@@ -1,0 +1,11 @@
+flake8==3.8.4
+mypy==0.800
+numpy==1.20.0
+pytorch-lightning==1.1.6
+pytorch-lightning-bolts==0.3.0
+torch==1.7.1
+tqdm==4.56.0
+wandb==0.10.15
+pytest==6.2.2
+Cython==0.29.21
+youtokentome

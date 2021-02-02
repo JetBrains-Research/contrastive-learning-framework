@@ -1,49 +1,34 @@
-from itertools import combinations
-from os import listdir
-from os.path import join, isdir, splitext
+from abc import abstractmethod
+from typing import List, Tuple, Dict
 
-import torch
-import youtokentome as yttm
 from torch.utils.data import Dataset
 
+FilesPair = Tuple[str, str]
 
-class BaseDataset(Dataset):
-    def __init__(self, dataset: str):
+
+class BaseContrastiveDataset(Dataset):
+    def __init__(self, dataset_path: str):
         super().__init__()
-        dataset_path = join("data", dataset)
-        model_path = join(dataset_path, "model.yttm")
-        self.tokenizer = yttm.BPE(model=model_path)
-        self.files = [
-            join(dataset_path, elem) for elem in listdir(dataset_path) if isdir(join(dataset_path, elem))
-        ]
-        self.pairs = {}
-        for file in self.files:
-            transformed_files = [
-                join(file, elem) for elem in listdir(file) if self._check_if_cpp(join(file, elem))
-            ]
-            self.pairs[file] = list(combinations(transformed_files, 2))
+        self.dataset_path = dataset_path
+        self.pairs = self._get_pairs()
 
-    @staticmethod
-    def _check_if_cpp(file: str):
-        _, extension = splitext(file)
-        return extension == ".cpp"
+    @abstractmethod
+    def _get_pairs(self) -> Dict[str, List[FilesPair]]:
+        pass
 
-    def __len__(self):
+    @abstractmethod
+    def _process_files(self, a_path: str, b_path: str) -> Dict:
+        pass
+
+    def __len__(self) -> int:
         return sum([len(v) for k, v in self.pairs.items()])
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Dict:
         pair_idx = 0
         for file, pairs in self.pairs.items():
             if pair_idx + len(pairs) > idx:
                 a_path, b_path = pairs[idx - pair_idx]
-                with open(a_path, "r") as a_file, open(b_path, "r") as b_file:
-                    a_text = a_file.read()
-                    b_text = b_file.read()
-                    return {
-                        "file": file,
-                        "a_encoding": torch.LongTensor(self.tokenizer.encode([a_text])),
-                        "b_encoding": torch.LongTensor(self.tokenizer.encode([b_text])),
-                        "a_text": a_text,
-                        "b_text": b_text
-                    }
+                return self._process_files(a_path, b_path)
             pair_idx += len(pairs)
+        return {}
+

@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from os.path import join
 
 import torch
 from pytorch_lightning import seed_everything, Trainer
@@ -26,7 +27,7 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
 
     config = test_config if is_test else default_config
     model_ = MocoV2Model(base_encoder="lstm", encoder_config=config, batch_size=2)
-    dm = BaseDataModule(dataset, batch_size=2)
+    dm = BaseDataModule(join("data", dataset), batch_size=2)
 
     # define logger
     wandb_logger = WandbLogger(

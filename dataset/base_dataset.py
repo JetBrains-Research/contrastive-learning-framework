@@ -31,4 +31,3 @@ class BaseContrastiveDataset(Dataset):
                 return self._process_files(a_path, b_path)
             pair_idx += len(pairs)
         return {}
-

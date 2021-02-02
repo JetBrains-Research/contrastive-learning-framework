@@ -41,4 +41,3 @@ class TextContrastiveDataset(BaseContrastiveDataset):
                 "a_text": a_text,
                 "b_text": b_text
             }
-

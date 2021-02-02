@@ -1,15 +1,22 @@
 from pytorch_lightning import LightningDataModule
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import random_split, DataLoader
-
-from .base_dataset import BaseDataset
+import torch
+from typing import Dict
+from os.path import exists
+from .text_dataset import TextContrastiveDataset
 
 
 class BaseDataModule(LightningDataModule):
-    def __init__(self, dataset: str, batch_size: int):
+    def __init__(self, dataset_path: str, batch_size: int):
         super().__init__()
-        self.dataset = BaseDataset(dataset)
+        self.dataset_path = dataset_path
+        self.dataset = TextContrastiveDataset(dataset_path)
         self.batch_size = batch_size
+
+    def prepare_data(self):
+        if not exists(self.dataset_path):
+            raise ValueError(f"There is no file in passed path ({self.dataset_path})")
 
     def setup(self, stage: str = None):
         len_train = int(0.6 * len(self.dataset))
@@ -29,7 +36,11 @@ class BaseDataModule(LightningDataModule):
     @staticmethod
     def _collate(batch):
         # batch contains a list of tuples of structure (sequence, target)
-        print([item["a_encoding"].shape for item in batch])
         a = pad_sequence([item["a_encoding"].squeeze() for item in batch], batch_first=True)
         b = pad_sequence([item["b_encoding"].squeeze() for item in batch], batch_first=True)
         return (a, b), None
+
+    def transfer_batch_to_device(self, batch: Dict, device: torch.device) -> Dict:
+        for key in ["a_encoding", "b_encoding"]:
+            batch[key] = batch[key].to(device)
+        return batch

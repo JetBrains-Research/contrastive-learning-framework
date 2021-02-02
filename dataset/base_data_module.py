@@ -1,5 +1,5 @@
 from os.path import exists
-from typing import Dict
+from typing import Any
 
 import torch
 from pytorch_lightning import LightningDataModule
@@ -42,7 +42,7 @@ class BaseDataModule(LightningDataModule):
         b = pad_sequence([item["b_encoding"].squeeze() for item in batch], batch_first=True)
         return (a, b), None
 
-    def transfer_batch_to_device(self, batch: Dict, device: torch.device) -> Dict:
+    def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
         for key in ["a_encoding", "b_encoding"]:
             batch[key] = batch[key].to(device)
         return batch

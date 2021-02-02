@@ -1,9 +1,11 @@
+from os.path import exists
+from typing import Dict
+
+import torch
 from pytorch_lightning import LightningDataModule
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import random_split, DataLoader
-import torch
-from typing import Dict
-from os.path import exists
+
 from .text_dataset import TextContrastiveDataset
 
 

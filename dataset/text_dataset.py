@@ -1,9 +1,9 @@
 from itertools import combinations
 from os import walk
 from os.path import join, splitext
+from typing import List, Dict
 
 import torch
-from typing import List, Dict
 import youtokentome as yttm
 
 from .base_dataset import BaseContrastiveDataset, FilesPair

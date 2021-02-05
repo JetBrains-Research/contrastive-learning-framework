@@ -1,8 +1,8 @@
-import youtokentome as yttm
+from argparse import ArgumentParser
 from os import listdir, remove
 from os.path import splitext, join, isdir
-from argparse import ArgumentParser
 
+import youtokentome as yttm
 
 data = "data"
 

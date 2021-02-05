@@ -1,10 +1,9 @@
-from abc import abstractmethod
-from tqdm import tqdm
-from typing import Tuple, Dict, Any
-
-from torch.utils.data import Dataset
 from collections import defaultdict
 from itertools import combinations
+from typing import Tuple, Dict
+
+from torch.utils.data import Dataset
+from tqdm import tqdm
 
 Pair = Tuple[str, str]
 

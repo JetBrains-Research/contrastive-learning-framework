@@ -1,11 +1,10 @@
-from itertools import combinations
 from os import walk
 from os.path import join, splitext, basename, dirname
-from typing import List, Dict, Tuple
-from torch.utils.data import Dataset
+from typing import Tuple
 
 import torch
 import youtokentome as yttm
+from torch.utils.data import Dataset
 
 
 class TextDataset(Dataset):
@@ -27,7 +26,6 @@ class TextDataset(Dataset):
             for file in dir_files_paths:
                 self.idx2file[idx] = file
                 idx += 1
-
 
     @staticmethod
     def _in_c_family(file: str) -> bool:

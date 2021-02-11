@@ -29,10 +29,10 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
     model_ = MocoV2Model(
         base_encoder="lstm",
         encoder_config=config,
-        batch_size=2
+        batch_size=16
     )
 
-    dm = BaseDataModule(dataset, is_test=is_test, batch_size=2)
+    dm = BaseDataModule(dataset, is_test=is_test, batch_size=16)
 
     # define logger
     wandb_logger = WandbLogger(

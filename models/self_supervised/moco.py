@@ -12,7 +12,6 @@ class MocoV2Model(MocoV2):
         self,
         base_encoder: Union[str, torch.nn.Module],
         encoder_config: dataclass,
-        emb_dim: int = 8,
         num_negatives: int = 65536,
         encoder_momentum: float = 0.999,
         softmax_temperature: float = 0.07,
@@ -28,7 +27,7 @@ class MocoV2Model(MocoV2):
         self.encoder_config = encoder_config
         super().__init__(
             base_encoder=base_encoder,
-            emb_dim=emb_dim,
+            emb_dim=encoder_config.output_size,
             num_negatives=num_negatives,
             encoder_momentum=encoder_momentum,
             softmax_temperature=softmax_temperature,

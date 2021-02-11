@@ -3,6 +3,7 @@ from os import listdir, remove
 from os.path import splitext, join, isdir
 
 import youtokentome as yttm
+
 from configs import default_tokenizer_config, test_tokenizer_config
 
 data = "data"

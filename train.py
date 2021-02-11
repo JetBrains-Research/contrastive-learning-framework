@@ -1,12 +1,11 @@
 from argparse import ArgumentParser
-from os.path import join
 
 import torch
 from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import WandbLogger
 
-from configs import default_config, test_config, default_tokenizer_config, test_tokenizer_config
+from configs import default_config, test_config
 from dataset import BaseDataModule
 from models import MocoV2Model
 

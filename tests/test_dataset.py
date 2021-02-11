@@ -1,4 +1,5 @@
 from torchvision.datasets import MNIST
+
 from dataset.contrastive_dataset import ContrastiveDataset
 
 

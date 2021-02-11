@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from os import listdir, remove
-from os.path import splitext, join, isdir
+from os.path import splitext, join, isdir, exists
 
 import youtokentome as yttm
 
@@ -10,7 +10,10 @@ data = "data"
 
 
 def tokenize(dataset_path: str, model_path: str, is_test: bool):
-    text = ""
+    buffer_path = "text.yttm"
+    if exists(buffer_path):
+        remove(buffer_path)
+
     for file in listdir(dataset_path):
         transformed_files_path = join(dataset_path, file)
         if isdir(transformed_files_path):
@@ -18,10 +21,10 @@ def tokenize(dataset_path: str, model_path: str, is_test: bool):
                 file_path = join(transformed_files_path, transformed_file)
                 _, ext = splitext(file_path)
                 if ext == ".cpp":
-                    with open(file_path, "r", encoding="utf8", errors='ignore') as f:
-                        text += f.read() + "\n"
-    with open("text.yttm", "w") as f:
-        f.write(text)
+                    with open(file_path, "r", encoding="utf8", errors='ignore') as file_:
+                        text = file_.read() + "\n"
+                        with open(buffer_path, "a") as buffer_:
+                            buffer_.write(text)
 
     tokenizer_config = test_tokenizer_config if is_test else default_tokenizer_config
     tokenizer = yttm.BPE.train(

@@ -10,7 +10,11 @@ class LSTMModel(nn.Module):
         self.num_classes = config.output_size
         self.hidden_size = config.hidden_size
         self.dropout = nn.Dropout(config.dropout)
-        self.embeddings = nn.Embedding(config.vocab_size, config.embedding_size, padding_idx=0)
+        self.embeddings = nn.Embedding(
+            config.vocab_size,
+            config.embedding_size,
+            padding_idx=config.pad_id,
+        )
         self.lstm = nn.LSTM(
             input_size=config.embedding_size,
             hidden_size=config.hidden_size,

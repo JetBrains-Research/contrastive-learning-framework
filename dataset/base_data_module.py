@@ -5,16 +5,24 @@ import torch
 from pytorch_lightning import LightningDataModule
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import random_split, DataLoader
+from os.path import join
 
 from .contrastive_dataset import ContrastiveDataset
 from .text_dataset import TextDataset
 
+text_datasets = ["poj_104"]
+
 
 class BaseDataModule(LightningDataModule):
-    def __init__(self, dataset_path: str, batch_size: int):
+    def __init__(self, dataset_name: str, batch_size: int, is_test: bool = False):
         super().__init__()
-        self.dataset_path = dataset_path
-        self.clf_dataset = TextDataset(dataset_path=dataset_path)
+        self.dataset_path = join("data", dataset_name)
+
+        if dataset_name in text_datasets:
+            self.clf_dataset = TextDataset(dataset_path=self.dataset_path, is_test=is_test)
+        else:
+            raise NotImplemented("Non-text datasets are currently not available")
+
         self.dataset = ContrastiveDataset(clf_dataset=self.clf_dataset)
         self.batch_size = batch_size
 

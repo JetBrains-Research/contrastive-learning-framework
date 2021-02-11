@@ -6,7 +6,7 @@ from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import WandbLogger
 
-from configs import default_config, test_config
+from configs import default_config, test_config, default_tokenizer_config, test_tokenizer_config
 from dataset import BaseDataModule
 from models import MocoV2Model
 
@@ -26,8 +26,14 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
         print(f"Unknown model: {model}, try on of {models.keys()}")
 
     config = test_config if is_test else default_config
-    model_ = MocoV2Model(base_encoder="lstm", encoder_config=config, batch_size=2)
-    dm = BaseDataModule(join("data", dataset), batch_size=2)
+
+    model_ = MocoV2Model(
+        base_encoder="lstm",
+        encoder_config=config,
+        batch_size=2
+    )
+
+    dm = BaseDataModule(dataset, is_test=is_test, batch_size=2)
 
     # define logger
     wandb_logger = WandbLogger(

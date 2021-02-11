@@ -21,10 +21,10 @@ class LSTMModel(nn.Module):
             batch_first=config.batch_first,
             bidirectional=config.bidirectional
         )
-        self.linear = nn.Linear(config.hidden_size, config.output_size)
+        self.fc = nn.Linear(config.hidden_size, config.output_size)
 
     def forward(self, seq: torch.Tensor):
         out = self.embeddings(seq)
         out = self.dropout(out)
         lstm_out, (ht, ct) = self.lstm(out)
-        return self.linear(ht[-1])
+        return self.fc(ht[-1])

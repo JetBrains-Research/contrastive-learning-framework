@@ -56,6 +56,7 @@ class BaseDataModule(LightningDataModule):
         return (a, b), None
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
-        for key in ["a_encoding", "b_encoding"]:
-            batch[key] = batch[key].to(device)
-        return batch
+        (a, b), label = batch
+        a = a.to(device)
+        b = b.to(device)
+        return (a, b), label

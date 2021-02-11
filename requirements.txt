@@ -7,6 +7,4 @@ torch==1.7.1
 tqdm==4.56.0
 wandb==0.10.15
 pytest==6.2.2
-Cython==0.29.21
-youtokentome
 torchvision~=0.8.2

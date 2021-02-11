@@ -20,7 +20,6 @@ class LSTMModel(nn.Module):
             hidden_size=config.hidden_size,
             batch_first=config.batch_first,
             dropout=config.dropout,
-            bias=config.bias,
             bidirectional=config.bidirectional
         )
         self.linear = nn.Linear(config.hidden_size, config.output_size)

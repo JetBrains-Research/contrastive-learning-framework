@@ -1,6 +1,6 @@
 flake8==3.8.4
 mypy==0.800
-numpy==1.20.0
+numpy==1.19.5
 pytorch-lightning==1.1.6
 pytorch-lightning-bolts==0.3.0
 torch==1.7.1

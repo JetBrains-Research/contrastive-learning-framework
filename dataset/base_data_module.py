@@ -8,6 +8,7 @@ from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import random_split, DataLoader
 
 from .contrastive_dataset import ContrastiveDataset
+from .download import load_dataset
 from .text_dataset import TextDataset
 
 text_datasets = ["poj_104"]
@@ -16,19 +17,21 @@ text_datasets = ["poj_104"]
 class BaseDataModule(LightningDataModule):
     def __init__(self, dataset_name: str, batch_size: int, is_test: bool = False):
         super().__init__()
+        self.dataset_name = dataset_name
         self.dataset_path = join("data", dataset_name)
+        self.batch_size = batch_size
+        self.is_test = is_test
 
-        if dataset_name in text_datasets:
-            self.clf_dataset = TextDataset(dataset_path=self.dataset_path, is_test=is_test)
+    def prepare_data(self):
+        if not exists(self.dataset_path):
+            load_dataset(self.dataset_name)
+
+        if self.dataset_name in text_datasets:
+            self.clf_dataset = TextDataset(dataset_path=self.dataset_path, is_test=self.is_test)
         else:
             raise NotImplementedError("Non-text datasets are currently not available")
 
         self.dataset = ContrastiveDataset(clf_dataset=self.clf_dataset)
-        self.batch_size = batch_size
-
-    def prepare_data(self):
-        if not exists(self.dataset_path):
-            raise ValueError(f"There is no file in passed path ({self.dataset_path})")
 
     def setup(self, stage: str = None):
         len_train = int(0.6 * len(self.dataset))

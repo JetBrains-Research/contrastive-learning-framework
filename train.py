@@ -5,7 +5,7 @@ from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import WandbLogger
 
-from configs import default_config, test_config
+from configs import default_config, test_config, default_hyperparametrs
 from dataset import BaseDataModule
 from models import MocoV2Model
 
@@ -25,14 +25,15 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
         print(f"Unknown model: {model}, try on of {models.keys()}")
 
     config = test_config if is_test else default_config
+    hyperparams = default_hyperparametrs
 
     model_ = MocoV2Model(
         base_encoder="lstm",
         encoder_config=config,
-        batch_size=16
+        batch_size=hyperparams.batch_size
     )
 
-    dm = BaseDataModule(dataset, is_test=is_test, batch_size=16)
+    dm = BaseDataModule(dataset, is_test=is_test, batch_size=hyperparams.batch_size)
 
     # define logger
     wandb_logger = WandbLogger(
@@ -53,9 +54,9 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
     # define learning rate logger
     lr_logger = LearningRateMonitor("step")
     trainer = Trainer(
-        max_epochs=10,
-        val_check_interval=0.01,
-        log_every_n_steps=200,
+        max_epochs=hyperparams.n_epochs,
+        val_check_interval=hyperparams.val_check_interval,
+        log_every_n_steps=hyperparams.log_every_n_steps,
         logger=wandb_logger,
         gpus=gpu,
         callbacks=[lr_logger, checkpoint_callback],

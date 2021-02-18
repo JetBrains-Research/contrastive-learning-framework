@@ -38,7 +38,6 @@ class MocoV2Model(MocoV2):
             num_workers=num_workers,
         )
 
-
     def init_encoders(self, base_encoder: str):
         encoder_q = LSTMModel(self.encoder_config)
         encoder_k = LSTMModel(self.encoder_config)

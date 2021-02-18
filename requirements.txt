@@ -9,3 +9,4 @@ wandb==0.10.15
 pytest==6.2.2
 torchvision~=0.8.2
 wget~=3.2
+split-folders==0.4.3

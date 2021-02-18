@@ -54,7 +54,6 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
     lr_logger = LearningRateMonitor("step")
     trainer = Trainer(
         max_epochs=10,
-        deterministic=True,
         val_check_interval=0.01,
         log_every_n_steps=200,
         logger=wandb_logger,

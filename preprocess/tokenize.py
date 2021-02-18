@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
+from dataclasses import asdict
 from os import listdir, remove
 from os.path import splitext, join, isdir, exists
-from dataclasses import asdict
 
 import youtokentome as yttm
 

@@ -1,4 +1,3 @@
-from os import walk
 from os.path import join, splitext, basename, dirname, exists
 from typing import Tuple
 
@@ -6,6 +5,7 @@ import torch
 import youtokentome as yttm
 from torch.utils.data import Dataset
 
+from dataset.utils import traverse_clf_dataset
 from preprocess import tokenize
 
 
@@ -19,18 +19,7 @@ class TextDataset(Dataset):
 
         self.tokenizer = self._get_tokenizer()
 
-        self.idx2file = dict()
-
-        _, base_dirs, _ = next(walk(self.data_path))
-        base_dirs_paths = map(lambda file_: join(self.data_path, file_), base_dirs)
-        idx = 0
-        for base_dir_path in base_dirs_paths:
-            _, _, dir_files = next(walk(base_dir_path))
-            dir_files_paths = map(lambda file_: join(base_dir_path, file_), dir_files)
-            dir_files_paths = filter(self._in_c_family, dir_files_paths)
-            for file in dir_files_paths:
-                self.idx2file[idx] = file
-                idx += 1
+        self.idx2file = traverse_clf_dataset(self.dataset_path)
 
     def _get_tokenizer(self) -> yttm.BPE:
         model_path = join(self.dataset_path, "model.yttm")

@@ -46,13 +46,28 @@ class BaseDataModule(LightningDataModule):
             self.contrastive_dataset[stage] = ContrastiveDataset(clf_dataset=self.clf_dataset[stage])
 
     def train_dataloader(self):
-        return DataLoader(self.contrastive_dataset["train"], batch_size=self.batch_size, collate_fn=self._collate)
+        return DataLoader(
+            self.contrastive_dataset["train"],
+            batch_size=self.batch_size,
+            collate_fn=self._collate,
+            drop_last=True
+        )
 
     def val_dataloader(self):
-        return DataLoader(self.contrastive_dataset["val"], batch_size=self.batch_size, collate_fn=self._collate)
+        return DataLoader(
+            self.contrastive_dataset["val"],
+            batch_size=self.batch_size,
+            collate_fn=self._collate,
+            drop_last=True
+        )
 
     def test_dataloader(self):
-        return DataLoader(self.contrastive_dataset["test"], batch_size=self.batch_size, collate_fn=self._collate)
+        return DataLoader(
+            self.contrastive_dataset["test"],
+            batch_size=self.batch_size,
+            collate_fn=self._collate,
+            drop_last=True
+        )
 
     @staticmethod
     def _collate(batch):
@@ -65,4 +80,6 @@ class BaseDataModule(LightningDataModule):
         (a, b), label = batch
         a = a.to(device)
         b = b.to(device)
+        if isinstance(label, torch.Tensor):
+            label = label.to(device)
         return (a, b), label

@@ -1,12 +1,13 @@
 import tarfile
 from os import listdir, rename, mkdir
-from shutil import rmtree, move
-import splitfolders
 from os.path import join, exists
-from preprocess import tokenize
+from shutil import rmtree, move
 
+import splitfolders
 import wget
 from tqdm import tqdm
+
+from preprocess import tokenize
 
 poj_orig_link = "https://s3-eu-west-1.amazonaws.com/datasets.ml.labs.aws.intellij.net/poj-104/poj-104-original.tar.gz"
 poj_orig_tar_path = join("data", "poj-104-original.tar.gz")

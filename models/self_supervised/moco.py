@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Union
 
 import torch
@@ -21,9 +21,8 @@ class MocoV2Model(MocoV2):
         batch_size: int = 256,
         use_mlp: bool = False,
         num_workers: int = 8,
-        *args,
-        **kwargs
     ):
+        self.hparams = asdict(encoder_config)
         self.encoder_config = encoder_config
         super().__init__(
             base_encoder=base_encoder,
@@ -37,9 +36,8 @@ class MocoV2Model(MocoV2):
             batch_size=batch_size,
             use_mlp=use_mlp,
             num_workers=num_workers,
-            *args,
-            **kwargs
         )
+
 
     def init_encoders(self, base_encoder: str):
         encoder_q = LSTMModel(self.encoder_config)

@@ -10,19 +10,19 @@ from preprocess import tokenize
 
 
 class TextDataset(Dataset):
-    def __init__(self, dataset_path: str, is_test: bool = False):
+    def __init__(self, dataset_path: str, stage: str, is_test: bool = False):
         super().__init__()
 
         self.dataset_path = dataset_path
-        model_path = join(self.dataset_path, "model.yttm")
+        self.data_path = join(dataset_path, stage)
         self.is_test = is_test
 
-        self.tokenizer = self._get_tokenizer(model_path)
+        self.tokenizer = self._get_tokenizer()
 
         self.idx2file = dict()
 
-        _, base_dirs, _ = next(walk(self.dataset_path))
-        base_dirs_paths = map(lambda file_: join(self.dataset_path, file_), base_dirs)
+        _, base_dirs, _ = next(walk(self.data_path))
+        base_dirs_paths = map(lambda file_: join(self.data_path, file_), base_dirs)
         idx = 0
         for base_dir_path in base_dirs_paths:
             _, _, dir_files = next(walk(base_dir_path))
@@ -32,15 +32,11 @@ class TextDataset(Dataset):
                 self.idx2file[idx] = file
                 idx += 1
 
-    def _get_tokenizer(self, model_path: str) -> yttm.BPE:
-        if exists(model_path):
-            return yttm.BPE(model=model_path)
-        else:
-            return tokenize(
-                dataset_path=self.dataset_path,
-                model_path=model_path,
-                is_test=self.is_test
-            )
+    def _get_tokenizer(self) -> yttm.BPE:
+        model_path = join(self.dataset_path, "model.yttm")
+        if not exists(model_path):
+            tokenize(dataset_path=self.dataset_path)
+        return yttm.BPE(model=model_path)
 
     @staticmethod
     def _in_c_family(file: str) -> bool:

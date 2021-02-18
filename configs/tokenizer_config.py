@@ -11,12 +11,7 @@ class TokenizerConfig:
     eos_id: int = 3
 
 
-test_tokenizer_config = TokenizerConfig(
-    vocab_size=200,
-    n_threads=-1
-)
-
 default_tokenizer_config = TokenizerConfig(
-    vocab_size=30000,
+    vocab_size=10000,
     n_threads=-1
 )

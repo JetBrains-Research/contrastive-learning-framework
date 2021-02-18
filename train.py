@@ -55,8 +55,8 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
     trainer = Trainer(
         max_epochs=10,
         deterministic=True,
-        check_val_every_n_epoch=1,
-        log_every_n_steps=50,
+        val_check_interval=0.01,
+        log_every_n_steps=200,
         logger=wandb_logger,
         gpus=gpu,
         callbacks=[lr_logger, checkpoint_callback],

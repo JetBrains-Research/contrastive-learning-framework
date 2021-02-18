@@ -5,7 +5,7 @@ from typing import Any
 import torch
 from pytorch_lightning import LightningDataModule
 from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import random_split, DataLoader
+from torch.utils.data import DataLoader
 
 from .contrastive_dataset import ContrastiveDataset
 from .download import load_dataset
@@ -13,40 +13,46 @@ from .text_dataset import TextDataset
 
 text_datasets = ["poj_104"]
 
+SEED = 9
+
 
 class BaseDataModule(LightningDataModule):
     def __init__(self, dataset_name: str, batch_size: int, is_test: bool = False):
         super().__init__()
+        if dataset_name not in text_datasets:
+            raise NotImplementedError("Non-text datasets are currently not available")
+
         self.dataset_name = dataset_name
         self.dataset_path = join("data", dataset_name)
         self.batch_size = batch_size
         self.is_test = is_test
 
+        self.clf_dataset = {}
+        self.contrastive_dataset = {}
+
     def prepare_data(self):
         if not exists(self.dataset_path):
             load_dataset(self.dataset_name)
 
-        if self.dataset_name in text_datasets:
-            self.clf_dataset = TextDataset(dataset_path=self.dataset_path, is_test=self.is_test)
-        else:
-            raise NotImplementedError("Non-text datasets are currently not available")
-
-        self.dataset = ContrastiveDataset(clf_dataset=self.clf_dataset)
-
     def setup(self, stage: str = None):
-        len_train = int(0.6 * len(self.dataset))
-        len_test = int(0.2 * len(self.dataset))
-        len_val = len(self.dataset) - len_test - len_train
-        self.train, self.val, self.test = random_split(self.dataset, [len_train, len_val, len_test])
+        stages = []
+        if stage == "fit" or stage is None:
+            stages += ["train", "val"]
+        if stage == "test" or stage is None:
+            stages += ["test"]
+
+        for stage in stages:
+            self.clf_dataset[stage] = TextDataset(dataset_path=self.dataset_path, stage=stage, is_test=self.is_test)
+            self.contrastive_dataset[stage] = ContrastiveDataset(clf_dataset=self.clf_dataset[stage])
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, collate_fn=self._collate)
+        return DataLoader(self.contrastive_dataset["train"], batch_size=self.batch_size, collate_fn=self._collate)
 
     def val_dataloader(self):
-        return DataLoader(self.val, batch_size=self.batch_size, collate_fn=self._collate)
+        return DataLoader(self.contrastive_dataset["val"], batch_size=self.batch_size, collate_fn=self._collate)
 
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=self.batch_size, collate_fn=self._collate)
+        return DataLoader(self.contrastive_dataset["test"], batch_size=self.batch_size, collate_fn=self._collate)
 
     @staticmethod
     def _collate(batch):

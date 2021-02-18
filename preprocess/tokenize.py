@@ -1,15 +1,17 @@
 from argparse import ArgumentParser
 from os import listdir, remove
 from os.path import splitext, join, isdir, exists
+from dataclasses import asdict
 
 import youtokentome as yttm
 
-from configs import default_tokenizer_config, test_tokenizer_config
+from configs import default_tokenizer_config
 
 data = "data"
 
 
-def tokenize(dataset_path: str, model_path: str, is_test: bool):
+def tokenize(dataset_path: str, model_name: str = "model.yttm"):
+    model_path = join(dataset_path, model_name)
     buffer_path = "text.yttm"
     if exists(buffer_path):
         remove(buffer_path)
@@ -26,15 +28,14 @@ def tokenize(dataset_path: str, model_path: str, is_test: bool):
                         with open(buffer_path, "a") as buffer_:
                             buffer_.write(text)
 
-    tokenizer_config = test_tokenizer_config if is_test else default_tokenizer_config
-    tokenizer = yttm.BPE.train(
+    tokenizer_config = default_tokenizer_config
+    _ = yttm.BPE.train(
         data="text.yttm",
         model=model_path,
-        **tokenizer_config.__dict__
+        **asdict(tokenizer_config)
     )
 
     remove("text.yttm")
-    return tokenizer
 
 
 if __name__ == "__main__":
@@ -45,4 +46,4 @@ if __name__ == "__main__":
     args = arg_parser.parse_args()
     dataset_path_ = join(data, args.dataset)
     model_path_ = join(dataset_path_, args.model_name)
-    _ = tokenize(dataset_path=dataset_path_, model_path=model_path_, is_test=args.is_test)
+    tokenize(dataset_path=dataset_path_, model_path=model_path_)

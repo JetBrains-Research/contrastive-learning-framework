@@ -12,5 +12,5 @@ class ModelHyperparameters:
 default_hyperparametrs = ModelHyperparameters(
     n_epochs=10,
     batch_size=16,
-    val_check_interval=0.1,
+    val_check_interval=0.01,
 )

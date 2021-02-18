@@ -19,7 +19,7 @@ class TextDataset(Dataset):
 
         self.tokenizer = self._get_tokenizer()
 
-        self.idx2file = traverse_clf_dataset(self.dataset_path)
+        self.idx2file = traverse_clf_dataset(self.data_path)
 
     def _get_tokenizer(self) -> yttm.BPE:
         model_path = join(self.dataset_path, "model.yttm")

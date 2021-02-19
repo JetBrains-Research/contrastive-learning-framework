@@ -50,6 +50,7 @@ class BaseDataModule(LightningDataModule):
             self.contrastive_dataset["train"],
             batch_size=self.batch_size,
             collate_fn=self._collate,
+            shuffle=True,
             drop_last=True
         )
 
@@ -58,6 +59,7 @@ class BaseDataModule(LightningDataModule):
             self.contrastive_dataset["val"],
             batch_size=self.batch_size,
             collate_fn=self._collate,
+            shuffle=True,
             drop_last=True
         )
 
@@ -66,6 +68,7 @@ class BaseDataModule(LightningDataModule):
             self.contrastive_dataset["test"],
             batch_size=self.batch_size,
             collate_fn=self._collate,
+            shuffle=True,
             drop_last=True
         )
 

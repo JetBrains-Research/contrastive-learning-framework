@@ -24,8 +24,14 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
     config = test_config if is_test else default_config
     hyperparams = default_hyperparametrs
 
-    transform = ssl_models_transforms[model]()
-    dm = BaseDataModule(dataset, is_test=is_test, batch_size=hyperparams.batch_size, transform=transform)
+    transform = ssl_models_transforms[model]() if model in ssl_models_transforms else None
+    dm = BaseDataModule(
+        encoder_name=encoder,
+        dataset_name=dataset,
+        is_test=is_test,
+        batch_size=hyperparams.batch_size,
+        transform=transform
+    )
 
     model_ = ssl_models[model](
         base_encoder=encoder,

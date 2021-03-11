@@ -10,10 +10,10 @@ from torch.utils.data import DataLoader
 
 from .contrastive_dataset import ContrastiveDataset
 from .download import load_dataset
-from .text_dataset import TextDataset
+from .text_dataset import get_text_dataset
 
 encoder2datasets = {
-    "LSTM": TextDataset,
+    "LSTM": get_text_dataset,
 }
 
 SEED = 9
@@ -30,7 +30,7 @@ class BaseDataModule(LightningDataModule):
     ):
         super().__init__()
         if encoder_name in encoder2datasets:
-            self.dataset = encoder2datasets[encoder_name]
+            self.get_dataset = encoder2datasets[encoder_name]
         else:
             raise NotImplementedError(f"Dataset for {encoder_name} is currently not available")
 
@@ -57,7 +57,7 @@ class BaseDataModule(LightningDataModule):
             stages += ["test"]
 
         for stage in stages:
-            self.clf_dataset[stage] = self.dataset(dataset_path=self.dataset_path, stage=stage, is_test=self.is_test)
+            self.clf_dataset[stage] = self.get_dataset(dataset_path=self.dataset_path, stage=stage, is_test=self.is_test)
             self.contrastive_dataset[stage] = ContrastiveDataset(clf_dataset=self.clf_dataset[stage])
 
     def train_dataloader(self):

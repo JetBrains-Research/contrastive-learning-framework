@@ -10,6 +10,10 @@ from dataset.utils import traverse_clf_dataset
 from preprocess import tokenize
 
 
+def get_text_dataset(dataset_path: str, stage: str, is_test: bool = False):
+    return TextDataset(dataset_path=dataset_path, stage=stage, is_test=is_test)
+
+
 class TextDataset(Dataset):
     def __init__(self, dataset_path: str, stage: str, is_test: bool = False):
         super().__init__()

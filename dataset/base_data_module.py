@@ -20,7 +20,14 @@ SEED = 9
 
 
 class BaseDataModule(LightningDataModule):
-    def __init__(self, encoder_name: str, dataset_name: str, batch_size: int, is_test: bool = False, transform: Callable = None):
+    def __init__(
+            self,
+            encoder_name: str,
+            dataset_name: str,
+            batch_size: int,
+            is_test: bool = False,
+            transform: Callable = None
+    ):
         super().__init__()
         if encoder_name in encoder2datasets:
             self.dataset = encoder2datasets[encoder_name]

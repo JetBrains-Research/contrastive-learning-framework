@@ -13,7 +13,7 @@ from .download import load_dataset
 from .text_dataset import TextDataset
 from code2seq.dataset import PathContextDataset
 
-datasets_ = {
+encoder2datasets = {
     "LSTM": TextDataset,
     "Code2Class": PathContextDataset
 }
@@ -22,12 +22,19 @@ SEED = 9
 
 
 class BaseDataModule(LightningDataModule):
-    def __init__(self, dataset_name: str, batch_size: int, is_test: bool = False, transform: Callable = None):
+    def __init__(
+            self,
+            encoder_name: str,
+            dataset_name: str,
+            batch_size: int,
+            is_test: bool = False,
+            transform: Callable = None
+    ):
         super().__init__()
-        if dataset_name in datasets_:
-            self.dataset = datasets_[dataset_name]
+        if encoder_name in encoder2datasets:
+            self.dataset = encoder2datasets[encoder_name]
         else:
-            raise NotImplementedError(f"{dataset_name} dataset iis currently not available")
+            raise NotImplementedError(f"Dataset for {encoder_name} is currently not available")
 
         self.dataset_name = dataset_name
         self.dataset_path = join("data", dataset_name)

@@ -14,6 +14,5 @@ ssl_models = {
 }
 
 ssl_models_transforms = {
-    "MocoV2": None,
     "BYOL": BYOLTransform
 }

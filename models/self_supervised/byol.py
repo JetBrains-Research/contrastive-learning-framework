@@ -56,14 +56,14 @@ class SiameseArm(nn.Module):
         # Projector
         self.projector = MLP(
             input_dim=encoder.output_size,
-            hidden_size=256,
-            output_dim=256
+            hidden_size=128,
+            output_dim=128
         )
         # Predictor
         self.predictor = MLP(
-            input_dim=256,
-            hidden_size=256,
-            output_dim=256
+            input_dim=128,
+            hidden_size=128,
+            output_dim=128
         )
 
     def forward(self, x):

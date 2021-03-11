@@ -7,7 +7,7 @@ from configs import LSTMConfig
 class LSTMModel(nn.Module):
     def __init__(self, config: LSTMConfig):
         super().__init__()
-        self.num_classes = config.output_size
+        self.output_size = config.output_size
         self.hidden_size = config.hidden_size
         self.dropout = nn.Dropout(config.dropout)
         self.embeddings = nn.Embedding(

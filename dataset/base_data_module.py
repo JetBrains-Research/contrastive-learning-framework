@@ -11,9 +11,11 @@ from torch.utils.data import DataLoader
 from .contrastive_dataset import ContrastiveDataset
 from .download import load_dataset
 from .text_dataset import TextDataset
+from code2seq.dataset import PathContextDataset
 
 datasets_ = {
-    "poj_104": TextDataset
+    "LSTM": TextDataset,
+    "Code2Class": PathContextDataset
 }
 
 SEED = 9

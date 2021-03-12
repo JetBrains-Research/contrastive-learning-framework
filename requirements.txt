@@ -1,5 +1,4 @@
 flake8==3.8.4
-mypy==0.800
 pytorch-lightning==1.2.3
 pytorch-lightning-bolts==0.3.0
 torch==1.7.1

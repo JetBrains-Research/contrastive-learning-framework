@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 from .contrastive_dataset import ContrastiveDataset
 from .download import load_dataset
-from .text_dataset import get_text_dataset
+from .classification_datasets.text_dataset import get_text_dataset
 
 encoder2datasets = {
     "LSTM": get_text_dataset,
@@ -57,7 +57,11 @@ class BaseDataModule(LightningDataModule):
             stages += ["test"]
 
         for stage in stages:
-            self.clf_dataset[stage] = self.get_dataset(dataset_path=self.dataset_path, stage=stage, is_test=self.is_test)
+            self.clf_dataset[stage] = self.get_dataset(
+                dataset_path=self.dataset_path,
+                stage=stage,
+                is_test=self.is_test
+            )
             self.contrastive_dataset[stage] = ContrastiveDataset(clf_dataset=self.clf_dataset[stage])
 
     def train_dataloader(self):

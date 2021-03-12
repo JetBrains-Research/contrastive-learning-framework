@@ -45,5 +45,4 @@ if __name__ == "__main__":
     arg_parser.add_argument("--is_test", action="store_true")
     args = arg_parser.parse_args()
     dataset_path_ = join(data, args.dataset)
-    model_path_ = join(dataset_path_, args.model_name)
-    tokenize(dataset_path=dataset_path_, model_path=model_path_)
+    tokenize(dataset_path=dataset_path_, model_name=args.model_name)

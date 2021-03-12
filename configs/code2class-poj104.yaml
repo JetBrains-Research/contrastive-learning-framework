@@ -7,14 +7,14 @@ hydra:
 
 name: code2class
 
-seed: 7
+seed: 9
 num_workers: 2
 log_offline: false
 
 num_classes: 5
 
 # data keys
-data_folder: /permanent-data
+data_folder: data
 vocabulary_name: vocabulary.pkl
 train_holdout: train
 val_holdout: val
@@ -28,7 +28,7 @@ progress_bar_refresh_rate: 1
 hyper_parameters:
   n_epochs: 3000
   patience: 10
-  batch_size: 512
+  batch_size: 16
   test_batch_size: 512
   clip_norm: 5
   max_context: 200
@@ -60,8 +60,8 @@ dataset:
     vocabulary_size: null
 
 encoder:
-  embedding_size: 128
-  rnn_size: 128
+  embedding_size: 16
+  rnn_size: 16
   use_bi_rnn: true
   embedding_dropout: 0.25
   rnn_num_layers: 1
@@ -69,6 +69,6 @@ encoder:
 
 classifier:
   n_hidden_layers: 2
-  hidden_size: 128
-  classifier_input_size: 256
+  hidden_size: 16
+  classifier_input_size: 16
   activation: relu

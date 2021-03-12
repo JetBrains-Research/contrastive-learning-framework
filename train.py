@@ -36,10 +36,11 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
     model_ = ssl_models[model](
         base_encoder=encoder,
         encoder_config=config,
+        datamodule=dm,
         batch_size=hyperparams.batch_size,
         max_epochs=hyperparams.n_epochs,
-        num_classes=dm.num_classes
     )
+
     # define logger
     wandb_logger = WandbLogger(
         project=f"{model}-{encoder}-{dataset}",

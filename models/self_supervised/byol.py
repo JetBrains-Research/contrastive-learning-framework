@@ -2,6 +2,7 @@ from copy import deepcopy
 from dataclasses import dataclass, asdict
 
 import torch.nn as nn
+from dataset import BaseDataModule
 from pl_bolts.models.self_supervised import BYOL
 from pl_bolts.models.self_supervised.byol.models import MLP
 
@@ -13,7 +14,7 @@ class BYOLModel(BYOL):
         self,
         base_encoder: str,
         encoder_config: dataclass,
-        num_classes: int,
+        datamodule: BaseDataModule,
         learning_rate: float = 0.2,
         weight_decay: float = 1.5e-6,
         input_height: int = 32,
@@ -25,9 +26,10 @@ class BYOLModel(BYOL):
     ):
         self.hparams = asdict(encoder_config)
         self.encoder_config = encoder_config
+        self.datamodule = datamodule
 
         super().__init__(
-            num_classes=num_classes,
+            num_classes=datamodule.num_classes,
             learning_rate=learning_rate,
             weight_decay=weight_decay,
             input_height=input_height,

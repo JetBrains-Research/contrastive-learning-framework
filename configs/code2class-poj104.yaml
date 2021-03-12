@@ -14,7 +14,7 @@ log_offline: false
 num_classes: 5
 
 # data keys
-data_folder: data
+data_folder: /permanent-data
 vocabulary_name: vocabulary.pkl
 train_holdout: train
 val_holdout: val
@@ -28,8 +28,8 @@ progress_bar_refresh_rate: 1
 hyper_parameters:
   n_epochs: 3000
   patience: 10
-  batch_size: 2
-  test_batch_size: 3
+  batch_size: 512
+  test_batch_size: 512
   clip_norm: 5
   max_context: 200
   random_context: true
@@ -60,8 +60,8 @@ dataset:
     vocabulary_size: null
 
 encoder:
-  embedding_size: 4
-  rnn_size: 2
+  embedding_size: 128
+  rnn_size: 128
   use_bi_rnn: true
   embedding_dropout: 0.25
   rnn_num_layers: 1
@@ -69,6 +69,6 @@ encoder:
 
 classifier:
   n_hidden_layers: 2
-  hidden_size: 8
-  classifier_input_size: 25
+  hidden_size: 128
+  classifier_input_size: 256
   activation: relu

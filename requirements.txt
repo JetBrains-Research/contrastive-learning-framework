@@ -10,4 +10,9 @@ pytest==6.2.2
 torchvision~=0.8.2
 wget~=3.2
 split-folders==0.4.3
+tabulate~=0.8.5
+Cython~=0.29.21
+setuptools~=50.3.2
+Click~=7.0
+omegaconf~=2.0.6
 code2seq~=0.0.2

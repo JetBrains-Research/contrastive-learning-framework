@@ -29,7 +29,7 @@ class MocoV2Model(MocoV2):
 
         super().__init__(
             base_encoder=base_encoder,
-            emb_dim=encoder_config.output_size,
+            emb_dim=encoder_config.num_classes,
             num_negatives=num_negatives,
             encoder_momentum=encoder_momentum,
             softmax_temperature=softmax_temperature,

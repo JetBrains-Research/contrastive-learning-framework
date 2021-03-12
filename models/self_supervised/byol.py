@@ -57,7 +57,7 @@ class SiameseArm(nn.Module):
         self.encoder = encoder
         # Projector
         self.projector = MLP(
-            input_dim=encoder.output_size,
+            input_dim=encoder.num_classes,
             hidden_size=128,
             output_dim=128
         )

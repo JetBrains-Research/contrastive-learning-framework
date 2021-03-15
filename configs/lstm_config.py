@@ -7,9 +7,8 @@ from .tokenizer_config import TokenizerConfig
 class LSTMConfig:
     vocab_size: int
     hidden_size: int
-    output_size: int
+    num_classes: int
     embedding_size: int
-    batch_first: bool
     bidirectional: bool
     dropout: float
 
@@ -22,9 +21,8 @@ class LSTMConfig:
 test_config = LSTMConfig(
     embedding_size=8,
     hidden_size=8,
-    output_size=8,
+    num_classes=5,
     vocab_size=10000,
-    batch_first=True,
     dropout=0.2,
     bidirectional=False
 )
@@ -32,9 +30,8 @@ test_config = LSTMConfig(
 default_config = LSTMConfig(
     embedding_size=64,
     hidden_size=64,
-    output_size=128,
+    num_classes=128,
     vocab_size=10000,
-    batch_first=True,
     dropout=0.2,
     bidirectional=False
 )

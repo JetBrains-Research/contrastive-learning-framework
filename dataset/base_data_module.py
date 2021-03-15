@@ -1,6 +1,7 @@
+from os import walk
 from os.path import exists
 from os.path import join
-from typing import Any
+from typing import Any, Callable
 
 import torch
 from pytorch_lightning import LightningDataModule
@@ -9,22 +10,36 @@ from torch.utils.data import DataLoader
 
 from .contrastive_dataset import ContrastiveDataset
 from .download import load_dataset
-from .text_dataset import TextDataset
+from .classification_datasets.text_dataset import get_text_dataset
 
-text_datasets = ["poj_104"]
+encoder2datasets = {
+    "LSTM": get_text_dataset,
+}
 
 SEED = 9
 
 
 class BaseDataModule(LightningDataModule):
-    def __init__(self, dataset_name: str, batch_size: int, is_test: bool = False):
+    def __init__(
+            self,
+            encoder_name: str,
+            dataset_name: str,
+            batch_size: int,
+            is_test: bool = False,
+            transform: Callable = None
+    ):
         super().__init__()
-        if dataset_name not in text_datasets:
-            raise NotImplementedError("Non-text datasets are currently not available")
+        if encoder_name in encoder2datasets:
+            self.get_dataset = encoder2datasets[encoder_name]
+        else:
+            raise NotImplementedError(f"Dataset for {encoder_name} is currently not available")
 
         self.dataset_name = dataset_name
         self.dataset_path = join("data", dataset_name)
         self.batch_size = batch_size
+        _, base_dirs, _ = next(walk(join(self.dataset_path, "train")))
+        self.num_classes = len(base_dirs)
+        self.transform = transform
         self.is_test = is_test
 
         self.clf_dataset = {}
@@ -42,7 +57,11 @@ class BaseDataModule(LightningDataModule):
             stages += ["test"]
 
         for stage in stages:
-            self.clf_dataset[stage] = TextDataset(dataset_path=self.dataset_path, stage=stage, is_test=self.is_test)
+            self.clf_dataset[stage] = self.get_dataset(
+                dataset_path=self.dataset_path,
+                stage=stage,
+                is_test=self.is_test
+            )
             self.contrastive_dataset[stage] = ContrastiveDataset(clf_dataset=self.clf_dataset[stage])
 
     def train_dataloader(self):
@@ -72,12 +91,17 @@ class BaseDataModule(LightningDataModule):
             drop_last=True
         )
 
-    @staticmethod
-    def _collate(batch):
+    def _collate(self, batch):
         # batch contains a list of tuples of structure (sequence, target)
-        a = pad_sequence([item["a_encoding"].squeeze() for item in batch], batch_first=True)
-        b = pad_sequence([item["b_encoding"].squeeze() for item in batch], batch_first=True)
-        return (a, b), None
+        a = pad_sequence([item["a_encoding"].squeeze() for item in batch])
+        b = pad_sequence([item["b_encoding"].squeeze() for item in batch])
+        label = torch.LongTensor([item["label"] for item in batch])
+        data = (a, b), label
+
+        if self.transform is not None:
+            return self.transform(data)
+        else:
+            return data
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
         (a, b), label = batch

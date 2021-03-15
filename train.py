@@ -7,10 +7,7 @@ from pytorch_lightning.loggers import WandbLogger
 
 from configs import default_config, test_config, default_hyperparametrs
 from dataset import BaseDataModule
-from models import MocoV2Model
-
-encoders = {"LSTM": 1}
-models = {"MocoV2": 1}
+from models import encoder_models, ssl_models, ssl_models_transforms
 
 SEED = 9
 
@@ -18,22 +15,31 @@ SEED = 9
 def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bool, resume: str = None):
     seed_everything(SEED)
 
-    if encoder not in encoders:
-        print(f"Unknown encoder: {encoder}, try on of {encoders.keys()}")
+    if encoder not in encoder_models:
+        print(f"Unknown encoder: {encoder}, try on of {encoder_models}")
 
-    if model not in models:
-        print(f"Unknown model: {model}, try on of {models.keys()}")
+    if model not in ssl_models:
+        print(f"Unknown model: {model}, try on of {ssl_models.keys()}")
 
     config = test_config if is_test else default_config
     hyperparams = default_hyperparametrs
 
-    model_ = MocoV2Model(
-        base_encoder="lstm",
-        encoder_config=config,
-        batch_size=hyperparams.batch_size
+    transform = ssl_models_transforms[model]() if model in ssl_models_transforms else None
+    dm = BaseDataModule(
+        encoder_name=encoder,
+        dataset_name=dataset,
+        is_test=is_test,
+        batch_size=hyperparams.batch_size,
+        transform=transform
     )
 
-    dm = BaseDataModule(dataset, is_test=is_test, batch_size=hyperparams.batch_size)
+    model_ = ssl_models[model](
+        base_encoder=encoder,
+        encoder_config=config,
+        datamodule=dm,
+        batch_size=hyperparams.batch_size,
+        max_epochs=hyperparams.n_epochs,
+    )
 
     # define logger
     wandb_logger = WandbLogger(
@@ -69,8 +75,8 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
 
 if __name__ == "__main__":
     arg_parser = ArgumentParser()
-    arg_parser.add_argument("model", type=str, default="MocoV2")
-    arg_parser.add_argument("encoder", type=str, default="LSTM")
+    arg_parser.add_argument("model", type=str, default="MocoV2", choices=list(ssl_models.keys()))
+    arg_parser.add_argument("encoder", type=str, default="LSTM", choices=list(encoder_models))
     arg_parser.add_argument("--dataset", type=str, default=None)
     arg_parser.add_argument("--offline", action="store_true")
     arg_parser.add_argument("--is_test", action="store_true")

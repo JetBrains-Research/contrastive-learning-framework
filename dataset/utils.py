@@ -15,6 +15,5 @@ def traverse_clf_dataset(dataset_path: str):
         _, _, dir_files = next(walk(base_dir_path))
         dir_files_paths = map(lambda file_: join(base_dir_path, file_), dir_files)
         dir_files_paths = filter(_in_c_family, dir_files_paths)
-        for file in dir_files_paths:
-            files.append(file)
+        files += list(dir_files_paths)
     return files

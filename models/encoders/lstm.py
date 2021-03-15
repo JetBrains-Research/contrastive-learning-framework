@@ -18,7 +18,6 @@ class LSTMModel(nn.Module):
         self.lstm = nn.LSTM(
             input_size=config.embedding_size,
             hidden_size=config.hidden_size,
-            batch_first=config.batch_first,
             bidirectional=config.bidirectional
         )
         self.fc = nn.Linear(config.hidden_size, config.num_classes)

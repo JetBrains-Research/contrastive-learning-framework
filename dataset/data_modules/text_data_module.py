@@ -32,8 +32,8 @@ class TextDataModule(BaseContrastiveDataModule):
     @abstractmethod
     def collate_fn(self, batch: Any) -> Any:
         # batch contains a list of tuples of structure (sequence, target)
-        a = pad_sequence([item["a_encoding"].squeeze() for item in batch], batch_first=True)
-        b = pad_sequence([item["b_encoding"].squeeze() for item in batch], batch_first=True)
+        a = pad_sequence([item["a_encoding"].squeeze() for item in batch])
+        b = pad_sequence([item["b_encoding"].squeeze() for item in batch])
         label = torch.LongTensor([item["label"] for item in batch])
         return (a, b), label
 

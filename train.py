@@ -6,7 +6,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import WandbLogger
 
 from configs import default_config, test_config, default_hyperparametrs
-from dataset import BaseDataModule
+from dataset import data_modules
 from models import encoder_models, ssl_models, ssl_models_transforms
 
 SEED = 9
@@ -25,10 +25,10 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
     hyperparams = default_hyperparametrs
 
     transform = ssl_models_transforms[model]() if model in ssl_models_transforms else None
-    dm = BaseDataModule(
-        encoder_name=encoder,
+    dm = data_modules[encoder](
         dataset_name=dataset,
         is_test=is_test,
+        num_classes=config.num_classes,
         batch_size=hyperparams.batch_size,
         transform=transform
     )
@@ -36,7 +36,6 @@ def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bo
     model_ = ssl_models[model](
         base_encoder=encoder,
         encoder_config=config,
-        datamodule=dm,
         batch_size=hyperparams.batch_size,
         max_epochs=hyperparams.n_epochs,
     )

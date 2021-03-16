@@ -2,7 +2,8 @@ from copy import deepcopy
 from dataclasses import dataclass, asdict
 
 import torch.nn as nn
-from dataset import BaseDataModule
+from code2seq.utils.vocabulary import Vocabulary
+from omegaconf import OmegaConf
 from pl_bolts.models.self_supervised import BYOL
 from pl_bolts.models.self_supervised.byol.models import MLP
 
@@ -14,7 +15,6 @@ class BYOLModel(BYOL):
         self,
         base_encoder: str,
         encoder_config: dataclass,
-        datamodule: BaseDataModule,
         learning_rate: float = 0.2,
         weight_decay: float = 1.5e-6,
         input_height: int = 32,
@@ -26,10 +26,18 @@ class BYOLModel(BYOL):
     ):
         self.hparams = asdict(encoder_config)
         self.encoder_config = encoder_config
-        self.datamodule = datamodule
+
+        if base_encoder == "LSTM":
+            encoder = encoder_models[base_encoder](self.encoder_config)
+            self.num_classes = self.encoder_config.num_classes
+        else:
+            _config = OmegaConf.load("configs/code2class-poj104.yaml")
+            _vocabulary = Vocabulary.load_vocabulary("data/poj_104/vocabulary.pkl")
+            encoder = encoder_models[base_encoder](config=_config, vocabulary=_vocabulary)
+            self.num_classes = _config.num_classes
 
         super().__init__(
-            num_classes=datamodule.num_classes,
+            num_classes=self.num_classes,
             learning_rate=learning_rate,
             weight_decay=weight_decay,
             input_height=input_height,
@@ -40,7 +48,7 @@ class BYOLModel(BYOL):
             **kwargs
         )
 
-        self.online_network = SiameseArm(encoder_models[base_encoder](self.encoder_config))
+        self.online_network = SiameseArm(encoder=encoder)
         self.target_network = deepcopy(self.online_network)
 
 

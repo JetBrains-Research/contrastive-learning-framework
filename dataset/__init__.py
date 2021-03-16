@@ -1,9 +1,18 @@
-from .base_data_module import BaseDataModule
+from dataset.classification_datasets.text_dataset import TextDataset
+from dataset.data_modules import TextDataModule, PathDataModule
+from .base_data_module import BaseContrastiveDataModule
 from .contrastive_dataset import ContrastiveDataset
-from .classification_datasets.text_dataset import TextDataset
 
 __all__ = [
     "TextDataset",
+    "TextDataModule",
+    "PathDataModule",
     "ContrastiveDataset",
-    "BaseDataModule",
+    "BaseContrastiveDataModule",
+    "data_modules"
 ]
+
+data_modules = {
+    "LSTM": TextDataModule,
+    "Code2Class": PathDataModule
+}

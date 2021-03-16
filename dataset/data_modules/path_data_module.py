@@ -51,8 +51,7 @@ class PathDataModule(BaseContrastiveDataModule):
         )
 
     def create_dataset(self, dataset_path: str, stage: str) -> Any:
-        dataset = PathDataset(self.stage2path[stage], self._config, self._vocabulary, False)
-        return dataset
+        return PathDataset(self.stage2path[stage], self._config, self._vocabulary, False)
 
     def collate_fn(self, batch: Any) -> Any:
         a_pc = [sample["a_encoding"] for sample in batch]

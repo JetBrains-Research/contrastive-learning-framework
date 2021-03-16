@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import Any, Callable
 
 import torch
@@ -25,11 +24,9 @@ class TextDataModule(BaseContrastiveDataModule):
             num_classes=num_classes
         )
 
-    @abstractmethod
     def create_dataset(self, dataset_path: str, stage: str) -> Any:
         return TextDataset(dataset_path=dataset_path, stage=stage, is_test=self.is_test)
 
-    @abstractmethod
     def collate_fn(self, batch: Any) -> Any:
         # batch contains a list of tuples of structure (sequence, target)
         a = pad_sequence([item["a_encoding"].squeeze() for item in batch])
@@ -37,7 +34,6 @@ class TextDataModule(BaseContrastiveDataModule):
         label = torch.LongTensor([item["label"] for item in batch])
         return (a, b), label
 
-    @abstractmethod
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
         (a, b), label = batch
         a = a.to(device)

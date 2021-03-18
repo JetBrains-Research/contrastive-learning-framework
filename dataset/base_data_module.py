@@ -40,8 +40,7 @@ class BaseContrastiveDataModule(LightningDataModule):
         pass
 
     def prepare_data(self):
-        if not exists(self.dataset_path):
-            load_dataset(self.dataset_name)
+        load_dataset(self.config)
 
     def setup(self, stage: str = None):
         stages = []

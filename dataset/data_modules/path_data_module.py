@@ -16,10 +16,12 @@ class PathDataModule(BaseContrastiveDataModule):
             config: DictConfig,
             transform: Callable = None,
     ):
-        self._config = config
-        self._vocabulary = Vocabulary.load_vocabulary(
-            join(config.data_folder, config.dataset.name, config.vocabulary_name)
+        BaseContrastiveDataModule.__init__(
+            self,
+            config=config,
+            transform=transform,
         )
+        self._vocabulary = None
 
         self._dataset_dir = join(config.data_folder, config.dataset.name)
         self._train_data_file = join(self._dataset_dir, f"{config.dataset.name}.{config.train_holdout}.c2s")
@@ -32,14 +34,11 @@ class PathDataModule(BaseContrastiveDataModule):
             "val": self._val_data_file
         }
 
-        BaseContrastiveDataModule.__init__(
-            self,
-            config=config,
-            transform=transform,
-        )
-
     def create_dataset(self, stage: str) -> Any:
-        return PathDataset(self.stage2path[stage], self._config, self._vocabulary, False)
+        self._vocabulary = Vocabulary.load_vocabulary(
+            join(self.config.data_folder, self.config.dataset.name, self.config.vocabulary_name)
+        )
+        return PathDataset(self.stage2path[stage], self.config, self._vocabulary, False)
 
     def collate_fn(self, batch: Any) -> Any:
         a_pc = [sample["a_encoding"] for sample in batch]

@@ -32,6 +32,8 @@ def train(config_path: str, resume: str):
         transform=transform
     )
 
+    dm.prepare_data()
+
     model_ = ssl_models[ssl_model](
         config=config,
     )

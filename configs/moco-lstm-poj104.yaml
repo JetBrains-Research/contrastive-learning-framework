@@ -1,0 +1,56 @@
+name: lstm
+
+seed: 9
+num_workers: 2
+log_offline: false
+
+num_classes: 5
+
+# data keys
+data_folder: data
+train_holdout: train
+val_holdout: val
+test_holdout: test
+
+save_every_epoch: 1
+val_every_epoch: 1
+val_check_interval: 0.01
+log_every_n_steps: 200
+progress_bar_refresh_rate: 1
+
+hyper_parameters:
+  n_epochs: 10
+  patience: 10
+  batch_size: 16
+  test_batch_size: 512
+  clip_norm: 5
+  shuffle_data: true
+
+dataset:
+  name: poj_104
+  tokenizer_name: model.yttm
+  vocab_size: 10000
+  pad_id: 0
+  unk_id: 1
+  bos_id: 2
+  eos_id: 3
+
+encoder:
+  embedding_size: 8
+  hidden_size: 8
+  num_classes: 5
+  vocab_size: 10000
+  dropout: 0.2
+  bidirectional: False
+
+ssl:
+  name: MocoV2
+  num_negatives: 65536
+  encoder_momentum: 0.999
+  softmax_temperature: 0.07
+  learning_rate: 0.03
+  momentum: 0.9
+  weight_decay: 1e-4
+  batch_size: 256
+  use_mlp: False
+  num_workers: 8

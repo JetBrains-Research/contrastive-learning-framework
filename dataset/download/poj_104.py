@@ -1,20 +1,12 @@
 import subprocess
 import sys
-import tarfile
 from argparse import ArgumentParser
-from os import listdir, rename, mkdir
 from os.path import join, exists
-from shutil import rmtree, move
+from random import seed
+
 from code2seq.preprocessing.astminer_to_code2seq import preprocess_csv
 from code2seq.preprocessing.build_vocabulary import preprocess as build_vocab
-
-import splitfolders
-import wget
 from omegaconf import DictConfig, OmegaConf
-from tqdm import tqdm
-import code2seq
-import site
-from random import shuffle, seed
 
 from preprocess import tokenize
 

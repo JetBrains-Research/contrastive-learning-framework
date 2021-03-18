@@ -4,7 +4,6 @@ from typing import Tuple
 
 import torch
 import youtokentome as yttm
-from omegaconf import DictConfig
 from torch.utils.data import Dataset
 
 from dataset.utils import traverse_clf_dataset
@@ -12,23 +11,22 @@ from preprocess import tokenize
 
 
 class TextDataset(Dataset):
-    def __init__(self, config: DictConfig, stage: str):
+    def __init__(self, dataset_path: str, stage: str, is_test: bool = False):
         super().__init__()
 
-        self.dataset_path = join(config.data_folder, config.dataset.name)
-        self.tokenizer_name = config.dataset.tokenizer_name
-        self.data_path = join(self.dataset_path, stage)
+        self.dataset_path = dataset_path
+        self.data_path = join(dataset_path, stage)
+        self.is_test = is_test
 
-        self.tokenizer = self._get_tokenizer(config=config)
+        self.tokenizer = self._get_tokenizer()
 
-        print(self.data_path)
         self.files = traverse_clf_dataset(self.data_path)
         shuffle(self.files)
 
-    def _get_tokenizer(self, config: DictConfig) -> yttm.BPE:
-        model_path = join(self.dataset_path, self.tokenizer_name)
+    def _get_tokenizer(self) -> yttm.BPE:
+        model_path = join(self.dataset_path, "model.yttm")
         if not exists(model_path):
-            tokenize(config=config)
+            tokenize(dataset_path=self.dataset_path)
         return yttm.BPE(model=model_path)
 
     @staticmethod

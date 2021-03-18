@@ -1,63 +1,67 @@
 from argparse import ArgumentParser
 
 import torch
-from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import WandbLogger
 
+from configs import default_config, test_config, default_hyperparametrs
 from dataset import data_modules
 from models import encoder_models, ssl_models, ssl_models_transforms
 
 SEED = 9
 
 
-def train(config_path: str, resume: str):
+def train(model: str, encoder: str, dataset: str, is_test: bool, log_offline: bool, resume: str = None):
     seed_everything(SEED)
-
-    config = OmegaConf.load(config_path)
-    encoder = config.name
-    ssl_model = config.ssl.name
-    dataset = config.dataset
 
     if encoder not in encoder_models:
         print(f"Unknown encoder: {encoder}, try on of {encoder_models}")
 
-    if ssl_model not in ssl_models:
-        print(f"Unknown model: {ssl_model}, try on of {ssl_models.keys()}")
+    if model not in ssl_models:
+        print(f"Unknown model: {model}, try on of {ssl_models.keys()}")
 
-    transform = ssl_models_transforms[ssl_model]() if ssl_model in ssl_models_transforms else None
+    config = test_config if is_test else default_config
+    hyperparams = default_hyperparametrs
+
+    transform = ssl_models_transforms[model]() if model in ssl_models_transforms else None
     dm = data_modules[encoder](
-        config=config,
+        dataset_name=dataset,
+        is_test=is_test,
+        num_classes=config.num_classes,
+        batch_size=hyperparams.batch_size,
         transform=transform
     )
 
-    model_ = ssl_models[ssl_model](
-        config=config,
+    model_ = ssl_models[model](
+        base_encoder=encoder,
+        encoder_config=config,
+        batch_size=hyperparams.batch_size,
+        max_epochs=hyperparams.n_epochs,
     )
 
     # define logger
     wandb_logger = WandbLogger(
-        project=f"{ssl_model}-{encoder}-{dataset.name}",
+        project=f"{model}-{encoder}-{dataset}",
         log_model=True,
-        offline=config.log_offline
+        offline=log_offline
     )
     wandb_logger.watch(model_)
     # define model checkpoint callback
     checkpoint_callback = ModelCheckpoint(
         dirpath=wandb_logger.experiment.dir,
         filename="{epoch:02d}-{val_loss:.4f}",
-        period=config.save_every_epoch,
+        period=3,
         save_top_k=-1,
     )
     # use gpu if it exists
-    gpu = -1 if torch.cuda.is_available() else None
+    gpu = 1 if torch.cuda.is_available() else None
     # define learning rate logger
     lr_logger = LearningRateMonitor("step")
     trainer = Trainer(
-        max_epochs=config.hyper_parameters.n_epochs,
-        val_check_interval=config.val_check_interval,
-        log_every_n_steps=config.log_every_n_steps,
+        max_epochs=hyperparams.n_epochs,
+        val_check_interval=hyperparams.val_check_interval,
+        log_every_n_steps=hyperparams.log_every_n_steps,
         logger=wandb_logger,
         gpus=gpu,
         callbacks=[lr_logger, checkpoint_callback],
@@ -70,11 +74,19 @@ def train(config_path: str, resume: str):
 
 if __name__ == "__main__":
     arg_parser = ArgumentParser()
-    arg_parser.add_argument("--config_path", type=str)
+    arg_parser.add_argument("model", type=str, default="MocoV2", choices=list(ssl_models.keys()))
+    arg_parser.add_argument("encoder", type=str, default="LSTM", choices=list(encoder_models))
+    arg_parser.add_argument("--dataset", type=str, default=None)
+    arg_parser.add_argument("--offline", action="store_true")
+    arg_parser.add_argument("--is_test", action="store_true")
     arg_parser.add_argument("--resume", type=str, default=None)
     args = arg_parser.parse_args()
 
     train(
-        config_path=args.config_path,
+        model=args.model,
+        encoder=args.encoder,
+        dataset=args.dataset,
+        log_offline=args.offline,
+        is_test=args.is_test,
         resume=args.resume
     )

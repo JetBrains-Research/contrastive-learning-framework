@@ -13,6 +13,6 @@ __all__ = [
 ]
 
 data_modules = {
-    "lstm": TextDataModule,
-    "code2class": PathDataModule
+    "LSTM": TextDataModule,
+    "Code2Class": PathDataModule
 }

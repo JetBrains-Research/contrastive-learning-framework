@@ -4,27 +4,18 @@ from typing import Callable, Any, Optional, Tuple
 import torch
 from code2seq.dataset import PathContextBatch
 from code2seq.utils.vocabulary import Vocabulary
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 
 from dataset.base_data_module import BaseContrastiveDataModule
 from dataset.classification_datasets import PathDataset
 
 
-def get_config() -> DictConfig:
-    return OmegaConf.load("configs/code2class-poj104.yaml")
-
-
 class PathDataModule(BaseContrastiveDataModule):
     def __init__(
             self,
-            dataset_name: str,
-            batch_size: int,
-            num_classes: int,
-            is_test: bool = False,
+            config: DictConfig,
             transform: Callable = None,
     ):
-
-        config = get_config()
         self._config = config
         self._vocabulary = Vocabulary.load_vocabulary(
             join(config.data_folder, config.dataset.name, config.vocabulary_name)
@@ -43,14 +34,11 @@ class PathDataModule(BaseContrastiveDataModule):
 
         BaseContrastiveDataModule.__init__(
             self,
-            dataset_name=dataset_name,
-            batch_size=config.hyper_parameters.batch_size,
-            is_test=is_test,
+            config=config,
             transform=transform,
-            num_classes=num_classes
         )
 
-    def create_dataset(self, dataset_path: str, stage: str) -> Any:
+    def create_dataset(self, stage: str) -> Any:
         return PathDataset(self.stage2path[stage], self._config, self._vocabulary, False)
 
     def collate_fn(self, batch: Any) -> Any:

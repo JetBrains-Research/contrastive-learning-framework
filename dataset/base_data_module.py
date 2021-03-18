@@ -3,6 +3,7 @@ from os.path import exists
 from os.path import join
 from typing import Any, Callable
 
+from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
@@ -15,26 +16,27 @@ SEED = 9
 class BaseContrastiveDataModule(LightningDataModule):
     def __init__(
             self,
-            dataset_name: str,
-            num_classes: int,
-            batch_size: int,
-            is_test: bool = False,
+            config: DictConfig,
             transform: Callable = None
     ):
         super().__init__()
 
-        self.dataset_name = dataset_name
-        self.dataset_path = join("data", dataset_name)
-        self.batch_size = batch_size
-        self.num_classes = num_classes
+        self.config = config
+        self.dataset_name = config.dataset.name
+        self.dataset_path = join(config.data_folder, self.dataset_name)
+        self.batch_size = config.hyper_parameters.batch_size
+        self.num_classes = config.num_classes
         self.transform = transform
-        self.is_test = is_test
+
+        self.train_holdout = config.train_holdout
+        self.test_holdout = config.test_holdout
+        self.val_holdout = config.val_holdout
 
         self.clf_dataset = {}
         self.contrastive_dataset = {}
 
     @abstractmethod
-    def create_dataset(self, dataset_path: str, stage: str) -> Any:
+    def create_dataset(self, stage: str) -> Any:
         pass
 
     def prepare_data(self):
@@ -44,17 +46,17 @@ class BaseContrastiveDataModule(LightningDataModule):
     def setup(self, stage: str = None):
         stages = []
         if stage == "fit" or stage is None:
-            stages += ["train", "val"]
+            stages += [self.train_holdout, self.val_holdout]
         if stage == "test" or stage is None:
-            stages += ["test"]
+            stages += [self.test_holdout]
 
         for stage in stages:
-            self.clf_dataset[stage] = self.create_dataset(dataset_path=self.dataset_path, stage=stage)
+            self.clf_dataset[stage] = self.create_dataset(stage=stage)
             self.contrastive_dataset[stage] = ContrastiveDataset(clf_dataset=self.clf_dataset[stage])
 
     def train_dataloader(self):
         return DataLoader(
-            self.contrastive_dataset["train"],
+            self.contrastive_dataset[self.train_holdout],
             batch_size=self.batch_size,
             collate_fn=self._collate,
             shuffle=True,
@@ -63,7 +65,7 @@ class BaseContrastiveDataModule(LightningDataModule):
 
     def val_dataloader(self):
         return DataLoader(
-            self.contrastive_dataset["val"],
+            self.contrastive_dataset[self.val_holdout],
             batch_size=self.batch_size,
             collate_fn=self._collate,
             shuffle=True,
@@ -72,7 +74,7 @@ class BaseContrastiveDataModule(LightningDataModule):
 
     def test_dataloader(self):
         return DataLoader(
-            self.contrastive_dataset["test"],
+            self.contrastive_dataset[self.test_holdout],
             batch_size=self.batch_size,
             collate_fn=self._collate,
             shuffle=True,

@@ -2,7 +2,7 @@ import tarfile
 from argparse import ArgumentParser
 from os import listdir, rename, mkdir
 from os.path import join, exists
-from shutil import rmtree, move
+from shutil import rmtree
 
 import splitfolders
 import wget
@@ -38,12 +38,11 @@ def load_poj_104(config: DictConfig):
             new_file_name = f"{name}.cpp"
             rename(join(label_dir_path, file_name), join(label_dir_path, new_file_name))
 
-    tokenize(config)
-
     mkdir(dataset_path)
-    move(join(orig_path, "model.yttm"), join(dataset_path, "model.yttm"))
     splitfolders.ratio(orig_path, output=dataset_path, seed=seed, ratio=(TRAIN_PART, VAL_PART, TEST_PART))
     rmtree(orig_path)
+
+    tokenize(config)
 
 
 if __name__ == "__main__":

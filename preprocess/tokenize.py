@@ -5,8 +5,6 @@ from os.path import splitext, join, isdir, exists
 
 import youtokentome as yttm
 
-from configs import default_tokenizer_config
-
 data = "data"
 
 

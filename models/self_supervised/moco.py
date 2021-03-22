@@ -1,7 +1,7 @@
-from dataclasses import dataclass, asdict
+from os.path import join
 
 from code2seq.utils.vocabulary import Vocabulary
-from omegaconf import OmegaConf
+from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import MocoV2
 
 from models.encoders import encoder_models
@@ -10,44 +10,35 @@ from models.encoders import encoder_models
 class MocoV2Model(MocoV2):
     def __init__(
         self,
-        base_encoder: str,
-        encoder_config: dataclass,
-        num_negatives: int = 65536,
-        encoder_momentum: float = 0.999,
-        softmax_temperature: float = 0.07,
-        learning_rate: float = 0.03,
-        momentum: float = 0.9,
-        weight_decay: float = 1e-4,
-        batch_size: int = 256,
-        use_mlp: bool = False,
-        num_workers: int = 8,
+        config: DictConfig,
         **kwargs
     ):
-        self.hparams = asdict(encoder_config)
-        self.encoder_config = encoder_config
+        self.config = config
 
         super().__init__(
-            base_encoder=base_encoder,
-            emb_dim=encoder_config.num_classes,
-            num_negatives=num_negatives,
-            encoder_momentum=encoder_momentum,
-            softmax_temperature=softmax_temperature,
-            learning_rate=learning_rate,
-            momentum=momentum,
-            weight_decay=weight_decay,
-            batch_size=batch_size,
-            use_mlp=use_mlp,
-            num_workers=num_workers,
+            base_encoder=config.name,
+            emb_dim=config.num_classes,
+            num_negatives=config.ssl.num_negatives,
+            encoder_momentum=config.ssl.encoder_momentum,
+            softmax_temperature=config.ssl.softmax_temperature,
+            learning_rate=config.ssl.learning_rate,
+            momentum=config.ssl.momentum,
+            weight_decay=config.ssl.weight_decay,
+            batch_size=config.ssl.batch_size,
+            use_mlp=config.ssl.use_mlp,
+            num_workers=config.ssl.num_workers,
             **kwargs
         )
 
     def init_encoders(self, base_encoder: str):
-        if base_encoder == "LSTM":
-            encoder_q = encoder_models[base_encoder](self.encoder_config)
-            encoder_k = encoder_models[base_encoder](self.encoder_config)
+        if base_encoder == "lstm":
+            encoder_q = encoder_models[base_encoder](self.config)
+            encoder_k = encoder_models[base_encoder](self.config)
+        elif base_encoder == "code2class":
+            _vocab_path = join(self.config.data_folder, self.config.dataset.name, self.config.vocabulary_name)
+            _vocabulary = Vocabulary.load_vocabulary(_vocab_path)
+            encoder_q = encoder_models[base_encoder](config=self.config, vocabulary=_vocabulary)
+            encoder_k = encoder_models[base_encoder](config=self.config, vocabulary=_vocabulary)
         else:
-            _config = OmegaConf.load("configs/code2class-poj104.yaml")
-            _vocabulary = Vocabulary.load_vocabulary("data/poj_104/vocabulary.pkl")
-            encoder_q = encoder_models[base_encoder](config=_config, vocabulary=_vocabulary)
-            encoder_k = encoder_models[base_encoder](config=_config, vocabulary=_vocabulary)
+            print(f"Unknown model: {self.config.name}")
         return encoder_q, encoder_k

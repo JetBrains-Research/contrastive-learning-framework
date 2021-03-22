@@ -8,6 +8,6 @@ __all__ = [
 ]
 
 encoder_models = {
-    "LSTM": LSTMModel,
-    "Code2Class": Code2ClassModel
+    "lstm": LSTMModel,
+    "code2class": Code2ClassModel
 }

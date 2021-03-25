@@ -4,7 +4,7 @@
 BUILD_DIR=build
 
 if [ ! -d "$BUILD_DIR" ]
-thenq
+then
   mkdir $BUILD_DIR
 fi
 

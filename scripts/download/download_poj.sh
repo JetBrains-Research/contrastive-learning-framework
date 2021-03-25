@@ -93,3 +93,4 @@ do
   rm -rf "$(dirname "$folder")"
 done
 mv "$DATA_PATH"_parsed/* "$DATA_PATH"
+rm -rf "$DATA_PATH"_parsed

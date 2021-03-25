@@ -34,7 +34,7 @@ def load_poj_104(config: DictConfig):
                 join("scripts", "download", "download_data.sh"),
                 "--dataset", config.dataset.name,
                 "--dev",
-                "--astminer", "build/astminer"
+                "--astminer", join("build", "astminer")
             ],
             stderr=sys.stderr,
             stdout=sys.stdout

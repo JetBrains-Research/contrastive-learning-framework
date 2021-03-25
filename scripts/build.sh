@@ -10,3 +10,4 @@ fi
 
 sh scripts/install_astminer.sh
 sh scripts/install_yttm.sh
+sh scripts/install_joern.sh

@@ -21,6 +21,7 @@ class TextDataset(Dataset):
 
         self.tokenizer = self._get_tokenizer(config=config)
 
+        print(self.data_path)
         self.files = traverse_clf_dataset(self.data_path)
         shuffle(self.files)
 

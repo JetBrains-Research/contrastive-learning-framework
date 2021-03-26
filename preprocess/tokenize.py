@@ -7,7 +7,7 @@ from omegaconf import DictConfig
 
 
 def tokenize(config: DictConfig):
-    data_path = join(config.data_folder, config.dataset.name)
+    data_path = join(config.data_folder, config.dataset.name, config.dataset.dir)
     model_path = join(data_path, config.dataset.tokenizer_name)
     buffer_path = "text.yttm"
     if exists(buffer_path):

@@ -36,6 +36,7 @@ hyper_parameters:
   decay_gamma: 0.95
 
 dataset:
+  dir: paths
   name: poj_104
   target:
     max_parts: 1

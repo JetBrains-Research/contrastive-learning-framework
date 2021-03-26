@@ -27,6 +27,7 @@ hyper_parameters:
   shuffle_data: true
 
 dataset:
+  dir: raw
   name: poj_104
   tokenizer_name: model.yttm
   vocab_size: 10000

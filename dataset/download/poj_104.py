@@ -8,7 +8,7 @@ from code2seq.preprocessing.astminer_to_code2seq import preprocess_csv
 from code2seq.preprocessing.build_vocabulary import preprocess as build_vocab
 from omegaconf import DictConfig, OmegaConf
 
-from preprocess import tokenize
+from preprocess import tokenize, process_graphs
 
 TRAIN_PART = 0.7
 VAL_PART = 0.2
@@ -47,6 +47,16 @@ def load_poj_104(config: DictConfig):
     elif config.name == "lstm":
         if not exists(join(dataset_path, config.dataset.tokenizer_name)):
             tokenize(config)
+    elif config.name == "gnn":
+        holdouts_existence = [
+            exists(join(dataset_path, holdout)) for holdout in [
+                config.train_holdout,
+                config.val_holdout,
+                config.test_holdout
+            ]
+        ]
+        if not all(holdouts_existence):
+            process_graphs(config)
     else:
         raise ValueError(f"Model {config.name} is not currently supported")
 

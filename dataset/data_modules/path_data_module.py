@@ -23,7 +23,7 @@ class PathDataModule(BaseContrastiveDataModule):
         )
         self._vocabulary = None
 
-        self._dataset_dir = join(config.data_folder, config.dataset.name)
+        self._dataset_dir = join(config.data_folder, config.dataset.name, config.dataset.dir)
         self._train_data_file = join(self._dataset_dir, f"{config.dataset.name}.{config.train_holdout}.c2s")
         self._val_data_file = join(self._dataset_dir, f"{config.dataset.name}.{config.val_holdout}.c2s")
         self._test_data_file = join(self._dataset_dir, f"{config.dataset.name}.{config.test_holdout}.c2s")
@@ -36,7 +36,12 @@ class PathDataModule(BaseContrastiveDataModule):
 
     def create_dataset(self, stage: str) -> Any:
         self._vocabulary = Vocabulary.load_vocabulary(
-            join(self.config.data_folder, self.config.dataset.name, self.config.vocabulary_name)
+            join(
+                self.config.data_folder,
+                self.config.dataset.name,
+                self.config.dataset.dir,
+                self.config.vocabulary_name
+            )
         )
         return PathDataset(self.stage2path[stage], self.config, self._vocabulary, False)
 

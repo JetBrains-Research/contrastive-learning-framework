@@ -15,7 +15,7 @@ class TextDataset(Dataset):
     def __init__(self, config: DictConfig, stage: str):
         super().__init__()
 
-        self.dataset_path = join(config.data_folder, config.dataset.name)
+        self.dataset_path = join(config.data_folder, config.dataset.name, config.dataset.dir)
         self.tokenizer_name = config.dataset.tokenizer_name
         self.data_path = join(self.dataset_path, stage)
 

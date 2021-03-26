@@ -36,7 +36,12 @@ class BYOLModel(BYOL):
         if self.config.name == "lstm":
             encoder = encoder_models[self.config.name](self.config)
         elif self.config.name == "code2class":
-            _vocab_path = join(self.config.data_folder, self.config.dataset.name, self.config.vocabulary_name)
+            _vocab_path = join(
+                self.config.data_folder,
+                self.config.dataset.name,
+                self.config.dataset.dir,
+                self.config.vocabulary_name
+            )
             _vocabulary = Vocabulary.load_vocabulary(_vocab_path)
             encoder = encoder_models[self.config.name](config=self.config, vocabulary=_vocabulary)
         else:

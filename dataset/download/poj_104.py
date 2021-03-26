@@ -1,8 +1,10 @@
 import subprocess
 import sys
 from argparse import ArgumentParser
-from os.path import join, exists
+from os import listdir, mkdir
+from os.path import join, exists, isfile
 from random import seed
+from shutil import move
 
 from code2seq.preprocessing.astminer_to_code2seq import preprocess_csv
 from code2seq.preprocessing.build_vocabulary import preprocess as build_vocab
@@ -34,7 +36,7 @@ def load_poj_104(config: DictConfig):
 
     seed(seed_)
     if config.name == "code2class":
-        if not exists(join(dataset_path, config.vocabulary_name)):
+        if not exists(join(dataset_path, config.dataset.dir)):
             for holdout in [config.train_holdout, config.val_holdout, config.test_holdout]:
                 print(f"preprocessing {holdout} data")
                 preprocess_csv(
@@ -44,6 +46,16 @@ def load_poj_104(config: DictConfig):
                     is_shuffled=config.hyper_parameters.shuffle_data
                 )
             build_vocab(config)
+
+            dataset_path = join(config.data_folder, config.dataset.name)
+            paths_storage = join(dataset_path, config.dataset.dir)
+            mkdir(paths_storage)
+            for elem in listdir(dataset_path):
+                path_ = join(dataset_path, elem)
+                if isfile(path_):
+                    if (elem.rsplit(".", 1)[1] in ["csv", "c2s"]) or (elem == "vocabulary.pkl"):
+                        move(path_, paths_storage)
+
     elif config.name == "lstm":
         if not exists(join(dataset_path, config.dataset.tokenizer_name)):
             tokenize(config)

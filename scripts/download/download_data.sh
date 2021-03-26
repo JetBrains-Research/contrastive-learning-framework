@@ -8,9 +8,9 @@ TEST_SPLIT_PART=20
 DEV=false
 LOAD_SPLITTED=false
 DATA_DIR=./data
-POJ_DOWNLOAD_SCRIPT=download_poj.sh
-CODEFORCES_DOWNLOAD_SCRIPT=download_codeforces.sh
-SPLIT_SCRIPT=split_dataset.sh
+POJ_DOWNLOAD_SCRIPT=scripts/download/download_poj.sh
+CODEFORCES_DOWNLOAD_SCRIPT=scripts/download/download_codeforces.sh
+SPLIT_SCRIPT=scripts/download/split_dataset.sh
 ASTMINER_SOURCE=../astminer
 ASTMINER_BINARY=build/shadow/lib-0.*.jar
 

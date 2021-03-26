@@ -1,5 +1,7 @@
 from .tokenize import tokenize
+from .joern import process_graphs
 
 __all__ = [
-    "tokenize"
+    "tokenize",
+    "process_graphs"
 ]

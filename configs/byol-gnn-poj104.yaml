@@ -28,7 +28,7 @@ hyper_parameters:
 
 dataset:
   name: poj_104
-  graphs_dir: graphs
+  dir: graphs
 
 encoder:
   embedding_size: 8

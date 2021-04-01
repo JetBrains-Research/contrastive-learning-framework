@@ -11,3 +11,8 @@ split-folders==0.4.3
 omegaconf~=2.0.6
 code2seq~=0.0.2
 pexpect~=4.8.0
+torch-cluster==1.5.9
+torch-geometric==1.6.3
+torch-scatter==2.0.6
+torch-sparse==0.6.9
+torch-spline-conv==1.2.1

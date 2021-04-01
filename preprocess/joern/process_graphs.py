@@ -1,9 +1,8 @@
 import subprocess
 from os import listdir
-
-import pexpect
 from os import mkdir
-from os.path import exists, join, isfile, dirname, abspath, isdir
+from os.path import exists, join, abspath, isdir
+
 from omegaconf import DictConfig
 from tqdm import tqdm
 

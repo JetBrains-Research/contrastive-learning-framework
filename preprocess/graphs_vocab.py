@@ -1,6 +1,6 @@
 import json
 from os import listdir
-from os.path import join, isdir, isfile
+from os.path import join, isdir
 
 from omegaconf import DictConfig
 from tqdm import tqdm

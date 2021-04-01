@@ -20,6 +20,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-1.7.1+cpu.html
+        pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-1.7.1+cpu.html
+        pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-1.7.1+cpu.html
+        pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-1.7.1+cpu.html
+        pip install torch-geometric
     - name: Install yttm
       run: |
         sh scripts/install_yttm.sh

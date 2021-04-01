@@ -1,32 +1,63 @@
+import subprocess
 from os import listdir
 
 import pexpect
-import os
-from os.path import exists, join, isfile, dirname, abspath
+from os import mkdir
+from os.path import exists, join, isfile, dirname, abspath, isdir
 from omegaconf import DictConfig
 from tqdm import tqdm
 
 
 def process_graphs(config: DictConfig):
-    joern_process = pexpect.spawnu("sh", ["./" + config.joern_path + "joern"])
+    data_path = join(config.data_folder, config.dataset.name, "raw")
+    graphs_path = join(config.data_folder, config.dataset.name, config.dataset.dir)
+    cpg_path = join(config.data_folder, config.dataset.name, "cpg")
 
-    data_path = join(config.data_folder, config.dataset.name)
+    if not exists(graphs_path):
+        mkdir(graphs_path)
+
+    if not exists(cpg_path):
+        mkdir(cpg_path)
+
+    graphs_path = abspath(graphs_path)
+
     for holdout in [config.train_holdout, config.val_holdout, config.test_holdout]:
         holdout_path = join(data_path, holdout)
-        holdout_files = [file for file in listdir(holdout_path) if isfile(join(holdout_path, file))]
-        holdout_output = abspath(join(holdout_path, config.graphs_dir))
+        holdout_output = join(graphs_path, holdout)
 
-        for file in tqdm(holdout_files):
-            file_path = join(holdout_path, file)
-            json_file_name = f"{file.rsplit('.')[0]}.json"
+        if not exists(holdout_output):
+            mkdir(holdout_output)
 
-            json_out = join(holdout_output, json_file_name)
-            import_cpg_cmd = f"importCpg(\"{file_path}\")"
-            script_path = join(abspath(config.script_path), "graph-for-funcs.sc")
-            run_script_cmd = f"cpg.runScript(\"{script_path}\").toString() |> \"{json_out}\" "
-            delete_cmd = "delete"
+        for class_ in tqdm(listdir(holdout_path)):
+            class_path = join(holdout_path, class_)
+            if isdir(class_path):
+                class_files = [file for file in listdir(class_path) if isfile(join(class_path, file))]
+                class_output = join(holdout_output, class_)
+                class_cpg = join(cpg_path, class_)
 
-            for cmd in [import_cpg_cmd, run_script_cmd, delete_cmd]:
-                joern_process.expect('joern>', searchwindowsize=50)
-                joern_process.sendline(cmd)
-                joern_process.buffer = ""
+                if not exists(class_output):
+                    mkdir(class_output)
+
+                if not exists(class_cpg):
+                    mkdir(class_cpg)
+
+                for file in tqdm(class_files):
+                    file_path = join(class_path, file)
+                    base_name = file.rsplit('.', 1)[0]
+                    cpg_file_path = join(class_cpg, f"{base_name}.bin")
+                    json_file_name = f"{base_name}.json"
+                    json_out = join(class_output, json_file_name)
+
+                    # joern-parse
+                    subprocess.check_call([
+                        "joern-parse",
+                        file_path, "--out",
+                        cpg_file_path
+                    ])
+
+                    # build graphs
+                    subprocess.check_call([
+                        "joern",
+                        "--script", "preprocess/joern/build_graphs.sc",
+                        "--params", f"cpgPath={cpg_file_path},outputPath={json_out}"
+                    ])

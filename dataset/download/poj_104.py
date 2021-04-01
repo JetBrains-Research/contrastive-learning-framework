@@ -7,10 +7,10 @@ from random import seed
 from shutil import move
 
 from code2seq.preprocessing.astminer_to_code2seq import preprocess_csv
-from code2seq.preprocessing.build_vocabulary import preprocess as build_vocab
+from code2seq.preprocessing.build_vocabulary import preprocess as build_code2seq_vocab
 from omegaconf import DictConfig, OmegaConf
 
-from preprocess import tokenize, process_graphs
+from preprocess import tokenize, process_graphs, build_graphs_vocab
 
 TRAIN_PART = 0.7
 VAL_PART = 0.2
@@ -45,7 +45,7 @@ def load_poj_104(config: DictConfig):
                     holdout_name=holdout,
                     is_shuffled=config.hyper_parameters.shuffle_data
                 )
-            build_vocab(config)
+            build_code2seq_vocab(config)
 
             dataset_path = join(config.data_folder, config.dataset.name)
             paths_storage = join(dataset_path, config.dataset.dir)
@@ -57,11 +57,11 @@ def load_poj_104(config: DictConfig):
                         move(path_, paths_storage)
 
     elif config.name == "lstm":
-        if not exists(join(dataset_path, config.dataset.tokenizer_name)):
+        if not exists(join(dataset_path, config.dataset.dir, config.dataset.tokenizer_name)):
             tokenize(config)
     elif config.name == "gnn":
         holdouts_existence = [
-            exists(join(dataset_path, holdout)) for holdout in [
+            exists(join(dataset_path, config.dataset.dir, holdout)) for holdout in [
                 config.train_holdout,
                 config.val_holdout,
                 config.test_holdout
@@ -69,6 +69,8 @@ def load_poj_104(config: DictConfig):
         ]
         if not all(holdouts_existence):
             process_graphs(config)
+
+        build_graphs_vocab(config)
     else:
         raise ValueError(f"Model {config.name} is not currently supported")
 

@@ -1,11 +1,13 @@
 from typing import Any, Callable
 
 import torch
+from torch_geometric.data import Batch
 from omegaconf import DictConfig
 from torch.nn.utils.rnn import pad_sequence
 
 from dataset.base_data_module import BaseContrastiveDataModule
 from dataset.classification_datasets.graph_dataset import GraphDataset
+from torch_geometric.data.dataloader import Collater
 
 
 class GraphDataModule(BaseContrastiveDataModule):
@@ -18,14 +20,15 @@ class GraphDataModule(BaseContrastiveDataModule):
             config=config,
             transform=transform,
         )
+        self.collater = Collater(follow_batch=[])
 
     def create_dataset(self, stage: str) -> Any:
         return GraphDataset(config=self.config, stage=stage)
 
     def collate_fn(self, batch: Any) -> Any:
         # batch contains a list of tuples of structure (sequence, target)
-        a = pad_sequence([item["a_encoding"].squeeze() for item in batch])
-        b = pad_sequence([item["b_encoding"].squeeze() for item in batch])
+        a = Batch.from_data_list([item["a_encoding"]for item in batch])
+        b = Batch.from_data_list([item["b_encoding"] for item in batch])
         label = torch.LongTensor([item["label"] for item in batch])
         return (a, b), label
 

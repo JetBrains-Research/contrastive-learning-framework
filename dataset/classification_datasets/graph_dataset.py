@@ -54,10 +54,10 @@ class GraphDataset(InMemoryDataset):
             e = graph["edges"]
             v = graph["vertexes"]
 
-            x = torch.LongTensor([self.v_type2id[v_["label"]] for v_ in v]).unsqueeze(1)
+            x = torch.LongTensor([self.v_type2id[v_["label"]] for v_ in v])
             y = dirname(file)
             edge_index = torch.stack([torch.LongTensor([e_["in"], e_["out"]]) for e_ in e], dim=-1)
-            edge_attr = torch.Tensor([self.e_type2id[e_["label"]] for e_ in e]).unsqueeze(1)
+            edge_attr = torch.LongTensor([self.e_type2id[e_["label"]] for e_ in e])
 
             data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
             data_list.append(data)

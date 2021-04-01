@@ -30,9 +30,15 @@ hyper_parameters:
   shuffle_data: true
 
 dataset:
-  name: poj_104
   dir: graphs
   vocab_file: vocab.json
+  name: poj_104
+  tokenizer_name: model.yttm
+  vocab_size: 10000
+  pad_id: 0
+  unk_id: 1
+  bos_id: 2
+  eos_id: 3
 
 encoder:
   embedding_size: 8

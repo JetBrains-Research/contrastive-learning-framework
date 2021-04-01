@@ -7,7 +7,7 @@ from os.path import exists, join, isdir
 from omegaconf import DictConfig
 from tqdm import tqdm
 
-from preprocess.utils import is_c_family_file
+from utils import is_c_family_file
 
 
 def process_graphs(config: DictConfig):

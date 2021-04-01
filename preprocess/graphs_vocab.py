@@ -5,6 +5,8 @@ from os.path import join, isdir
 from omegaconf import DictConfig
 from tqdm import tqdm
 
+from utils import is_json_file
+
 
 def build_graphs_vocab(config: DictConfig):
     graphs_storage = join(config.data_folder, config.dataset.name, config.dataset.dir)
@@ -18,7 +20,9 @@ def build_graphs_vocab(config: DictConfig):
     for class_ in tqdm(listdir(holdout_path)):
         class_path = join(holdout_path, class_)
         if isdir(class_path):
-            paths = [join(class_path, file) for file in listdir(class_path)]
+            paths = [
+                join(class_path, file) for file in listdir(class_path) if is_json_file(join(class_path, file))
+            ]
 
             for graph_path in tqdm(paths):
                 with open(graph_path, "r") as f:

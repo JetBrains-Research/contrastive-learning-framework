@@ -5,7 +5,7 @@ from omegaconf import DictConfig
 from torch.nn.utils.rnn import pad_sequence
 
 from dataset.base_data_module import BaseContrastiveDataModule
-from dataset.classification_datasets.text_dataset import TextDataset
+from dataset.classification_datasets.graph_dataset import GraphDataset
 
 
 class GraphDataModule(BaseContrastiveDataModule):
@@ -20,7 +20,7 @@ class GraphDataModule(BaseContrastiveDataModule):
         )
 
     def create_dataset(self, stage: str) -> Any:
-        return TextDataset(config=self.config, stage=stage)
+        return GraphDataset(config=self.config, stage=stage)
 
     def collate_fn(self, batch: Any) -> Any:
         # batch contains a list of tuples of structure (sequence, target)

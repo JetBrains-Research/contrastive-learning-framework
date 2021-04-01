@@ -44,6 +44,8 @@ class BYOLModel(BYOL):
             )
             _vocabulary = Vocabulary.load_vocabulary(_vocab_path)
             encoder = encoder_models[self.config.name](config=self.config, vocabulary=_vocabulary)
+        elif self.config.name == "gnn":
+            encoder = encoder_models[self.config.name](self.config)
         else:
             print(f"Unknown model: {self.config.name}")
         self.online_network = SiameseArm(encoder=encoder)

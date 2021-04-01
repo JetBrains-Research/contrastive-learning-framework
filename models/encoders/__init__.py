@@ -9,5 +9,6 @@ __all__ = [
 
 encoder_models = {
     "lstm": LSTMModel,
-    "code2class": Code2ClassModel
+    "code2class": Code2ClassModel,
+    "gnn": LSTMModel,
 }

@@ -32,6 +32,7 @@ hyper_parameters:
 dataset:
   name: poj_104
   dir: graphs
+  vocab_file: vocab.json
 
 encoder:
   embedding_size: 8

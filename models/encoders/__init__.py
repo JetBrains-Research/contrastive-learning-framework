@@ -1,6 +1,6 @@
 from .code2class import Code2ClassModel
-from .lstm import LSTMModel
 from .gnn import GNNModel
+from .lstm import LSTMModel
 
 __all__ = [
     "LSTMModel",

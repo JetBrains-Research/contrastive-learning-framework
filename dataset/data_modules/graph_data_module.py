@@ -1,13 +1,12 @@
 from typing import Any, Callable
 
 import torch
-from torch_geometric.data import Batch
 from omegaconf import DictConfig
-from torch.nn.utils.rnn import pad_sequence
+from torch_geometric.data import Batch
+from torch_geometric.data.dataloader import Collater
 
 from dataset.base_data_module import BaseContrastiveDataModule
 from dataset.classification_datasets.graph_dataset import GraphDataset
-from torch_geometric.data.dataloader import Collater
 
 
 class GraphDataModule(BaseContrastiveDataModule):

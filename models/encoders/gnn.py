@@ -3,11 +3,8 @@ from os.path import join
 
 import torch.nn as nn
 from omegaconf import DictConfig
-from torch import Tensor
-
-from torch_geometric.nn.conv import GENConv
-from torch_geometric.typing import OptTensor
 from torch_geometric.nn import global_mean_pool
+from torch_geometric.nn.conv import GENConv
 
 
 class GNNModel(nn.Module):

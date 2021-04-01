@@ -12,6 +12,9 @@ train_holdout: train
 val_holdout: val
 test_holdout: test
 
+joern_path: joern
+script_path: preprocess/joern
+
 save_every_epoch: 1
 val_every_epoch: 1
 val_check_interval: 0.01

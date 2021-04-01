@@ -7,6 +7,8 @@ from os.path import exists, join, isfile, dirname, abspath, isdir
 from omegaconf import DictConfig
 from tqdm import tqdm
 
+from preprocess.utils import is_c_family_file
+
 
 def process_graphs(config: DictConfig):
     data_path = join(config.data_folder, config.dataset.name, "raw")
@@ -31,7 +33,7 @@ def process_graphs(config: DictConfig):
         for class_ in tqdm(listdir(holdout_path)):
             class_path = join(holdout_path, class_)
             if isdir(class_path):
-                class_files = [file for file in listdir(class_path) if isfile(join(class_path, file))]
+                class_files = [file for file in listdir(class_path) if is_c_family_file(join(class_path, file))]
                 class_output = join(holdout_output, class_)
                 class_cpg = join(cpg_path, class_)
 

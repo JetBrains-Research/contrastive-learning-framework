@@ -1,4 +1,3 @@
-import json
 import subprocess
 from os import listdir
 from os import mkdir

@@ -61,30 +61,3 @@ def process_graphs(config: DictConfig):
                         "--script", "preprocess/joern/build_graphs.sc",
                         "--params", f"cpgPath={cpg_file_path},outputPath={json_out}"
                     ])
-
-                    with open(json_out, "r") as f:
-                        graph = json.load(f)
-
-                    e = [json.loads(e) for e in json.loads(graph["edges"])]
-                    v = [json.loads(v) for v in json.loads(graph["vertexes"])]
-
-                    vertexes2ids = {v_id: id_ for id_, v_id in enumerate(set(v_["id"] for v_ in v))}
-                    e = [_upd_e_ids(e_, vertexes2ids) for e_ in e]
-                    v = [_upd_v_ids(v_, vertexes2ids) for v_ in v]
-
-                    graph["edges"] = e
-                    graph["vertexes"] = v
-
-                    with open(json_out, "w") as f:
-                        json.dump(graph, f)
-
-
-def _upd_e_ids(e_: dict, mapping: dict):
-    e_["in"] = mapping[e_["in"]]
-    e_["out"] = mapping[e_["out"]]
-    return e_
-
-
-def _upd_v_ids(v_: dict, mapping: dict):
-    v_["id"] = mapping[v_["id"]]
-    return v_

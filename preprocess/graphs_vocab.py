@@ -27,8 +27,8 @@ def build_graphs_vocab(config: DictConfig):
             for graph_path in tqdm(paths):
                 with open(graph_path, "r") as f:
                     graph = json.load(f)
-                e = graph["edges"]
-                v = graph["vertexes"]
+                e = json.loads(graph["edges"])
+                v = json.loads(graph["vertexes"])
                 vertexes_types.update(set(v_["label"] for v_ in v))
                 vertexes_names.update(set(v_["name"] for v_ in v))
                 edges_types.update(set(e_["label"] for e_ in e))

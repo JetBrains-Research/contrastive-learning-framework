@@ -27,41 +27,32 @@ val selectKeys =
 @main def main(cpgPath: String, outputPath: String) = {
   importCpg(inputPath = cpgPath)
 
-  val valid_vert_ids = cpg.all
+  val ids_map = cpg.all
     .filterNot(v => skip_types.contains(v.label))
     .map(v => v.id)
-    .toList
+    .zipWithIndex
+    .toMap
 
   val vertexes_json = cpg.all
     .filterNot(v => skip_types.contains(v.label))
     .map(v =>
-      Json
-        .obj(
-          ("label", v.label.asJson),
-          ("id", v.id.asJson),
-          ("name", selectKeys(v).asJson)
+      Map(
+          "label" -> v.label,
+          "id" -> ids_map(v.id),
+          "name" -> selectKeys(v)
         )
-        .toString
     )
     .toJson
     .asJson
 
-  val edges = cpg.graph.E
-    .filter(e =>
-      valid_vert_ids.contains(e.inNode.id) & valid_vert_ids.contains(
-        e.outNode.id
-      )
-    )
-
-  val edges_json = edges
+  val edges_json = cpg.graph.E
+    .filter(e => ids_map.contains(e.inNode.id) & ids_map.contains(e.outNode.id))
     .map(e =>
-      Json
-        .obj(
-          ("label", e.label.asJson),
-          ("in", e.inNode.id.asJson),
-          ("out", e.outNode.id.asJson)
+      Map(
+          "label" -> e.label,
+          "in" -> ids_map(e.inNode.id),
+          "out" -> ids_map(e.outNode.id)
         )
-        .toString
     )
     .toJson
     .asJson

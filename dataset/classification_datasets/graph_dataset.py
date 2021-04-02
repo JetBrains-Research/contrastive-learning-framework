@@ -51,8 +51,8 @@ class GraphDataset(InMemoryDataset):
             file_path = join(self.root, file)
             with open(file_path, "r") as f:
                 graph = json.load(f)
-            e = graph["edges"]
-            v = graph["vertexes"]
+            e = json.loads(graph["edges"])
+            v = json.loads(graph["vertexes"])
 
             x = torch.LongTensor([self.v_type2id[v_["label"]] for v_ in v])
             y = dirname(file)

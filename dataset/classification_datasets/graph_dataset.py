@@ -22,20 +22,21 @@ class GraphDataset(InMemoryDataset):
         self.v_name2id = vocab["v_name2id"]
         self.e_type2id = vocab["e_type2id"]
 
+        self.raw_files = []
+        for class_ in listdir(self.root):
+            class_path = join(self.root, class_)
+            if isdir(class_path):
+                self.raw_files += [
+                    join(class_, file) for file in listdir(class_path) if is_json_file(join(class_path, file))
+                ]
+
         super(GraphDataset, self).__init__(self.root, transform, pre_transform)
 
         self.data, self.slices = torch.load(self.processed_file_path)
 
     @property
     def raw_file_names(self):
-        raw_files = []
-        for class_ in listdir(self.root):
-            class_path = join(self.root, class_)
-            if isdir(class_path):
-                raw_files += [
-                    join(class_, file) for file in listdir(class_path) if is_json_file(join(class_path, file))
-                ]
-        return raw_files
+        return self.raw_files
 
     @property
     def processed_file_names(self):

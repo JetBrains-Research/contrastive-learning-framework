@@ -20,9 +20,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Install yttm
+    - name: Build
       run: |
-        sh scripts/install_yttm.sh
+        sh scripts/build.sh
     - name: Lint with Flake
       run: |
         flake8 --max-line-length=120 --exclude="test_*.py","build" .

@@ -1,6 +1,7 @@
 import json
 from os import listdir
 from os.path import join, dirname, isdir
+from copy import deepcopy
 
 import torch
 from omegaconf import DictConfig
@@ -40,11 +41,11 @@ class GraphDataset(InMemoryDataset):
 
     @property
     def processed_file_names(self):
-        return self.processed_file_path
+        return deepcopy(self.processed_file_path)
 
     @property
     def processed_dir(self):
-        return self.root
+        return deepcopy(self.root)
 
     def process(self):
         data_list = []

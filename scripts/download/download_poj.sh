@@ -54,7 +54,7 @@ else
       echo "Dev mode"
       tar -C $DATA_DIR/ -xvf "$DATA_DIR/poj-104-original.tar.gz" "ProgramData/[1-3]"
 
-      for i in {30..5000}
+      for i in {50..5000}
       do
         if [ -f "$DATA_DIR"/ProgramData/1/"$i".txt ]
         then

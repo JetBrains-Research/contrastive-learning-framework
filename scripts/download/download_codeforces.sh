@@ -50,7 +50,7 @@ else
   do
     unzip "$round" -d "$DATA_DIR/anti-plagiarism-datasets-master/rounds"
     round_dir="${round%.zip}"
-    find "$round_dir"/*  -type d -name "*[A-D]" -exec mv {} "$DATA_PATH" \;
+    find "$round_dir"/*  -type d -name -exec mv {} "$DATA_PATH" \;
     rm -rf "$round_dir"
     rm "$round"
   done

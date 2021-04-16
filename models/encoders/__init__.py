@@ -1,16 +1,16 @@
 from .code2class import Code2ClassModel
 from .gnn import GNNModel
-from .lstm import LSTMModel
+from .transformer import TransformerModel
 
 __all__ = [
-    "LSTMModel",
+    "TransformerModel",
     "Code2ClassModel",
     "GNNModel",
     "encoder_models"
 ]
 
 encoder_models = {
-    "lstm": LSTMModel,
+    "transformer": TransformerModel,
     "code2class": Code2ClassModel,
     "gnn": GNNModel,
 }

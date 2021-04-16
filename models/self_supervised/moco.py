@@ -31,7 +31,7 @@ class MocoV2Model(MocoV2):
         )
 
     def init_encoders(self, base_encoder: str):
-        if base_encoder == "lstm":
+        if base_encoder == "transformer":
             encoder_q = encoder_models[base_encoder](self.config)
             encoder_k = encoder_models[base_encoder](self.config)
         elif base_encoder == "code2class":

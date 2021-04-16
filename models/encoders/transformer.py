@@ -3,7 +3,7 @@ import torch.nn as nn
 from omegaconf import DictConfig
 
 
-class LSTMModel(nn.Module):
+class TransformerModel(nn.Module):
     def __init__(self, config: DictConfig):
         super().__init__()
         self.num_classes = config.num_classes

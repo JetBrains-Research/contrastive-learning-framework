@@ -1,4 +1,4 @@
-name: lstm
+name: transformer
 
 seed: 9
 num_workers: 2
@@ -21,7 +21,7 @@ progress_bar_refresh_rate: 1
 hyper_parameters:
   n_epochs: 10
   patience: 10
-  batch_size: 16
+  batch_size: 8
   test_batch_size: 512
   clip_norm: 5
   shuffle_data: true

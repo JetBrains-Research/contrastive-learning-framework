@@ -33,7 +33,7 @@ class BYOLModel(BYOL):
         self._init_encoders()
 
     def _init_encoders(self):
-        if self.config.name == "lstm":
+        if self.config.name == "transformer":
             encoder = encoder_models[self.config.name](self.config)
         elif self.config.name == "code2class":
             _vocab_path = join(

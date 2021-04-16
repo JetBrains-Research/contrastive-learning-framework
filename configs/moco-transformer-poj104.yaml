@@ -37,12 +37,11 @@ dataset:
   eos_id: 3
 
 encoder:
-  embedding_size: 8
   hidden_size: 8
   num_classes: 5
   vocab_size: 10000
-  dropout: 0.2
-  bidirectional: False
+  num_heads: 2
+  num_layers: 2
 
 ssl:
   name: MocoV2

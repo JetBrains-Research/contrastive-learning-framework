@@ -42,6 +42,7 @@ encoder:
   vocab_size: 10000
   num_heads: 2
   num_layers: 2
+  max_seq_len: 512
 
 ssl:
   name: MocoV2

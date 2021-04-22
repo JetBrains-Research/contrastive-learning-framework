@@ -57,7 +57,7 @@ fi
 
 # To prepare our dataset for astminer we need to rename all .txt files to .c files
 echo "Renaming files"
-find "$DATA_PATH"/*/*  -name "*.txt" -type f -exec sh -c 'mv "$0" "${0%.txt}.c"' {} \;
+find "$DATA_PATH" -name "*.txt" -type f -exec sh -c 'mv "$0" "${0%.txt}.c"' {} \;
 
 if [ ! -d "$DATA_PATH"/raw ]
 then

@@ -42,7 +42,7 @@ mkdir "$DIR_TRAIN"
 mkdir "$DIR_VAL"
 mkdir "$DIR_TEST"
 
-cp -r "$ORIGINAL_DATASET_PATH"/* "$DIR_TRAIN"/
+find "$ORIGINAL_DATASET_PATH" -mindepth 1 -type d -exec cp -r {} "$DIR_TRAIN" \;
 
 num_files=$(find "$DIR_TRAIN" -mindepth 1 -type d | wc -l)
 
@@ -58,7 +58,7 @@ then
   echo $train_bound
 elif [ $DATASET_NAME == "poj_104" ]
 then
-  basenames=$(find "$DIR_TRAIN"/* -type d)
+  basenames=$(find "$DIR_TRAIN" -mindepth 1 -type d)
   train_bound=$(expr $num_files \* $TRAIN_SPLIT_PART / 100)
   test_bound=$(expr $train_bound + $num_files \* $TEST_SPLIT_PART / 100)
 else

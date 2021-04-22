@@ -16,6 +16,8 @@ DOWNLOAD_SCRIPT = "download_data.sh"
 
 
 def load_dataset(config: DictConfig):
+    if not exists(config.data_folder):
+        mkdir(config.data_folder)
     seed_ = config.seed
     dataset_path = join(config.data_folder, config.dataset.name)
     if not exists(dataset_path):
@@ -33,18 +35,16 @@ def load_dataset(config: DictConfig):
     seed(seed_)
     if config.name == "code2class":
         if not exists(join(dataset_path, config.dataset.dir)):
+            subprocess.run(
+                args=[
+                    "sh",
+                    join("scripts", "run_astminer.sh"),
+                    "--dataset", config.dataset.name,
+                ],
+                stderr=sys.stderr,
+                stdout=sys.stdout
+            )
             for holdout in [config.train_holdout, config.val_holdout, config.test_holdout]:
-                subprocess.run(
-                    args=[
-                        "sh",
-                        join("scripts", "run_astminer.sh"),
-                        "--dataset", config.dataset.name,
-                        "--dev",
-                        "--astminer", join("build", "astminer")
-                    ],
-                    stderr=sys.stderr,
-                    stdout=sys.stdout
-                )
                 print(f"preprocessing {holdout} data")
                 preprocess_csv(
                     data_folder=config.data_folder,
@@ -88,4 +88,4 @@ if __name__ == "__main__":
     args = arg_parser.parse_args()
 
     config_ = OmegaConf.load(args.config_path)
-    load_poj_104(config_)
+    load_dataset(config_)

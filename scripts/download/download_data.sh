@@ -11,8 +11,6 @@ DATA_DIR=./data
 POJ_DOWNLOAD_SCRIPT=scripts/download/download_poj.sh
 CODEFORCES_DOWNLOAD_SCRIPT=scripts/download/download_codeforces.sh
 SPLIT_SCRIPT=scripts/download/split_dataset.sh
-ASTMINER_SOURCE=../astminer
-ASTMINER_BINARY=build/shadow/lib-0.*.jar
 
 function is_int(){
   if [[ ! "$1" =~ ^[+-]?[0-9]+$ ]]; then
@@ -26,8 +24,7 @@ while (( "$#" )); do
     -h|--help)
       echo "options:"
       echo "-h, --help                     show brief help"
-      echo "-d, --dataset NAME             specify dataset name, available: java-small, java-med, java-large, poj_104"
-      echo "--astminer                     the path to astminer"
+      echo "-d, --dataset NAME             specify dataset name, available: codeforces, poj_104"
       echo "--train-part VAL               specify a percentage of dataset used as train set"
       echo "--test-part VAL                specify a percentage of dataset used as test set"
       echo "--val-part VAL                 specify a percentage of dataset used as validation set"
@@ -41,15 +38,6 @@ while (( "$#" )); do
         shift 2
       else
         echo "Specify dataset name"
-        exit 1
-      fi
-      ;;
-    --astminer*)
-      if [ -n "$2" ] && [ "${2:0:1}" != "-" ]; then
-        ASTMINER_SOURCE=$2
-        shift 2
-      else
-        echo "Specify astminer path"
         exit 1
       fi
       ;;
@@ -97,36 +85,17 @@ while (( "$#" )); do
   esac
 done
 
-ASTMINER_PATH=${ASTMINER_SOURCE}/${ASTMINER_BINARY}
-DATA_PATH=${DATA_DIR}/${DATASET_NAME}
-
 if [ ! -d $DATA_DIR ]
 then
   mkdir $DATA_DIR
 fi
 
-if [[ "$DATASET_NAME" == "java-"* ]]
+if [ "$DATASET_NAME" == "poj_104" ]
 then
-  if [ ! -d "$DATA_PATH" ]
-  then
-    if [ ! -f "$DATA_DIR"/"$DATASET_NAME"-preprocessed.tar.gz ]
-    then
-      echo "Downloading dataset $DATASET_NAME"
-      wget https://s3.amazonaws.com/code2seq/datasets/"$DATASET_NAME"-preprocessed.tar.gz -P $DATA_DIR/
-    else
-      echo "Dataset $DATASET_NAME already downloaded"
-    fi
-    echo "Unzip dataset"
-    tar -xvzf $DATA_DIR/"$DATASET_NAME"-preprocessed.tar.gz -C data/
-  else
-    echo "Dataset $DATASET_NAME already exists"
-  fi
-elif [ "$DATASET_NAME" == "poj_104" ]
-then
-  sh "$POJ_DOWNLOAD_SCRIPT" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART" "$DEV" "$ASTMINER_PATH" "$SPLIT_SCRIPT" "$LOAD_SPLITTED"
+  sh "$POJ_DOWNLOAD_SCRIPT" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART" "$DEV" "$SPLIT_SCRIPT" "$LOAD_SPLITTED"
 elif [ "$DATASET_NAME" == "codeforces" ]
 then
-  sh "$CODEFORCES_DOWNLOAD_SCRIPT" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART" "$DEV" "$ASTMINER_PATH" "$SPLIT_SCRIPT"
+  sh "$CODEFORCES_DOWNLOAD_SCRIPT" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART" "$DEV" "$SPLIT_SCRIPT"
 else
   echo "Dataset $DATASET_NAME does not exist"
 fi

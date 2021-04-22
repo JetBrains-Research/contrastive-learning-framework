@@ -13,9 +13,8 @@ TRAIN_SPLIT_PART=$1
 VAL_SPLIT_PART=$2
 TEST_SPLIT_PART=$3
 DEV=$4
-ASTMINER_PATH=$5
-SPLIT_SCRIPT=$6
-LOAD_SPLITTED=$7
+SPLIT_SCRIPT=$5
+LOAD_SPLITTED=$6
 DATA_DIR=./data
 DATASET_NAME=poj_104
 
@@ -52,24 +51,17 @@ else
     if $DEV
     then
       echo "Dev mode"
-      tar -C $DATA_DIR/ -xvf "$DATA_DIR/poj-104-original.tar.gz" "ProgramData/[1-3]"
+      tar -C $DATA_DIR/ -xvf "$DATA_DIR/poj-104-original.tar.gz" "ProgramData/[1-6]"
 
       for i in {30..5000}
       do
-        if [ -f "$DATA_DIR"/ProgramData/1/"$i".txt ]
-        then
-          rm "$DATA_DIR"/ProgramData/1/"$i".txt
-        fi
-
-        if [ -f "$DATA_DIR"/ProgramData/2/"$i".txt ]
-        then
-          rm "$DATA_DIR"/ProgramData/2/"$i".txt
-        fi
-
-        if [ -f "$DATA_DIR"/ProgramData/3/"$i".txt ]
-        then
-          rm "$DATA_DIR"/ProgramData/3/"$i".txt
-        fi
+        for j in {1..6}
+        do
+          if [ -f "$DATA_DIR"/ProgramData/"$j"/"$i".txt ]
+          then
+            rm "$DATA_DIR"/ProgramData/"$j"/"$i".txt
+          fi
+        done
       done
     else
       tar -C $DATA_DIR/ -xvf "$DATA_DIR/poj-104-original.tar.gz"
@@ -86,33 +78,10 @@ if [ ! -d "$DATA_PATH"/raw ]
 then
   # Splitting dataset on train/test/val parts
   echo "Splitting on train/test/val"
-  sh "$SPLIT_SCRIPT" "$DATA_PATH" "$DATA_PATH"_split "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART"
+  sh "$SPLIT_SCRIPT" "$DATASET_NAME" "$DATA_PATH" "$DATA_PATH"_split "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART"
   rm -rf "$DATA_PATH"
   mkdir "$DATA_PATH"
   mkdir "$DATA_PATH"/raw
   mv "$DATA_PATH"_split/* "$DATA_PATH"/raw
   rm -rf "$DATA_PATH"_split
 fi
-
-echo "Extracting paths using astminer. You need to specify the path to .jar in \"ASTMINER_PATH\" variable first"
-if [ -d "$DATA_PATH"_parsed ]
-then
-  rm -rf "$DATA_PATH"_parsed
-fi
-mkdir "$DATA_PATH"_parsed
-
-java -jar -Xmx200g $ASTMINER_PATH code2vec --lang c,cpp --project "$DATA_PATH"/raw/train --output "$DATA_PATH"_parsed/train --maxL 8 --maxW 2 --granularity file --folder-label --split-tokens
-java -jar -Xmx200g $ASTMINER_PATH code2vec --lang c,cpp --project "$DATA_PATH"/raw/test --output "$DATA_PATH"_parsed/test --maxL 8 --maxW 2 --granularity file --folder-label --split-tokens
-java -jar -Xmx200g $ASTMINER_PATH code2vec --lang c,cpp --project "$DATA_PATH"/raw/val --output "$DATA_PATH"_parsed/val --maxL 8 --maxW 2 --granularity file --folder-label --split-tokens
-
-for folder in $(find "$DATA_PATH"_parsed/*/c -type d)
-do
-  for file in "$folder"/*
-  do
-    type="$(basename -s .csv "$(dirname "$folder")")"
-    mv "$file" "$DATA_PATH"/"$(basename "${file%.csv}.$type.csv")"
-  done
-  rm -rf "$(dirname "$folder")"
-done
-
-rm -rf "$DATA_PATH"_parsed

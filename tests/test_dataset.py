@@ -21,11 +21,11 @@ def test_contrastive_dataset():
         assert label_a == label_b
 
 
-def test_split_poj_104():
+def test_split():
     for dataset in ["poj_104", "codeforces"]:
         subprocess.run(
             args=[
-                "sh",
+                "bash",
                 join("scripts", "download", "download_data.sh"),
                 "--dataset", dataset,
                 "--dev",

@@ -48,21 +48,21 @@ num_files=$(find "$DIR_TRAIN" -mindepth 1 -type d | wc -l)
 
 if [ $DATASET_NAME == "codeforces" ]
 then
-  basenames=$(find "$DIR_TRAIN" -mindepth 1 -type d | \
+    basenames=$(find "$DIR_TRAIN" -mindepth 1 -type d | \
               awk -F '_' '{print $(NF-5)$(NF-4), $0}' | \
               sort -k1 | \
               cut -d ' ' -f2-)
-  bounds=$(python $COMPUTE_BOUNDS_SCRIPT "$DIR_TRAIN" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART")
-  train_bound=$(echo $bounds | cut -d " " -f1)
-  test_bound=$(echo $bounds | cut -d " " -f2)
-  echo $train_bound
+    bounds=$(python $COMPUTE_BOUNDS_SCRIPT "$DIR_TRAIN" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART")
+    train_bound=$(echo $bounds | cut -d " " -f1)
+    test_bound=$(echo $bounds | cut -d " " -f2)
+    echo $train_bound
 elif [ $DATASET_NAME == "poj_104" ]
 then
-  basenames=$(find "$DIR_TRAIN" -mindepth 1 -type d)
-  train_bound=$(expr $num_files \* $TRAIN_SPLIT_PART / 100)
-  test_bound=$(expr $train_bound + $num_files \* $TEST_SPLIT_PART / 100)
+    basenames=$(find "$DIR_TRAIN" -mindepth 1 -type d)
+    train_bound=$(expr $num_files \* $TRAIN_SPLIT_PART / 100)
+    test_bound=$(expr $train_bound + $num_files \* $TEST_SPLIT_PART / 100)
 else
-  echo "Dataset $DATASET_NAME does not exist"
+    echo "Dataset $DATASET_NAME does not exist"
 fi
 
 counter=$(expr 0)

@@ -12,7 +12,7 @@ POJ_DOWNLOAD_SCRIPT=scripts/download/download_poj.sh
 CODEFORCES_DOWNLOAD_SCRIPT=scripts/download/download_codeforces.sh
 SPLIT_SCRIPT=scripts/download/split_dataset.sh
 
-function is_int(){
+function is_int() {
   if [[ ! "$1" =~ ^[+-]?[0-9]+$ ]]; then
     echo "Non integer {$1} passed in --$2-part"
     exit 1

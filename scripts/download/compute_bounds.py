@@ -1,8 +1,7 @@
 from argparse import ArgumentParser
+from collections import defaultdict
 from os import listdir
 from os.path import join, isdir
-import sys
-from collections import defaultdict
 
 
 def get_task(clones_dir: str):

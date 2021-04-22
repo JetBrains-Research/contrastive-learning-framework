@@ -90,12 +90,23 @@ then
   mkdir $DATA_DIR
 fi
 
-if [ "$DATASET_NAME" == "poj_104" ]
+if $LOAD_SPLITTED
 then
-  sh "$POJ_DOWNLOAD_SCRIPT" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART" "$DEV" "$SPLIT_SCRIPT" "$LOAD_SPLITTED"
-elif [ "$DATASET_NAME" == "codeforces" ]
-then
-  sh "$CODEFORCES_DOWNLOAD_SCRIPT" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART" "$DEV" "$SPLIT_SCRIPT"
+  if [ "$DATASET_NAME" == "poj_104" ]
+  then
+    echo ""
+  elif [ "$DATASET_NAME" == "codeforces" ]
+  then
+    echo ""
+  fi
 else
-  echo "Dataset $DATASET_NAME does not exist"
+  if [ "$DATASET_NAME" == "poj_104" ]
+  then
+    sh "$POJ_DOWNLOAD_SCRIPT" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART" "$DEV" "$SPLIT_SCRIPT"
+  elif [ "$DATASET_NAME" == "codeforces" ]
+  then
+    sh "$CODEFORCES_DOWNLOAD_SCRIPT" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART" "$DEV" "$SPLIT_SCRIPT"
+  else
+    echo "Dataset $DATASET_NAME does not exist"
+  fi
 fi

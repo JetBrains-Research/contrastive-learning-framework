@@ -5,16 +5,13 @@
 # $2              specify a percentage of dataset used as test set
 # $3              specify a percentage of dataset used as validation set
 # $4              specify if developer mode is on, default: false
-# $5              specify a path to astminer .jar file
-# $6              specify a path to splitiing script
-# $7              specify if splitted dataset needs to be downloaded
+# $5              specify a path to splitiing script
 
 TRAIN_SPLIT_PART=$1
 VAL_SPLIT_PART=$2
 TEST_SPLIT_PART=$3
 DEV=$4
 SPLIT_SCRIPT=$5
-LOAD_SPLITTED=$6
 DATA_DIR=./data
 DATASET_NAME=poj_104
 
@@ -29,43 +26,31 @@ if [ -d "$DATA_PATH" ]
 then
   echo "$DATA_PATH exists."
 else
-  if $LOAD_SPLITTED
+  if [ ! -f "$DATA_DIR/poj-104-original.tar.gz" ]
   then
-    if [ ! -f "$DATA_DIR/poj-104-splitted.tar.gz" ]
-    then
-      echo "Downloading splitted dataset ${DATASET_NAME}"
-      wget https://s3-eu-west-1.amazonaws.com/datasets.ml.labs.aws.intellij.net/poj-104/poj-104-splitted.tar.gz -P $DATA_DIR/
-    fi
+    echo "Downloading dataset ${DATASET_NAME}"
+    wget https://s3-eu-west-1.amazonaws.com/datasets.ml.labs.aws.intellij.net/poj-104/poj-104-original.tar.gz -P $DATA_DIR/
+  fi
 
-    echo "Unzip splitted dataset"
-    tar -C $DATA_DIR/ -xvf "$DATA_DIR/poj-104-splitted.tar.gz"
-  else
-    if [ ! -f "$DATA_DIR/poj-104-original.tar.gz" ]
-    then
-      echo "Downloading dataset ${DATASET_NAME}"
-      wget https://s3-eu-west-1.amazonaws.com/datasets.ml.labs.aws.intellij.net/poj-104/poj-104-original.tar.gz -P $DATA_DIR/
-    fi
+  echo "Unzip dataset"
+  # In the developer mode we leave only several classes
+  if $DEV
+  then
+    echo "Dev mode"
+    tar -C $DATA_DIR/ -xvf "$DATA_DIR/poj-104-original.tar.gz" "ProgramData/[1-6]"
 
-    echo "Unzip dataset"
-    # In the developer mode we leave only several classes
-    if $DEV
-    then
-      echo "Dev mode"
-      tar -C $DATA_DIR/ -xvf "$DATA_DIR/poj-104-original.tar.gz" "ProgramData/[1-6]"
-
-      for i in {30..5000}
+    for i in {30..5000}
+    do
+      for j in {1..6}
       do
-        for j in {1..6}
-        do
-          if [ -f "$DATA_DIR"/ProgramData/"$j"/"$i".txt ]
-          then
-            rm "$DATA_DIR"/ProgramData/"$j"/"$i".txt
-          fi
-        done
+        if [ -f "$DATA_DIR"/ProgramData/"$j"/"$i".txt ]
+        then
+          rm "$DATA_DIR"/ProgramData/"$j"/"$i".txt
+        fi
       done
-    else
-      tar -C $DATA_DIR/ -xvf "$DATA_DIR/poj-104-original.tar.gz"
-    fi
+    done
+  else
+    tar -C $DATA_DIR/ -xvf "$DATA_DIR/poj-104-original.tar.gz"
   fi
   mv "$DATA_DIR"/ProgramData "$DATA_PATH"
 fi

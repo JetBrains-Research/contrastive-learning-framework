@@ -6,7 +6,6 @@
 # $3              specify a percentage of dataset used as validation set
 # $4              specify if developer mode is on, default: false
 # $5              specify a path to astminer .jar file
-# $6              specify a path to splitiing script
 
 TRAIN_SPLIT_PART=$1
 VAL_SPLIT_PART=$2

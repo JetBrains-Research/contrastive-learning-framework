@@ -63,7 +63,7 @@ if [ ! -d "$DATA_PATH"/raw ]
 then
   # Splitting dataset on train/test/val parts
   echo "Splitting on train/test/val"
-  sh "$SPLIT_SCRIPT" "$DATASET_NAME" "$DATA_PATH" "$DATA_PATH"_split "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART"
+  bash "$SPLIT_SCRIPT" "$DATASET_NAME" "$DATA_PATH" "$DATA_PATH"_split "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART"
   rm -rf "$DATA_PATH"
   mkdir "$DATA_PATH"
   mkdir "$DATA_PATH"/raw

@@ -5,7 +5,6 @@ DATASET_NAME=poj_104
 ASTMINER_SOURCE=build/astminer
 ASTMINER_BINARY=build/shadow/lib-0.6.jar
 ASTMINER_PATH=${ASTMINER_SOURCE}/${ASTMINER_BINARY}
-DATA_PATH=${DATA_DIR}/${DATASET_NAME}
 
 while (( "$#" )); do
   case "$1" in
@@ -49,6 +48,8 @@ while (( "$#" )); do
       exit 1
   esac
 done
+
+DATA_PATH=${DATA_DIR}/${DATASET_NAME}
 
 echo "Extracting paths using astminer. You need to specify the path to .jar in \"ASTMINER_PATH\" variable first"
 if [ -d "$DATA_PATH"_parsed ]

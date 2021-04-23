@@ -48,10 +48,38 @@ num_files=$(find "$DIR_TRAIN" -mindepth 1 -type d | wc -l)
 
 if [ $DATASET_NAME == "codeforces" ]
 then
+    # It is necessary to divide the data on train/test/val in such a way that
+    # each competition is completely contained in only one holdout.
+    # To achieve this goal we:
+    #   (1) sort all the dirs with data by the competition id
+    #   (2) define train_bound and test_bound which are the indexes
+    #       defining the boundary of train and test set
+
+    # To make it clear, I explain each step precisely:
+    #    1. DIR_TRAIN has the following structure:
+    #       author_name_1_1312_D_00000001_tests_OK_0001
+    #       author_name_2_1313_D_00000002_tests_OK_0002
+    #       author_name_2_1312_A_00000003_tests_OK_0003
+    #       ....
+    #   2. Then we select competition ids, the output is as follows:
+    #       1312_D author_name_1_1312_D_00000001_tests_OK_0001
+    #       1313_D author_name_2_1313_D_00000002_tests_OK_0002
+    #       1312_A author_name_2_1312_A_00000003_tests_OK_0003
+    #       ....
+    #   3. Then we sort these lines by the competition id and get:
+    #       1312_A author_name_2_1312_A_00000003_tests_OK_0003
+    #       1312_D author_name_1_1312_D_00000001_tests_OK_0001
+    #       1313_D author_name_2_1313_D_00000002_tests_OK_0002
+    #       ....
     basenames=$(find "$DIR_TRAIN" -mindepth 1 -type d | \
               awk -F '_' '{print $(NF-5)$(NF-4), $0}' | \
               sort -k1 | \
               cut -d ' ' -f2-)
+    #   4. Finally, we cut the competition id name, leaving only dirs:
+    #       author_name_2_1312_A_00000003_tests_OK_0003
+    #       author_name_1_1312_D_00000001_tests_OK_0001
+    #       author_name_2_1313_D_00000002_tests_OK_0002
+    #       ....
     bounds=$(python $COMPUTE_BOUNDS_SCRIPT "$DIR_TRAIN" "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART")
     train_bound=$(echo $bounds | cut -d " " -f1)
     test_bound=$(echo $bounds | cut -d " " -f2)

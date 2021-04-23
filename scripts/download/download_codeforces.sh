@@ -29,7 +29,7 @@ then
 else
   if [ ! -f "$DATA_PATH".zip ]
   then
-    wget https://s3-eu-west-1.amazonaws.com/datasets.ml.labs.aws.intellij.net/codeforces-code-clone/codeforces_reduced.zip
+    wget "${REDUCED_DATA}"
     mv codeforces_reduced.zip "$DATA_PATH".zip
   fi
 

@@ -6,14 +6,12 @@
 # $3              specify a percentage of dataset used as validation set
 # $4              specify if developer mode is on, default: false
 # $5              specify a path to astminer .jar file
-# $6              specify a path to splitiing script
 
 TRAIN_SPLIT_PART=$1
 VAL_SPLIT_PART=$2
 TEST_SPLIT_PART=$3
 DEV=$4
-ASTMINER_PATH=$5
-SPLIT_SCRIPT=$6
+SPLIT_SCRIPT=$5
 DATA_DIR=./data
 DATASET_NAME=codeforces
 
@@ -24,59 +22,33 @@ then
   mkdir $DATA_DIR
 fi
 
-echo "Downloading dataset ${DATASET_NAME}"
+echo "Downloading dataset codeforces"
 if [ -d "$DATA_PATH" ]
 then
   echo "$DATA_PATH exists."
 else
-  if [ ! -f "$DATA_DIR/$DATASET_NAME.zip" ]
+  if [ ! -f "$DATA_PATH".zip ]
   then
-    aws s3 cp s3://datasets.ml.labs.aws.intellij.net/codeforces-code-clone/anti-plagiarism-datasets-master.zip "$DATA_DIR/$DATASET_NAME.zip"
+    wget "${REDUCED_DATA}"
+    mv codeforces_reduced.zip "$DATA_PATH".zip
   fi
 
   echo "Unzip dataset"
 
   if $DEV
   then
-    echo "Dev mode"
-    unzip -qq "$DATA_DIR/$DATASET_NAME.zip" "anti-plagiarism-datasets-master/rounds/1314,1315.zip" -d $DATA_DIR/
+    unzip -qq "$DATA_PATH".zip 'codeforces_reduced/*_13[0-1][0-9]_[E-Z]_*' -d $DATA_DIR
   else
-    unzip "$DATA_DIR/$DATASET_NAME.zip" -d $DATA_DIR
+    unzip "$DATA_PATH".zip -d $DATA_DIR
   fi
-
-  mkdir $DATA_PATH
-
-  for round in $(find "$DATA_DIR/anti-plagiarism-datasets-master/rounds" -name "*.zip" -type f)
-  do
-    unzip "$round" -d "$DATA_DIR/anti-plagiarism-datasets-master/rounds"
-    round_dir="${round%.zip}"
-    find "$round_dir"/*  -type d -name "*[A-D]" -exec mv {} "$DATA_PATH" \;
-    rm -rf "$round_dir"
-    rm "$round"
-  done
-  rm -rf $DATA_DIR/anti-plagiarism-datasets-master
+  mv "${DATA_DIR}"/codeforces_reduced "$DATA_PATH"
 
   # Splitting dataset on train/test/val parts
   echo "Splitting on train/test/val"
-  sh "$SPLIT_SCRIPT" "$DATA_PATH" "$DATA_PATH"_split "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART"
+  bash "$SPLIT_SCRIPT" "$DATASET_NAME" "$DATA_PATH" "$DATA_PATH"_split "$TRAIN_SPLIT_PART" "$TEST_SPLIT_PART" "$VAL_SPLIT_PART"
   rm -rf "$DATA_PATH"
-  mv "$DATA_PATH"_split "$DATA_PATH"
+  mkdir "$DATA_PATH"
+  mkdir "$DATA_PATH"/raw
+  mv "$DATA_PATH"_split/* "$DATA_PATH"/raw
+  rm -rf "$DATA_PATH"_split
 fi
-echo "Extracting paths using astminer. You need to specify the path to .jar in \"ASTMINER_PATH\" variable first"
-if [ -d "$DATA_PATH"_parsed ]
-then
-  rm -rf "$DATA_PATH"_parsed
-fi
-mkdir "$DATA_PATH"_parsed
-java -jar -Xmx200g "$ASTMINER_PATH" code2vec --lang cpp --project "$DATA_PATH"/train --output "$DATA_PATH"_parsed/train --maxL 8 --maxW 2 --granularity file --folder-label --split-tokens
-java -jar -Xmx200g "$ASTMINER_PATH" code2vec --lang cpp --project "$DATA_PATH"/test --output "$DATA_PATH"_parsed/test --maxL 8 --maxW 2 --granularity file --folder-label --split-tokens
-java -jar -Xmx200g "$ASTMINER_PATH" code2vec --lang cpp --project "$DATA_PATH"/val --output "$DATA_PATH"_parsed/val --maxL 8 --maxW 2 --granularity file --folder-label --split-tokens
-for folder in $(find "$DATA_PATH"_parsed/*/cpp -type d)
-do
-  for file in "$folder"/*
-  do
-    type="$(basename -s .csv "$(dirname "$folder")")"
-    mv "$file" "$DATA_PATH"_parsed/"$(basename "${file%.csv}.$type.csv")"
-  done
-  rm -rf "$(dirname "$folder")"
-done

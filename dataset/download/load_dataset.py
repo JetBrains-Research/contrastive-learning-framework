@@ -12,13 +12,12 @@ from omegaconf import DictConfig, OmegaConf
 
 from preprocess import tokenize, process_graphs, build_graphs_vocab
 
-TRAIN_PART = 0.7
-VAL_PART = 0.2
-TEST_PART = 0.1
 DOWNLOAD_SCRIPT = "download_data.sh"
 
 
-def load_poj_104(config: DictConfig):
+def load_dataset(config: DictConfig):
+    if not exists(config.data_folder):
+        mkdir(config.data_folder)
     seed_ = config.seed
     dataset_path = join(config.data_folder, config.dataset.name)
     if not exists(dataset_path):
@@ -28,7 +27,6 @@ def load_poj_104(config: DictConfig):
                 join("scripts", "download", "download_data.sh"),
                 "--dataset", config.dataset.name,
                 "--dev",
-                "--astminer", join("build", "astminer")
             ],
             stderr=sys.stderr,
             stdout=sys.stdout
@@ -37,6 +35,15 @@ def load_poj_104(config: DictConfig):
     seed(seed_)
     if config.name == "code2class":
         if not exists(join(dataset_path, config.dataset.dir)):
+            subprocess.run(
+                args=[
+                    "sh",
+                    join("scripts", "run_astminer.sh"),
+                    "--dataset", config.dataset.name,
+                ],
+                stderr=sys.stderr,
+                stdout=sys.stdout
+            )
             for holdout in [config.train_holdout, config.val_holdout, config.test_holdout]:
                 print(f"preprocessing {holdout} data")
                 preprocess_csv(
@@ -81,4 +88,4 @@ if __name__ == "__main__":
     args = arg_parser.parse_args()
 
     config_ = OmegaConf.load(args.config_path)
-    load_poj_104(config_)
+    load_dataset(config_)

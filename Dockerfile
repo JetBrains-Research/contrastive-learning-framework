@@ -10,7 +10,7 @@ RUN apt-get update \
                        unzip \
                        git \
                        ssh \
-                       python3-dev python3-pip python3-setuptools
+                       python3.8-dev python3.8-pip python3.8-setuptools
 
 RUN ln -sf $(which python3) /usr/bin/python \
     && ln -sf $(which pip3) /usr/bin/pip

@@ -10,10 +10,10 @@ RUN apt-get update \
                        unzip \
                        git \
                        ssh \
-                       python3.8-dev python3.8-pip python3.8-setuptools
+                       python3.8-dev python3-pip python3-setuptools
 
-RUN ln -sf $(which python3) /usr/bin/python \
-    && ln -sf $(which pip3) /usr/bin/pip
+RUN ln -s /usr/bin/pip3 /usr/bin/pip
+RUN ln -s /usr/bin/python3.8 /usr/bin/python
 
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8

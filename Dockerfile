@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.0-cudnn8-devel-ubuntu18.04
+FROM ubuntu:18.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -8,7 +8,6 @@ RUN apt-get update \
                        ca-certificates \
                        wget \
                        unzip \
-                       cmake \
                        git \
                        ssh \
                        python3-dev python3-pip python3-setuptools

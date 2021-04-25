@@ -7,9 +7,12 @@ RUN apt-get update \
                        build-essential \
                        ca-certificates \
                        wget \
+                       curl \
                        unzip \
                        git \
                        ssh \
+                       sudo \
+                       default-jre \
                        python3.8-dev python3-pip python3-setuptools
 
 RUN ln -s /usr/bin/pip3 /usr/bin/pip

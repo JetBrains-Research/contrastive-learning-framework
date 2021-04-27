@@ -3,7 +3,6 @@ from typing import Any, Callable
 import torch
 from omegaconf import DictConfig
 from torch_geometric.data import Batch
-from torch_geometric.data.dataloader import Collater
 
 from dataset.base_data_module import BaseContrastiveDataModule
 from dataset.classification_datasets.graph_dataset import GraphDataset

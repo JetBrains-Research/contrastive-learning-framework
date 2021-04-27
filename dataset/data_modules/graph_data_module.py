@@ -19,7 +19,6 @@ class GraphDataModule(BaseContrastiveDataModule):
             config=config,
             transform=transform,
         )
-        self.collater = Collater(follow_batch=[])
 
     def create_dataset(self, stage: str) -> Any:
         return GraphDataset(config=self.config, stage=stage)

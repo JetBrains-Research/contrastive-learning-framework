@@ -2,6 +2,8 @@ import subprocess
 from os import listdir
 from os import mkdir
 from os.path import exists, join, isdir
+import multiprocessing
+from joblib import Parallel, delayed
 
 from omegaconf import DictConfig
 from tqdm import tqdm
@@ -27,6 +29,7 @@ def process_graphs(config: DictConfig):
     data_path = join(config.data_folder, config.dataset.name, "raw")
     graphs_path = join(config.data_folder, config.dataset.name, config.dataset.dir)
     cpg_path = join(config.data_folder, config.dataset.name, "cpg")
+    num_cores = multiprocessing.cpu_count()
 
     if not exists(graphs_path):
         mkdir(graphs_path)
@@ -54,18 +57,14 @@ def process_graphs(config: DictConfig):
                 if not exists(class_cpg):
                     mkdir(class_cpg)
 
-                for file in tqdm(class_files):
-                    file_path = join(class_path, file)
-                    base_name = file.rsplit('.', 1)[0]
-                    cpg_file_path = join(class_cpg, f"{base_name}.bin")
+                class_files_tqdm = tqdm(class_files)
 
-                    # joern-parse
-                    if not exists(cpg_file_path):
-                        subprocess.check_call([
-                            "joern-parse",
-                            file_path, "--out",
-                            cpg_file_path
-                        ])
+                _ = Parallel(n_jobs=num_cores)(
+                    delayed(run_joern_parse)(
+                        file=file,
+                        class_path=class_path,
+                        class_cpg=class_cpg
+                    ) for file in class_files_tqdm)
 
         subprocess.check_call([
             "joern",

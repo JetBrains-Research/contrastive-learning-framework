@@ -9,6 +9,20 @@ from tqdm import tqdm
 from utils import is_c_family_file
 
 
+def run_joern_parse(file: str, class_path: str, class_cpg: str):
+    file_path = join(class_path, file)
+    base_name = file.rsplit('.', 1)[0]
+    cpg_file_path = join(class_cpg, f"{base_name}.bin")
+
+    # joern-parse
+    if not exists(cpg_file_path):
+        subprocess.check_call([
+            "joern-parse",
+            file_path, "--out",
+            cpg_file_path
+        ])
+
+
 def process_graphs(config: DictConfig):
     data_path = join(config.data_folder, config.dataset.name, "raw")
     graphs_path = join(config.data_folder, config.dataset.name, config.dataset.dir)
@@ -44,19 +58,17 @@ def process_graphs(config: DictConfig):
                     file_path = join(class_path, file)
                     base_name = file.rsplit('.', 1)[0]
                     cpg_file_path = join(class_cpg, f"{base_name}.bin")
-                    json_file_name = f"{base_name}.json"
-                    json_out = join(class_output, json_file_name)
 
                     # joern-parse
-                    subprocess.check_call([
-                        "joern-parse",
-                        file_path, "--out",
-                        cpg_file_path
-                    ])
+                    if not exists(cpg_file_path):
+                        subprocess.check_call([
+                            "joern-parse",
+                            file_path, "--out",
+                            cpg_file_path
+                        ])
 
-                    # build graphs
-                    subprocess.check_call([
-                        "joern",
-                        "--script", "preprocess/joern/build_graphs.sc",
-                        "--params", f"cpgPath={cpg_file_path},outputPath={json_out}"
-                    ])
+        subprocess.check_call([
+            "joern",
+            "--script", "preprocess/joern/build_graphs.sc",
+            "--params", f"inputPath={holdout_path},cpgPath={cpg_path},outputPath={holdout_output}"
+        ])

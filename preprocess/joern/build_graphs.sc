@@ -7,6 +7,7 @@
 
 import io.circe.Json
 import io.circe.syntax._
+import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes._
 
 val skip_types =
@@ -24,45 +25,59 @@ val selectKeys =
       v.property("CODE").toString
   }
 
-@main def main(cpgPath: String, outputPath: String) = {
-  importCpg(inputPath = cpgPath)
+def build_graph(cpg: Cpg, outputPath: String) = {
+ val ids_map = cpg.all
+   .filterNot(v => skip_types.contains(v.label))
+   .map(v => v.id)
+   .zipWithIndex
+   .toMap
 
-  val ids_map = cpg.all
-    .filterNot(v => skip_types.contains(v.label))
-    .map(v => v.id)
-    .zipWithIndex
-    .toMap
+ val vertexes_json = cpg.all
+   .filterNot(v => skip_types.contains(v.label))
+   .map(v =>
+     Map(
+         "label" -> v.label,
+         "id" -> ids_map(v.id),
+         "name" -> selectKeys(v)
+       )
+   )
+   .toJson
+   .asJson
 
-  val vertexes_json = cpg.all
-    .filterNot(v => skip_types.contains(v.label))
-    .map(v =>
-      Map(
-          "label" -> v.label,
-          "id" -> ids_map(v.id),
-          "name" -> selectKeys(v)
-        )
-    )
-    .toJson
-    .asJson
+ val edges_json = cpg.graph.E
+   .filter(e => ids_map.contains(e.inNode.id) & ids_map.contains(e.outNode.id))
+   .map(e =>
+     Map(
+         "label" -> e.label,
+         "in" -> ids_map(e.inNode.id),
+         "out" -> ids_map(e.outNode.id)
+       )
+   )
+   .toJson
+   .asJson
 
-  val edges_json = cpg.graph.E
-    .filter(e => ids_map.contains(e.inNode.id) & ids_map.contains(e.outNode.id))
-    .map(e =>
-      Map(
-          "label" -> e.label,
-          "in" -> ids_map(e.inNode.id),
-          "out" -> ids_map(e.outNode.id)
-        )
-    )
-    .toJson
-    .asJson
+ val output = Json
+   .obj(
+     ("vertexes", vertexes_json),
+     ("edges", edges_json)
+   )
+   .toString
 
-  val output = Json
-    .obj(
-      ("vertexes", vertexes_json),
-      ("edges", edges_json)
-    )
-    .toString
+ output |> outputPath
+}
 
-  output |> outputPath
+@main def main(inputPath: String, cpgPath: String, outputPath: String) = {
+  val output_ = better.files.File(outputPath)
+  val cpg_storage_ = better.files.File(cpgPath)
+
+  better.files.File(inputPath)
+        .listRecursively
+        .filter{ e => e.isRegularFile }
+        .filterNot{ f => (output_ / f.parent.name / (f.nameWithoutExtension + ".json")).exists }
+        .map { f =>
+          val cpg_path = cpg_storage_ / f.parent.name / (f.nameWithoutExtension + ".bin")
+          val Some(cpg) = importCpg(cpg_path.pathAsString)
+          val output_path = output_ / f.parent.name / (f.nameWithoutExtension + ".json")
+          build_graph(cpg, output_path.pathAsString)
+        }.toList
 }

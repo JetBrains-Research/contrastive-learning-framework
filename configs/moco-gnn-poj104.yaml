@@ -28,6 +28,7 @@ hyper_parameters:
 
 dataset:
   name: poj_104
+  vocab_file: vocab.json
   dir: graphs
 
 encoder:

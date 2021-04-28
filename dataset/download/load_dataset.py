@@ -26,7 +26,6 @@ def load_dataset(config: DictConfig):
                 "bash",
                 join("scripts", "download", "download_data.sh"),
                 "--dataset", config.dataset.name,
-                "--dev",
             ],
             stderr=sys.stderr,
             stdout=sys.stdout

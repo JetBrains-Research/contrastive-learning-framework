@@ -25,7 +25,8 @@ val selectKeys =
       v.property("CODE").toString
   }
 
-def build_graph(cpg: Cpg, outputPath: String) = {
+def build_graph(cpgPath: String, outputPath: String) = {
+ val Some(cpg) = importCpg(cpgPath)
  val ids_map = cpg.all
    .filterNot(v => skip_types.contains(v.label))
    .map(v => v.id)
@@ -76,8 +77,7 @@ def build_graph(cpg: Cpg, outputPath: String) = {
         .filterNot{ f => (output_ / f.parent.name / (f.nameWithoutExtension + ".json")).exists }
         .map { f =>
           val cpg_path = cpg_storage_ / f.parent.name / (f.nameWithoutExtension + ".bin")
-          val Some(cpg) = importCpg(cpg_path.pathAsString)
           val output_path = output_ / f.parent.name / (f.nameWithoutExtension + ".json")
-          build_graph(cpg, output_path.pathAsString)
+          build_graph(cpg_path.pathAsString, output_path.pathAsString)
         }.toList
 }

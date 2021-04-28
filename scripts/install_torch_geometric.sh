@@ -6,13 +6,15 @@ CUDA_AVAILABLE=$(python -c 'import torch; print(torch.cuda.is_available())')
 
 if [ $CUDA_AVAILABLE == "True" ]
 then
-    CUDA=cu102
+    VERSION=cu102
 else
-    CUDA=cpu
+    VERSION=cpu
 fi
 
-pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html
-pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html
-pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html
-pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html
+echo "Installing ${TORCH}-${VERSION}"
+
+pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-${TORCH}+${VERSION}.html
+pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH}+${VERSION}.html
+pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH}+${VERSION}.html
+pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH}+${VERSION}.html
 pip install torch-geometric

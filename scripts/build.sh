@@ -8,7 +8,7 @@ then
   mkdir $BUILD_DIR
 fi
 
-sh scripts/install_astminer.sh
-sh scripts/install_yttm.sh
-sh scripts/install_joern.sh
-sh scripts/install_torch_geometric.sh
+bash scripts/install_astminer.sh
+bash scripts/install_yttm.sh
+bash scripts/install_joern.sh
+bash scripts/install_torch_geometric.sh

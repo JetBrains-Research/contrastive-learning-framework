@@ -23,10 +23,9 @@ def load_dataset(config: DictConfig):
     if not exists(dataset_path):
         subprocess.run(
             args=[
-                "sh",
+                "bash",
                 join("scripts", "download", "download_data.sh"),
                 "--dataset", config.dataset.name,
-                "--dev",
             ],
             stderr=sys.stderr,
             stdout=sys.stdout
@@ -37,7 +36,7 @@ def load_dataset(config: DictConfig):
         if not exists(join(dataset_path, config.dataset.dir)):
             subprocess.run(
                 args=[
-                    "sh",
+                    "bash",
                     join("scripts", "run_astminer.sh"),
                     "--dataset", config.dataset.name,
                 ],

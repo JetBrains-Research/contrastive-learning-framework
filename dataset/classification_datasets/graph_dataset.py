@@ -1,7 +1,7 @@
 import json
+from copy import deepcopy
 from os import listdir
 from os.path import join, dirname, isdir
-from copy import deepcopy
 
 import torch
 from omegaconf import DictConfig

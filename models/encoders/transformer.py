@@ -56,5 +56,5 @@ class TransformerModel(nn.Module):
 
     def forward(self, seq: torch.Tensor):
         out = self.dropout(self.token_embedding(seq) + self.position_embedding(seq))
-        out = self.transformer(out)
-        return self.fc(out.mean(0))
+        out = self.transformer(out)[0]
+        return self.fc(out)

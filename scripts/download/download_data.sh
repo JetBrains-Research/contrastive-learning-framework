@@ -92,13 +92,21 @@ fi
 
 if $LOAD_SPLITTED
 then
-  if [ "$DATASET_NAME" == "poj_104" ]
+  DATA_PATH=${DATA_DIR}/${DATASET_NAME}
+
+  if [ ! -f "$DATA_PATH".zip ]
   then
-    echo ""
-  elif [ "$DATASET_NAME" == "codeforces" ]
-  then
-    echo ""
+    if [ "$DATASET_NAME" == "poj_104" ]
+    then
+    wget "${POJ_104_SPLITTED}"
+    elif [ "$DATASET_NAME" == "codeforces" ]
+    then
+    wget "${SPLITTED_DATA}"
+    fi
   fi
+  mv "$DATASET_NAME"_splitted.zip "$DATA_PATH".zip
+  unzip "$DATA_PATH".zip -d $DATA_DIR
+  mv "$DATA_PATH"_splitted "$DATA_PATH"
 else
   if [ "$DATASET_NAME" == "poj_104" ]
   then

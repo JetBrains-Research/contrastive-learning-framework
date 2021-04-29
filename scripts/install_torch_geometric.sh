@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script - installing torch_geometric, a framework for working with graph data in pytorch
 
-TORCH=1.7.1
+TORCH=1.7.0
 CUDA_AVAILABLE=$(python -c 'import torch; print(torch.cuda.is_available())')
 
 if [ $CUDA_AVAILABLE == "True" ]

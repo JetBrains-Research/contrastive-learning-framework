@@ -53,9 +53,8 @@ class TransformerModel(nn.Module):
             encoder_layer,
             num_layers=config.encoder.num_layers
         )
-        self.fc = nn.Linear(config.encoder.hidden_size, config.num_classes)
 
     def forward(self, seq: torch.Tensor):
         out = self.dropout(self.token_embedding(seq) + self.position_embedding(seq))
         out = self.transformer(out)[0]
-        return self.fc(out)
+        return out

@@ -42,7 +42,7 @@ encoder:
   vocab_size: 10000
   num_heads: 4
   num_layers: 2
-  dim_feadforward: 256
+  dim_feedforward: 256
   max_seq_len: 1024
 
 ssl:

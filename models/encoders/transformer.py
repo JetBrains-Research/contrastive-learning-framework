@@ -46,7 +46,8 @@ class TransformerModel(nn.Module):
 
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=config.encoder.hidden_size,
-            nhead=config.encoder.num_heads
+            nhead=config.encoder.num_heads,
+            dim_feedforward=config.encoder.dim_feedforward
         )
         self.transformer = nn.TransformerEncoder(
             encoder_layer,

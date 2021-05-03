@@ -1,0 +1,58 @@
+name: transformer
+
+seed: 9
+num_workers: 2
+log_offline: false
+
+num_classes: 64
+
+# data keys
+data_folder: data
+train_holdout: train
+val_holdout: val
+test_holdout: test
+
+save_every_epoch: 1
+val_every_epoch: 1
+val_check_interval: 0.05
+log_every_n_steps: 500
+progress_bar_refresh_rate: 1
+
+hyper_parameters:
+  n_epochs: 10
+  patience: 10
+  batch_size: 8
+  test_batch_size: 8
+  clip_norm: 5
+  shuffle_data: true
+
+dataset:
+  dir: raw
+  name: codeforces
+  tokenizer_name: model.yttm
+  vocab_size: 10000
+  pad_id: 0
+  unk_id: 1
+  bos_id: 2
+  eos_id: 3
+
+encoder:
+  hidden_size: 64
+  num_classes: 64
+  vocab_size: 10000
+  num_heads: 4
+  num_layers: 2
+  dim_feedforward: 256
+  max_seq_len: 1024
+
+ssl:
+  name: MocoV2
+  num_negatives: 65536
+  encoder_momentum: 0.999
+  softmax_temperature: 0.07
+  learning_rate: 0.03
+  momentum: 0.9
+  weight_decay: 1e-4
+  batch_size: 256
+  use_mlp: False
+  num_workers: 8

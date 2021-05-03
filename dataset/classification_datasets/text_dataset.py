@@ -21,7 +21,6 @@ class TextDataset(Dataset):
 
         self.tokenizer = self._get_tokenizer(config=config)
 
-        print(self.data_path)
         self.files = traverse_clf_dataset(self.data_path)
         shuffle(self.files)
 
@@ -39,7 +38,7 @@ class TextDataset(Dataset):
     def _process_file(self, path: str) -> Tuple:
         with open(path, "r", encoding="utf8", errors='ignore') as file:
             text = file.read()
-            encoding = self.tokenizer.encode([text])
+            encoding = self.tokenizer.encode([text], bos=True)
             return torch.LongTensor(encoding), basename(dirname(path))
 
     def __len__(self):

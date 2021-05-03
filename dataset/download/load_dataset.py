@@ -62,7 +62,7 @@ def load_dataset(config: DictConfig):
                     if (elem.rsplit(".", 1)[1] in ["csv", "c2s"]) or (elem == "vocabulary.pkl"):
                         move(path_, paths_storage)
 
-    elif config.name == "lstm":
+    elif config.name == "transformer":
         if not exists(join(dataset_path, config.dataset.dir, config.dataset.tokenizer_name)):
             tokenize(config)
     elif config.name == "gnn":

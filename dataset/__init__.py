@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 data_modules = {
-    "lstm": TextDataModule,
+    "transformer": TextDataModule,
     "code2class": PathDataModule,
     "gnn": GraphDataModule
 }

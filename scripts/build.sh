@@ -9,6 +9,5 @@ then
 fi
 
 bash scripts/install_astminer.sh
-bash scripts/install_yttm.sh
 bash scripts/install_joern.sh
 bash scripts/install_torch_geometric.sh

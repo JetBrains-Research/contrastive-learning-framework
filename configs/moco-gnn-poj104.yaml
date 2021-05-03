@@ -28,15 +28,14 @@ hyper_parameters:
 
 dataset:
   name: poj_104
+  vocab_file: vocab.json
   dir: graphs
 
 encoder:
   embedding_size: 8
   hidden_size: 8
-  num_classes: 5
-  vocab_size: 10000
-  dropout: 0.2
-  bidirectional: False
+  num_layers: 2
+  out_channels: 8
 
 ssl:
   name: BYOL

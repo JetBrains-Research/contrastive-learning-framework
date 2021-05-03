@@ -3,7 +3,6 @@ from typing import Any, Callable
 import torch
 from omegaconf import DictConfig
 from torch_geometric.data import Batch
-from torch_geometric.data.dataloader import Collater
 
 from dataset.base_data_module import BaseContrastiveDataModule
 from dataset.classification_datasets.graph_dataset import GraphDataset
@@ -19,7 +18,6 @@ class GraphDataModule(BaseContrastiveDataModule):
             config=config,
             transform=transform,
         )
-        self.collater = Collater(follow_batch=[])
 
     def create_dataset(self, stage: str) -> Any:
         return GraphDataset(config=self.config, stage=stage)

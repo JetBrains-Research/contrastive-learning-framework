@@ -9,7 +9,9 @@ class Code2ClassModel(nn.Module):
     def __init__(self, config: DictConfig, vocabulary: Vocabulary):
         super().__init__()
         self.num_classes = config.num_classes
+        print(vocabulary.label_to_id)
         self.code2class = Code2Class(config, vocabulary)
 
     def forward(self, batch: PathContextBatch):
-        return self.code2class(batch.contexts, batch.contexts_per_label)
+        out = self.code2class(batch.contexts, batch.contexts_per_label)
+        return out

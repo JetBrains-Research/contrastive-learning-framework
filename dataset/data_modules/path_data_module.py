@@ -54,10 +54,13 @@ class PathDataModule(BaseContrastiveDataModule):
         return (a_pc, b_pc), torch.LongTensor(labels)
 
     def transfer_batch_to_device(
-            self, batch: Tuple[PathContextBatch, torch.Tensor], device: Optional[torch.device] = None
-    ) -> Tuple[PathContextBatch, torch.Tensor]:
-        pc, labels = batch
+            self,
+            batch: Tuple[Tuple[PathContextBatch, PathContextBatch], torch.Tensor],
+            device: Optional[torch.device] = None
+    ) -> Tuple[Tuple[PathContextBatch, PathContextBatch], torch.Tensor]:
+        (a, b), labels = batch
         if device is not None:
-            pc.move_to_device(device)
+            a.move_to_device(device)
+            b.move_to_device(device)
             labels.to(device)
-        return pc, labels
+        return (a, b), labels

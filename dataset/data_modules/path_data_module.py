@@ -59,8 +59,7 @@ class PathDataModule(BaseContrastiveDataModule):
             device: Optional[torch.device] = None
     ) -> Tuple[Tuple[PathContextBatch, PathContextBatch], torch.Tensor]:
         (a, b), labels = batch
-        if device is not None:
-            a.move_to_device(device)
-            b.move_to_device(device)
-            labels.to(device)
+        a.move_to_device(device)
+        b.move_to_device(device)
+        labels.to(device)
         return (a, b), labels

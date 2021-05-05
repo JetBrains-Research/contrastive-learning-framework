@@ -1,5 +1,5 @@
-from os.path import join, isdir
 from os import listdir
+from os.path import join, isdir
 
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig

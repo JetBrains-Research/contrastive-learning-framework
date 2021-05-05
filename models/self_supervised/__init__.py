@@ -1,5 +1,6 @@
 from .byol import BYOLModel, BYOLTransform
 from .moco import MocoV2Model
+from .simclr import SimCLRModel, SimCLRTransform
 
 __all__ = [
     "MocoV2Model",
@@ -10,9 +11,11 @@ __all__ = [
 
 ssl_models = {
     "MocoV2": MocoV2Model,
-    "BYOL": BYOLModel
+    "BYOL": BYOLModel,
+    "SimCLR": SimCLRModel
 }
 
 ssl_models_transforms = {
-    "BYOL": BYOLTransform
+    "BYOL": BYOLTransform,
+    "SimCLR": SimCLRTransform
 }

@@ -30,9 +30,10 @@ class TextDataModule(BaseContrastiveDataModule):
         return (a, b), label
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
-        (a, b), label = batch
-        a = a.to(device)
-        b = b.to(device)
+        inputs, label = batch
+        inputs = [
+            input_.to(device) if input_ is not None else None for input_ in inputs
+        ]
         if isinstance(label, torch.Tensor):
             label = label.to(device)
-        return (a, b), label
+        return inputs, label

@@ -47,7 +47,7 @@ class BYOLModel(BYOL):
         elif self.config.name == "gnn":
             encoder = encoder_models[self.config.name](self.config)
         else:
-            print(f"Unknown model: {self.config.name}")
+            raise ValueError(f"Unknown model: {self.config.name}")
         self.online_network = SiameseArm(encoder=encoder)
         self.target_network = deepcopy(self.online_network)
 

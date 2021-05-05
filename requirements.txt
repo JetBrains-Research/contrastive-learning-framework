@@ -3,7 +3,7 @@ numpy==1.20.1
 torch==1.7.1
 torchvision==0.8.2
 pytorch-lightning==1.1.7
-pytorch-lightning-bolts==0.3.0
+pytorch-lightning-bolts==0.3.2
 flake8==3.8.4
 tqdm~=4.58.0
 wandb==0.10.20

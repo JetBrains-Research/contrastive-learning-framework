@@ -9,6 +9,9 @@ import io.circe.Json
 import io.circe.syntax._
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes._
+import scala.concurrent.{Future, Await}
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 val skip_types =
   List("FILE", "UNKNOWN", "META_DATA", "NAMESPACE", "NAMESPACE_BLOCK")
@@ -65,19 +68,26 @@ def build_graph(cpgPath: String, outputPath: String) = {
    .toString
 
  output |> outputPath
+ close(workspace.projectByCpg(cpg).map(_.name).get)
 }
 
 @main def main(inputPath: String, cpgPath: String, outputPath: String) = {
   val output_ = better.files.File(outputPath)
   val cpg_storage_ = better.files.File(cpgPath)
 
-  better.files.File(inputPath)
-        .listRecursively
-        .filter{ e => e.isRegularFile }
-        .filterNot{ f => (output_ / f.parent.name / (f.nameWithoutExtension + ".json")).exists }
-        .map { f =>
-          val cpg_path = cpg_storage_ / f.parent.name / (f.nameWithoutExtension + ".bin")
-          val output_path = output_ / f.parent.name / (f.nameWithoutExtension + ".json")
-          build_graph(cpg_path.pathAsString, output_path.pathAsString)
-        }.toList
+  val fileList = better.files.File(inputPath)
+  					   .listRecursively
+  					   .filter{ e => e.isRegularFile }
+  					   .filterNot{ f => (output_ / f.parent.name / (f.nameWithoutExtension + ".json")).exists }
+  					   .toList
+
+
+  val result = Future {
+    fileList.foreach { f =>
+        val cpg_path = cpg_storage_ / f.parent.name / (f.nameWithoutExtension + ".bin")
+        val output_path = output_ / f.parent.name / (f.nameWithoutExtension + ".json")
+        build_graph(cpg_path.pathAsString, output_path.pathAsString)
+    }
+  }
+  Await.result(result, Duration.Inf)
 }

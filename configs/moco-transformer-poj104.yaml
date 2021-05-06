@@ -1,10 +1,10 @@
 name: transformer
 
 seed: 9
-num_workers: 2
+num_workers: 8
 log_offline: false
 
-num_classes: 64
+num_classes: 16
 
 # data keys
 data_folder: data
@@ -15,31 +15,31 @@ test_holdout: test
 save_every_epoch: 1
 val_every_epoch: 1
 val_check_interval: 0.05
-log_every_n_steps: 500
+log_every_n_steps: 2
 progress_bar_refresh_rate: 1
 
 hyper_parameters:
   n_epochs: 10
   patience: 10
-  batch_size: 8
-  test_batch_size: 8
-  clip_norm: 5
+  batch_size: 4
+  test_batch_size: 4
+  clip_norm: 1
   shuffle_data: true
 
 dataset:
   dir: raw
   name: poj_104
   tokenizer_name: model.yttm
-  vocab_size: 10000
+  vocab_size: 20000
   pad_id: 0
   unk_id: 1
   bos_id: 2
   eos_id: 3
 
 encoder:
-  hidden_size: 64
-  num_classes: 64
-  vocab_size: 10000
+  hidden_size: 16
+  num_classes: 16
+  vocab_size: 20000
   num_heads: 4
   num_layers: 2
   dim_feedforward: 256

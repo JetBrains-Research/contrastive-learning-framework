@@ -60,4 +60,3 @@ class BYOLTransform:
     def __call__(self, batch):
         (x1, x2), y = batch
         return (x1, x2, None), y
-

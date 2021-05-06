@@ -44,6 +44,9 @@ class MocoV2Model(Moco_v2):
             _vocabulary = Vocabulary.load_vocabulary(_vocab_path)
             encoder_q = encoder_models[base_encoder](config=self.config, vocabulary=_vocabulary)
             encoder_k = encoder_models[base_encoder](config=self.config, vocabulary=_vocabulary)
+        elif self.config.name == "gnn":
+            encoder_q = encoder_models[self.config.name](self.config)
+            encoder_k = encoder_models[self.config.name](self.config)
         else:
-            print(f"Unknown model: {self.config.name}")
+            raise ValueError(f"Unknown model: {self.config.name}")
         return encoder_q, encoder_k

@@ -2,12 +2,12 @@ from os.path import join
 
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
-from pl_bolts.models.self_supervised import MocoV2
+from pl_bolts.models.self_supervised import Moco_v2
 
 from models.encoders import encoder_models
 
 
-class MocoV2Model(MocoV2):
+class MocoV2Model(Moco_v2):
     def __init__(
         self,
         config: DictConfig,
@@ -44,6 +44,9 @@ class MocoV2Model(MocoV2):
             _vocabulary = Vocabulary.load_vocabulary(_vocab_path)
             encoder_q = encoder_models[base_encoder](config=self.config, vocabulary=_vocabulary)
             encoder_k = encoder_models[base_encoder](config=self.config, vocabulary=_vocabulary)
+        elif self.config.name == "gnn":
+            encoder_q = encoder_models[self.config.name](self.config)
+            encoder_k = encoder_models[self.config.name](self.config)
         else:
-            print(f"Unknown model: {self.config.name}")
+            raise ValueError(f"Unknown model: {self.config.name}")
         return encoder_q, encoder_k

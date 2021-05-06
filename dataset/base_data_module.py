@@ -4,10 +4,11 @@ from typing import Any, Callable
 
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, BatchSampler, RandomSampler, SequentialSampler
 
 from .contrastive_dataset import ContrastiveDataset
 from .download import load_dataset
+from .samplers import DiverseBatchSampler
 
 SEED = 9
 
@@ -38,6 +39,18 @@ class BaseContrastiveDataModule(LightningDataModule):
     def create_dataset(self, stage: str) -> Any:
         pass
 
+    def get_batch_sampler(self, dataset, batch_size, drop_last):
+        if self.config.ssl.name in ["MocoV2", "BYOL"]:
+            return BatchSampler(sampler=RandomSampler(dataset), batch_size=batch_size, drop_last=drop_last)
+        elif self.config.ssl.name == "SimCLR":
+            return DiverseBatchSampler(
+                dataset=dataset,
+                batch_size=batch_size,
+                drop_last=drop_last
+            )
+        else:
+            raise ValueError(f"Unknown ssl method {self.config.ssl.name}")
+
     def prepare_data(self):
         load_dataset(self.config)
 
@@ -53,30 +66,27 @@ class BaseContrastiveDataModule(LightningDataModule):
             self.contrastive_dataset[stage] = ContrastiveDataset(clf_dataset=self.clf_dataset[stage])
 
     def train_dataloader(self):
+        dataset = self.contrastive_dataset[self.train_holdout]
         return DataLoader(
-            self.contrastive_dataset[self.train_holdout],
-            batch_size=self.batch_size,
+            dataset,
+            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.batch_size, drop_last=True),
             collate_fn=self._collate,
-            shuffle=True,
-            drop_last=True
         )
 
     def val_dataloader(self):
+        dataset = self.contrastive_dataset[self.val_holdout]
         return DataLoader(
-            self.contrastive_dataset[self.val_holdout],
-            batch_size=self.batch_size,
+            dataset,
+            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.batch_size, drop_last=True),
             collate_fn=self._collate,
-            shuffle=True,
-            drop_last=True
         )
 
     def test_dataloader(self):
+        dataset = self.contrastive_dataset[self.test_holdout]
         return DataLoader(
-            self.contrastive_dataset[self.test_holdout],
-            batch_size=self.batch_size,
+            dataset,
+            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.batch_size, drop_last=True),
             collate_fn=self._collate,
-            shuffle=True,
-            drop_last=True
         )
 
     @abstractmethod

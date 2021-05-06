@@ -12,5 +12,4 @@ class Code2ClassModel(nn.Module):
         self.code2class = Code2Class(config, vocabulary)
 
     def forward(self, batch: PathContextBatch):
-        out = self.code2class(batch.contexts, batch.contexts_per_label)
-        return out
+        return self.code2class(batch.contexts, batch.contexts_per_label)

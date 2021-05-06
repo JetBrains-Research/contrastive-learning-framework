@@ -1,11 +1,10 @@
 from copy import deepcopy
 from os.path import join
 
-import torch.nn as nn
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import BYOL
-from pl_bolts.models.self_supervised.byol.models import MLP
+from models.encoders import SiameseArm
 
 from models.encoders import encoder_models
 
@@ -47,8 +46,13 @@ class BYOLModel(BYOL):
         elif self.config.name == "gnn":
             encoder = encoder_models[self.config.name](self.config)
         else:
-            print(f"Unknown model: {self.config.name}")
-        self.online_network = SiameseArm(encoder=encoder)
+            raise ValueError(f"Unknown model: {self.config.name}")
+        self.online_network = SiameseArm(
+            encoder=encoder,
+            input_dim=self.config.num_classes,
+            output_dim=self.config.num_classes,
+            hidden_size=self.config.num_classes
+        )
         self.target_network = deepcopy(self.online_network)
 
 
@@ -57,27 +61,3 @@ class BYOLTransform:
         (x1, x2), y = batch
         return (x1, x2, None), y
 
-
-class SiameseArm(nn.Module):
-    def __init__(self, encoder=None):
-        super().__init__()
-        # Encoder
-        self.encoder = encoder
-        # Projector
-        self.projector = MLP(
-            input_dim=encoder.num_classes,
-            hidden_size=128,
-            output_dim=128
-        )
-        # Predictor
-        self.predictor = MLP(
-            input_dim=128,
-            hidden_size=128,
-            output_dim=128
-        )
-
-    def forward(self, x):
-        y = self.encoder(x)
-        z = self.projector(y)
-        h = self.predictor(z)
-        return y, z, h

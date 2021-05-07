@@ -1,8 +1,10 @@
 from os import listdir
 from os.path import join, isdir
 
+import torch
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
+from pl_bolts.metrics import mean, precision_at_k
 from pl_bolts.models.self_supervised import SimCLR
 
 from models.encoders import encoder_models
@@ -69,6 +71,49 @@ class SimCLRModel(SimCLR):
 
     def forward(self, x):
         return self.encoder(x)
+
+    def shared_step(self, batch):
+        # final image in tuple is for online eval
+        (img1, img2, _), y = batch
+
+        # get h representations, bolts resnet returns a list
+        h1 = self(img1)
+        h2 = self(img2)
+
+        # get z representations
+        z1 = self.projection(h1)
+        z2 = self.projection(h2)
+
+        loss = self.nt_xent_loss(z1, z2, self.temperature)
+
+        with torch.no_grad():
+            logits = torch.mm(z1, z2.T)
+            labels = torch.arange(logits.shape[0], dtype=torch.long)
+            labels = labels.type_as(logits)
+            acc1, acc5 = precision_at_k(logits, labels, top_k=(1, 5))
+
+        return loss, acc1, acc5
+
+    def training_step(self, batch, batch_idx):
+        loss, acc1, acc5 = self.shared_step(batch)
+
+        log = {'train_loss': loss, 'train_acc1': acc1, 'train_acc5': acc5}
+        self.log_dict(log)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        loss, acc1, acc5 = self.shared_step(batch)
+
+        logs = {'val_loss': loss, 'val_acc1': acc1, 'val_acc5': acc5}
+        return logs
+
+    def validation_epoch_end(self, outputs):
+        val_loss = mean(outputs, 'val_loss')
+        val_acc1 = mean(outputs, 'val_acc1')
+        val_acc5 = mean(outputs, 'val_acc5')
+
+        log = {'val_loss': val_loss, 'val_acc1': val_acc1, 'val_acc5': val_acc5}
+        self.log_dict(log)
 
 
 class SimCLRTransform:

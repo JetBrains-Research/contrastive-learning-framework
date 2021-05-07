@@ -24,7 +24,8 @@ class BaseContrastiveDataModule(LightningDataModule):
         self.config = config
         self.dataset_name = config.dataset.name
         self.dataset_path = join(config.data_folder, self.dataset_name)
-        self.batch_size = config.hyper_parameters.batch_size
+        self.train_batch_size = config.hyper_parameters.batch_size
+        self.test_batch_size = config.hyper_parameters.test_batch_size
         self.num_classes = config.num_classes
         self.transform = transform
 
@@ -69,7 +70,7 @@ class BaseContrastiveDataModule(LightningDataModule):
         dataset = self.contrastive_dataset[self.train_holdout]
         return DataLoader(
             dataset,
-            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.batch_size, drop_last=True),
+            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.train_batch_size, drop_last=True),
             collate_fn=self._collate,
         )
 
@@ -77,7 +78,7 @@ class BaseContrastiveDataModule(LightningDataModule):
         dataset = self.contrastive_dataset[self.val_holdout]
         return DataLoader(
             dataset,
-            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.batch_size, drop_last=True),
+            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.test_batch_size, drop_last=True),
             collate_fn=self._collate,
         )
 
@@ -85,7 +86,7 @@ class BaseContrastiveDataModule(LightningDataModule):
         dataset = self.contrastive_dataset[self.test_holdout]
         return DataLoader(
             dataset,
-            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.batch_size, drop_last=True),
+            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.test_batch_size, drop_last=True),
             collate_fn=self._collate,
         )
 

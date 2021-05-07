@@ -4,8 +4,8 @@ from os.path import join
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import BYOL
-from models.encoders import SiameseArm
 
+from models.encoders import SiameseArm
 from models.encoders import encoder_models
 
 

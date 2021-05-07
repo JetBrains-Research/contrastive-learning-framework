@@ -27,8 +27,8 @@ def build_graphs_vocab(config: DictConfig):
             for graph_path in tqdm(paths):
                 with open(graph_path, "r") as f:
                     graph = json.load(f)
-                e = json.loads(graph["edges"])
-                v = json.loads(graph["vertexes"])
+                e = graph["edges"]
+                v = graph["vertexes"]
                 vertexes_types.update(set(v_["label"] for v_ in v))
                 vertexes_names.update(set(v_["name"] for v_ in v))
                 edges_types.update(set(e_["label"] for e_ in e))
@@ -38,7 +38,7 @@ def build_graphs_vocab(config: DictConfig):
     vocab = {
         "v_type2id": {v_type: id_ for id_, v_type in enumerate(vertexes_types)},
         "v_name2id": {v_name: id_ for id_, v_name in enumerate(vertexes_names)},
-        "e_type2id": {e_type: id_ for id_, e_type in enumerate(edges_types)}
+        "e_type2id": {e_type: id_ for id_, e_type in enumerate(edges_types)},
     }
 
     with open(join(graphs_storage, config.dataset.vocab_file), "w") as vocab_f:

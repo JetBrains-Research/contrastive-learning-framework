@@ -5,8 +5,11 @@
     - outputPath: String  -- where to store json
  */
 
-import io.circe.Json
+import io.circe._
+import io.circe.generic.auto._
+import io.circe.parser._
 import io.circe.syntax._
+import io.circe.generic.semiauto._
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes._
 import scala.concurrent.{Future, Await}
@@ -29,65 +32,74 @@ val selectKeys =
   }
 
 def build_graph(cpgPath: String, outputPath: String) = {
- val Some(cpg) = importCpg(cpgPath)
- val ids_map = cpg.all
-   .filterNot(v => skip_types.contains(v.label))
-   .map(v => v.id)
-   .zipWithIndex
-   .toMap
+  val Some(cpg) = importCpg(cpgPath)
 
- val vertexes_json = cpg.all
-   .filterNot(v => skip_types.contains(v.label))
-   .map(v =>
-     Map(
-         "label" -> v.label,
-         "id" -> ids_map(v.id),
-         "name" -> selectKeys(v)
-       )
-   )
-   .toJson
-   .asJson
+  val valid_v = cpg.all.filterNot(v => skip_types.contains(v.label)).toList
+  val ids_map = valid_v
+    .map(v => v.id)
+    .zipWithIndex
+    .toMap
 
- val edges_json = cpg.graph.E
-   .filter(e => ids_map.contains(e.inNode.id) & ids_map.contains(e.outNode.id))
-   .map(e =>
-     Map(
-         "label" -> e.label,
-         "in" -> ids_map(e.inNode.id),
-         "out" -> ids_map(e.outNode.id)
-       )
-   )
-   .toJson
-   .asJson
+  val vertexes = Future.traverse(valid_v) { v =>
+    Future {
+      Map(
+        "label" -> v.label,
+        "id" -> ids_map(v.id).toString,
+        "name" -> selectKeys(v)
+      )
+    }
+  }
 
- val output = Json
-   .obj(
-     ("vertexes", vertexes_json),
-     ("edges", edges_json)
-   )
-   .toString
+  val vertexes_json = Await.result(vertexes, Duration.Inf).asJson
 
- output |> outputPath
- close(workspace.projectByCpg(cpg).map(_.name).get)
+  val valid_e = cpg.graph.E
+    .filter(e => ids_map.contains(e.inNode.id) & ids_map.contains(e.outNode.id))
+    .toList
+  val edges = Future.traverse(valid_e) { e =>
+    Future {
+      Map(
+        "label" -> e.label,
+        "in" -> ids_map(e.inNode.id).toString,
+        "out" -> ids_map(e.outNode.id).toString
+      )
+    }
+  }
+
+  val edges_json = Await.result(edges, Duration.Inf).asJson
+
+  val output = Json
+    .obj(
+      ("vertexes", vertexes_json),
+      ("edges", edges_json)
+    )
+    .toString
+
+  output |> outputPath
+  close(workspace.projectByCpg(cpg).map(_.name).get)
 }
 
 @main def main(inputPath: String, cpgPath: String, outputPath: String) = {
   val output_ = better.files.File(outputPath)
   val cpg_storage_ = better.files.File(cpgPath)
 
-  val fileList = better.files.File(inputPath)
-  					   .listRecursively
-  					   .filter{ e => e.isRegularFile }
-  					   .filterNot{ f => (output_ / f.parent.name / (f.nameWithoutExtension + ".json")).exists }
-  					   .toList
-
+  val fileList = better.files
+    .File(inputPath)
+    .listRecursively
+    .filter { e => e.isRegularFile }
+    .filterNot { f =>
+      (output_ / f.parent.name / (f.nameWithoutExtension + ".json")).exists
+    }
+    .toList
 
   val result = Future {
     fileList.foreach { f =>
-        val cpg_path = cpg_storage_ / f.parent.name / (f.nameWithoutExtension + ".bin")
-        val output_path = output_ / f.parent.name / (f.nameWithoutExtension + ".json")
-        build_graph(cpg_path.pathAsString, output_path.pathAsString)
+      val cpg_path =
+        cpg_storage_ / f.parent.name / (f.nameWithoutExtension + ".bin")
+      val output_path =
+        output_ / f.parent.name / (f.nameWithoutExtension + ".json")
+      build_graph(cpg_path.pathAsString, output_path.pathAsString)
     }
   }
   Await.result(result, Duration.Inf)
 }
+

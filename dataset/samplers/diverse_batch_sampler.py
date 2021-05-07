@@ -3,6 +3,7 @@ from typing import List
 
 import numpy as np
 from torch.utils.data.sampler import Sampler
+from tqdm import tqdm
 
 
 class DiverseBatchSampler(Sampler[List[int]]):
@@ -12,7 +13,8 @@ class DiverseBatchSampler(Sampler[List[int]]):
         self.drop_last = drop_last
 
         self.label2idx = defaultdict(list)
-        for idx in range(len(dataset)):
+        print("Cinstructing sampler")
+        for idx in tqdm(range(len(dataset))):
             self.label2idx[dataset[idx]["label"]].append(idx)
 
     def __iter__(self):

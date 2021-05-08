@@ -78,7 +78,9 @@ class BaseContrastiveDataModule(LightningDataModule):
         dataset = self.contrastive_dataset[self.val_holdout]
         return DataLoader(
             dataset,
-            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.test_batch_size, drop_last=True),
+            batch_size=self.test_batch_size,
+            drop_last=True,
+            shuffle=True,
             collate_fn=self._collate,
         )
 
@@ -86,7 +88,9 @@ class BaseContrastiveDataModule(LightningDataModule):
         dataset = self.contrastive_dataset[self.test_holdout]
         return DataLoader(
             dataset,
-            batch_sampler=self.get_batch_sampler(dataset, batch_size=self.test_batch_size, drop_last=True),
+            batch_size=self.test_batch_size,
+            drop_last=True,
+            shuffle=True,
             collate_fn=self._collate,
         )
 

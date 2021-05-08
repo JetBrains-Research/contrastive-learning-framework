@@ -15,7 +15,7 @@ class DiverseBatchSampler(Sampler[List[int]]):
         self.label2idx = defaultdict(list)
         print("Cinstructing sampler")
         for idx in tqdm(range(len(dataset))):
-            self.label2idx[dataset[idx]["label"]].append(idx)
+            self.label2idx[dataset.get_label_by_idx(idx)].append(idx)
 
     def __iter__(self):
         n_samples_per_label = {

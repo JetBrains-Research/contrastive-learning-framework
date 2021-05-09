@@ -4,7 +4,7 @@ from typing import Any, Callable
 
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
-from torch.utils.data import DataLoader, BatchSampler, RandomSampler
+from torch.utils.data import DataLoader
 
 from .contrastive_dataset import ContrastiveDataset
 from .download import load_dataset

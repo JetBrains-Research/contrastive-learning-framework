@@ -1,6 +1,5 @@
 from collections import defaultdict
 from itertools import combinations
-from random import shuffle
 from typing import Tuple, Dict
 
 from torch.utils.data import Dataset

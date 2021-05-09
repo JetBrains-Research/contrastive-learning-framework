@@ -57,27 +57,27 @@ class BaseContrastiveDataModule(LightningDataModule):
         return DataLoader(
             self.contrastive_dataset[self.train_holdout],
             batch_size=self.train_batch_size,
-            drop_last=True,
-            shuffle=True,
             collate_fn=self._collate,
+            shuffle=True,
+            drop_last=True
         )
 
     def val_dataloader(self):
         return DataLoader(
             self.contrastive_dataset[self.val_holdout],
             batch_size=self.test_batch_size,
-            drop_last=True,
-            shuffle=True,
             collate_fn=self._collate,
+            shuffle=True,
+            drop_last=True
         )
 
     def test_dataloader(self):
         return DataLoader(
             self.contrastive_dataset[self.test_holdout],
             batch_size=self.test_batch_size,
-            drop_last=True,
-            shuffle=True,
             collate_fn=self._collate,
+            shuffle=True,
+            drop_last=True
         )
 
     @abstractmethod

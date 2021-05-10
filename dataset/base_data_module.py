@@ -23,7 +23,8 @@ class BaseContrastiveDataModule(LightningDataModule):
         self.config = config
         self.dataset_name = config.dataset.name
         self.dataset_path = join(config.data_folder, self.dataset_name)
-        self.batch_size = config.hyper_parameters.batch_size
+        self.train_batch_size = config.hyper_parameters.batch_size
+        self.test_batch_size = config.hyper_parameters.test_batch_size
         self.num_classes = config.num_classes
         self.transform = transform
 
@@ -55,7 +56,7 @@ class BaseContrastiveDataModule(LightningDataModule):
     def train_dataloader(self):
         return DataLoader(
             self.contrastive_dataset[self.train_holdout],
-            batch_size=self.batch_size,
+            batch_size=self.train_batch_size,
             collate_fn=self._collate,
             shuffle=True,
             drop_last=True
@@ -64,7 +65,7 @@ class BaseContrastiveDataModule(LightningDataModule):
     def val_dataloader(self):
         return DataLoader(
             self.contrastive_dataset[self.val_holdout],
-            batch_size=self.batch_size,
+            batch_size=self.test_batch_size,
             collate_fn=self._collate,
             shuffle=True,
             drop_last=True
@@ -73,7 +74,7 @@ class BaseContrastiveDataModule(LightningDataModule):
     def test_dataloader(self):
         return DataLoader(
             self.contrastive_dataset[self.test_holdout],
-            batch_size=self.batch_size,
+            batch_size=self.test_batch_size,
             collate_fn=self._collate,
             shuffle=True,
             drop_last=True

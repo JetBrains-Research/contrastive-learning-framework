@@ -19,7 +19,7 @@ class ContrastiveDataset(Dataset):
             _, label = self.clf_dataset[clf_idx]
             self.label2idx[label].append(clf_idx)
         # Pairs of indexes related to elements of clf_dataset having the same class
-        label2pairs = {k: list(combinations(v, 2)) for k, v in self.label2idx.items()}
+        label2pairs = {k: list(combinations(v, 2)) for k, v in self.label2idx.items() if len(v) > 1}
         self.idx2label = dict()
         for label, idxs in self.label2idx.items():
             for idx in idxs:

@@ -1,12 +1,16 @@
 from copy import deepcopy
 from os.path import join
 
+import torch
+import torch.nn.functional as F
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import BYOL
+from torchmetrics.functional import auroc
 
 from models.encoders import SiameseArm
 from models.encoders import encoder_models
+from models.self_supervised.utils import validation
 
 
 class BYOLModel(BYOL):
@@ -54,6 +58,61 @@ class BYOLModel(BYOL):
             hidden_size=self.config.num_classes
         )
         self.target_network = deepcopy(self.online_network)
+
+    def shared_step(self, batch, batch_idx):
+        imgs, y = batch
+        q, k = imgs[:2]
+
+        # Image 1 to image 2 loss
+        y1, z1, h1 = self.online_network(q)
+        with torch.no_grad():
+            y2, z2, h2 = self.target_network(k)
+        loss_a = -2 * F.cosine_similarity(h1, z2).mean()
+
+        # Image 2 to image 1 loss
+        y1, z1, h1 = self.online_network(k)
+        with torch.no_grad():
+            y2, z2, h2 = self.target_network(q)
+        # L2 normalize
+        loss_b = -2 * F.cosine_similarity(h1, z2).mean()
+
+        # Final loss
+        total_loss = loss_a + loss_b
+
+        return loss_a, loss_b, total_loss, h1, h2
+
+    def training_step(self, batch, batch_idx):
+        *_, labels = batch
+        loss_a, loss_b, total_loss, h1, h2 = self.shared_step(batch, batch_idx)
+
+        with torch.no_grad():
+            features = torch.cat([h1, h2], dim=0)
+            labels = labels.contiguous().view(-1, 1)
+            labels = labels.repeat(2, 1)
+
+            logits = torch.matmul(features, features.T).reshape(-1)
+            logits = (logits - logits.min()) / (logits.max() - logits.min())
+            mask = torch.eq(labels, labels.T).reshape(-1)
+
+            roc_auc = auroc(logits, mask)
+
+        log = {"train_loss": total_loss, "train_roc_auc": roc_auc}
+        self.log_dict(log)
+        return total_loss
+
+    def validation_step(self, batch, batch_idx):
+        *_, labels = batch
+        loss_a, loss_b, total_loss, h1, h2 = self.shared_step(batch, batch_idx)
+        features = torch.cat([h1, h2], dim=0)
+        labels = labels.contiguous().view(-1, 1)
+        labels = labels.repeat(2, 1)
+
+        log = {"loss": total_loss, "features": features, "labels": labels}
+        return log
+
+    def validation_epoch_end(self, outputs):
+        log = validation(outputs)
+        self.log_dict(log)
 
 
 class BYOLTransform:

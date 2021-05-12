@@ -4,8 +4,9 @@ from os.path import join, isdir
 import torch
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
-from pl_bolts.metrics import mean
-from pytorch_lightning.metrics.functional import auroc
+from torchmetrics.functional import auroc
+
+from .utils import validation
 from pl_bolts.models.self_supervised import SimCLR
 
 from models.encoders import encoder_models
@@ -73,8 +74,7 @@ class SimCLRModel(SimCLR):
     def forward(self, x):
         return self.encoder(x)
 
-    def shared_step(self, batch):
-        # final image in tuple is for online eval
+    def representation(self, batch):
         (img1, img2, _), y = batch
 
         # get h representations, bolts resnet returns a list
@@ -85,28 +85,14 @@ class SimCLRModel(SimCLR):
         z1 = self.projection(h1)
         z2 = self.projection(h2)
 
-        if y is None:
-            mask = torch.eye(z1.shape[0], dtype=torch.float32, device=z1.device)
-        else:
-            y = y.contiguous().view(-1, 1)
-            mask = torch.eq(y, y.T).float()
-
-        contrast_feature = torch.cat([z1, z2], dim=0)
-        logits = torch.matmul(contrast_feature, contrast_feature.T)
-        mask = mask.repeat(2, 2)
-
-        loss = self._loss(logits, mask)
-
-        with torch.no_grad():
-            roc_auc = auroc(logits.reshape(-1), mask.reshape(-1))
-
-        return loss, roc_auc
+        return torch.cat([z1, z2], dim=0)
 
     def _loss(self, logits, mask):
         batch_size = mask.shape[0] // 2
 
         # compute logits
         anchor_dot_contrast = logits / self.temperature
+
         # for numerical stability
         logits_max, _ = torch.max(anchor_dot_contrast, dim=1, keepdim=True)
         logits = anchor_dot_contrast - logits_max.detach()
@@ -130,24 +116,40 @@ class SimCLRModel(SimCLR):
 
         return loss
 
-    def training_step(self, batch, batch_idx):
-        loss, roc_auc = self.shared_step(batch)
+    def shared_step(self, batch):
+        _, labels = batch
+        features = self.representation(batch)
+        labels = labels.contiguous().view(-1, 1)
+        labels = labels.repeat(2, 1)
 
-        log = {'train_loss': loss, 'train_roc_auc': roc_auc}
+        logits = torch.matmul(features, features.T)
+        mask = torch.eq(labels, labels.T)
+
+        loss = self._loss(logits, mask)
+
+        with torch.no_grad():
+            logits = logits.reshape(-1)
+            logits = (logits - logits.min()) / (logits.max() - logits.min())
+            mask = mask.reshape(-1)
+            roc_auc = auroc(logits, mask)
+
+        return loss, roc_auc, features, labels
+
+    def training_step(self, batch, batch_idx):
+        loss, roc_auc, *_ = self.shared_step(batch)
+
+        log = {"train_loss": loss, "train_roc_auc": roc_auc}
         self.log_dict(log)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, roc_auc = self.shared_step(batch)
+        loss, _, features, labels = self.shared_step(batch)
 
-        logs = {'val_loss': loss, 'val_roc_auc': roc_auc}
+        logs = {"loss": loss, "features": features, "labels": labels}
         return logs
 
     def validation_epoch_end(self, outputs):
-        val_loss = mean(outputs, 'val_loss')
-        val_roc_auc = mean(outputs, 'val_roc_auc')
-
-        log = {'val_loss': val_loss, 'val_roc_auc': val_roc_auc}
+        log = validation(outputs)
         self.log_dict(log)
 
 

@@ -3,7 +3,6 @@ from os.path import join
 import torch
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
-from pl_bolts.metrics import precision_at_k
 from pl_bolts.models.self_supervised import Moco_v2
 from pl_bolts.models.self_supervised.moco.moco2_module import concat_all_gather
 from torch import nn

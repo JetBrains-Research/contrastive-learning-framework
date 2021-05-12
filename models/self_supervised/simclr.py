@@ -4,12 +4,11 @@ from os.path import join, isdir
 import torch
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
+from pl_bolts.models.self_supervised import SimCLR
 from torchmetrics.functional import auroc
 
-from .utils import validation
-from pl_bolts.models.self_supervised import SimCLR
-
 from models.encoders import encoder_models
+from .utils import validation
 
 
 class SimCLRModel(SimCLR):

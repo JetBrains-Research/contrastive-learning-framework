@@ -96,9 +96,9 @@ class SimCLRModel(SimCLR):
 
         # mask-out self-contrast cases
         logits_mask = torch.scatter(
-            torch.ones_like(mask),
+            torch.ones_like(mask, device=self.device),
             1,
-            torch.arange(2 * batch_size).view(-1, 1),
+            torch.arange(2 * batch_size, device=self.device).view(-1, 1),
             0
         )
         mask_ = mask * logits_mask

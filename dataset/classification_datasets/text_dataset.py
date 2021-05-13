@@ -18,6 +18,7 @@ class TextDataset(Dataset):
         self.dataset_path = join(config.data_folder, config.dataset.name, config.dataset.dir)
         self.tokenizer_name = config.dataset.tokenizer_name
         self.data_path = join(self.dataset_path, stage)
+        self.max_seq_len = config.encoder.max_seq_len
 
         self.tokenizer = self._get_tokenizer(config=config)
 
@@ -39,6 +40,7 @@ class TextDataset(Dataset):
         with open(path, "r", encoding="utf8", errors='ignore') as file:
             text = file.read()
             encoding = self.tokenizer.encode([text], bos=True)
+            encoding = [encoding[0][:self.max_seq_len]]
             return torch.LongTensor(encoding), basename(dirname(path))
 
     def __len__(self):

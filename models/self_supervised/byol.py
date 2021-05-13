@@ -10,7 +10,7 @@ from torchmetrics.functional import auroc
 
 from models.encoders import SiameseArm
 from models.encoders import encoder_models
-from models.self_supervised.utils import validation
+from models.self_supervised.utils import validation_metrics, prepare_features, min_max_scale, clone_classification_step
 
 
 class BYOLModel(BYOL):
@@ -59,59 +59,53 @@ class BYOLModel(BYOL):
         )
         self.target_network = deepcopy(self.online_network)
 
-    def shared_step(self, batch, batch_idx):
-        imgs, y = batch
-        q, k = imgs[:2]
+    def _loss(self, h1_1, h2_1, z1_2, z2_2):
+        loss_a = -2 * F.cosine_similarity(h1_1, z1_2).mean()
+        loss_b = -2 * F.cosine_similarity(h2_1, z2_2).mean()
+        return loss_a + loss_b
 
+    def representation(self, q, k):
         # Image 1 to image 2 loss
-        y1, z1, h1 = self.online_network(q)
+        y1_1, z1_1, h1_1 = self.online_network(q)
         with torch.no_grad():
-            y2, z2, h2 = self.target_network(k)
-        loss_a = -2 * F.cosine_similarity(h1, z2).mean()
+            y1_2, z1_2, h1_2 = self.target_network(k)
 
         # Image 2 to image 1 loss
-        y1, z1, h1 = self.online_network(k)
+        y2_1, z2_1, h2_1 = self.online_network(k)
         with torch.no_grad():
-            y2, z2, h2 = self.target_network(q)
-        # L2 normalize
-        loss_b = -2 * F.cosine_similarity(h1, z2).mean()
+            y2_2, z2_2, h2_2 = self.target_network(q)
 
-        # Final loss
-        total_loss = loss_a + loss_b
-
-        return loss_a, loss_b, total_loss, h1, h2
+        return h1_1, h2_1, z1_2, z2_2
 
     def training_step(self, batch, batch_idx):
-        *_, labels = batch
-        loss_a, loss_b, total_loss, h1, h2 = self.shared_step(batch, batch_idx)
+        (q, k, _), labels = batch
+
+        h1_1, h2_1, z1_2, z2_2 = self.representation(q=q, k=k)
+        loss = self._loss(h1_1, h2_1, z1_2, z2_2)
+        queries, keys = h1_1, h2_1
 
         with torch.no_grad():
-            features = torch.cat([h1, h2], dim=0)
-            labels = labels.contiguous().view(-1, 1)
-            labels = labels.repeat(2, 1)
+            features, labels = prepare_features(queries, keys, labels)
+            logits, mask = clone_classification_step(features, labels)
+            logits = min_max_scale(logits)
+            roc_auc = auroc(logits.reshape(-1), mask.reshape(-1))
 
-            logits = torch.matmul(features, features.T).reshape(-1)
-            logits = (logits - logits.min()) / (logits.max() - logits.min())
-            mask = torch.eq(labels, labels.T).reshape(-1)
-
-            roc_auc = auroc(logits, mask)
-
-        log = {"train_loss": total_loss, "train_roc_auc": roc_auc}
-        self.log_dict(log)
-        return total_loss
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
+        return loss
 
     def validation_step(self, batch, batch_idx):
-        *_, labels = batch
-        loss_a, loss_b, total_loss, h1, h2 = self.shared_step(batch, batch_idx)
-        features = torch.cat([h1, h2], dim=0)
-        labels = labels.contiguous().view(-1, 1)
-        labels = labels.repeat(2, 1)
+        (q, k, _), labels = batch
 
-        log = {"loss": total_loss, "features": features, "labels": labels}
-        return log
+        h1_1, h2_1, z1_2, z2_2 = self.representation(q=q, k=k)
+        loss = self._loss(h1_1, h2_1, z1_2, z2_2)
+        queries, keys = h1_1, h2_1
+
+        features, labels = prepare_features(queries, keys, labels)
+
+        return {"loss": loss, "features": features, "labels": labels}
 
     def validation_epoch_end(self, outputs):
-        log = validation(outputs)
+        log = validation_metrics(outputs)
         self.log_dict(log)
 
 

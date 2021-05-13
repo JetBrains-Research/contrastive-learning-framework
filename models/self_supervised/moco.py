@@ -10,7 +10,7 @@ from torch.nn import functional as F
 from torchmetrics.functional import auroc
 
 from models.encoders import encoder_models
-from .utils import validation
+from .utils import validation_metrics, prepare_features, min_max_scale, clone_classification_step
 
 
 class MocoV2Model(Moco_v2):
@@ -85,7 +85,7 @@ class MocoV2Model(Moco_v2):
         q = nn.functional.normalize(q, dim=1)
         return q
 
-    def shared_step(self, q, k, queue):
+    def representation(self, q, k):
         # compute query features
         q = self.encoder_q(q)  # queries: NxC
         q = nn.functional.normalize(q, dim=1)
@@ -103,8 +103,9 @@ class MocoV2Model(Moco_v2):
             # undo shuffle
             if self.trainer.use_ddp or self.trainer.use_ddp2:
                 k = self._batch_unshuffle_ddp(k, idx_unshuffle)
+        return q, k
 
-        # compute logits
+    def _loss(self, q, k, queue):
         # Einstein sum is more intuitive
         # positive logits: Nx1
         l_pos = torch.einsum('nc,nc->n', [q, k]).unsqueeze(-1)
@@ -121,50 +122,37 @@ class MocoV2Model(Moco_v2):
         labels = torch.zeros(logits.shape[0], dtype=torch.long)
         labels = labels.type_as(logits)
 
-        return logits, labels, k, q
-
-    def _loss(self, logits, target):
-        loss = F.cross_entropy(logits.float(), target.long())
+        loss = F.cross_entropy(logits.float(), labels.long())
         return loss
 
     def training_step(self, batch, batch_idx):
         (q, k), labels = batch
 
         self._momentum_update_key_encoder()  # update the key encoder
-        output, target, queries, keys = self.shared_step(q=q, k=k, queue=self.queue)
+        queries, keys = self.representation(q=q, k=k)
+        loss = self._loss(queries, keys, self.queue)
         self._dequeue_and_enqueue(keys, queue=self.queue, queue_ptr=self.queue_ptr)  # dequeue and enqueue
 
-        loss = self._loss(output, target)
-
         with torch.no_grad():
-            features = torch.cat([queries, keys], dim=0)
-            labels = labels.contiguous().view(-1, 1)
-            labels = labels.repeat(2, 1)
+            features, labels = prepare_features(queries, keys, labels)
+            logits, mask = clone_classification_step(features, labels)
+            logits = min_max_scale(logits)
+            roc_auc = auroc(logits.reshape(-1), mask.reshape(-1))
 
-            logits = torch.matmul(features, features.T).reshape(-1)
-            logits = (logits - logits.min()) / (logits.max() - logits.min())
-            mask = torch.eq(labels, labels.T).reshape(-1)
-
-            roc_auc = auroc(logits, mask)
-
-        log = {"train_loss": loss, "train_roc_auc": roc_auc}
-        self.log_dict(log)
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
         return loss
 
     def validation_step(self, batch, batch_idx):
         (q, k), labels = batch
 
-        output, target, queries, keys = self.shared_step(q=q, k=k, queue=self.val_queue)
+        queries, keys = self.representation(q=q, k=k)
+        loss = self._loss(queries, keys, self.val_queue)
         self._dequeue_and_enqueue(keys, queue=self.val_queue, queue_ptr=self.val_queue_ptr)  # dequeue and enqueue
 
-        loss = self._loss(output, target)
-        features = torch.cat([queries, keys], dim=0)
-        labels = labels.contiguous().view(-1, 1)
-        labels = labels.repeat(2, 1)
+        features, labels = prepare_features(queries, keys, labels)
 
-        logs = {"loss": loss, "features": features, "labels": labels}
-        return logs
+        return {"loss": loss, "features": features, "labels": labels}
 
     def validation_epoch_end(self, outputs):
-        log = validation(outputs)
+        log = validation_metrics(outputs)
         self.log_dict(log)

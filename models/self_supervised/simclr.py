@@ -8,7 +8,7 @@ from pl_bolts.models.self_supervised import SimCLR
 from torchmetrics.functional import auroc
 
 from models.encoders import encoder_models
-from .utils import validation
+from .utils import validation_metrics, prepare_features, min_max_scale, clone_classification_step
 
 
 class SimCLRModel(SimCLR):
@@ -73,18 +73,16 @@ class SimCLRModel(SimCLR):
     def forward(self, x):
         return self.encoder(x)
 
-    def representation(self, batch):
-        (img1, img2, _), y = batch
-
+    def representation(self, q, k):
         # get h representations, bolts resnet returns a list
-        h1 = self(img1)
-        h2 = self(img2)
+        h1 = self(q)
+        h2 = self(k)
 
         # get z representations
         z1 = self.projection(h1)
         z2 = self.projection(h2)
 
-        return torch.cat([z1, z2], dim=0)
+        return z1, z2
 
     def _loss(self, logits, mask):
         batch_size = mask.shape[0] // 2
@@ -115,40 +113,33 @@ class SimCLRModel(SimCLR):
 
         return loss
 
-    def shared_step(self, batch):
-        _, labels = batch
-        features = self.representation(batch)
-        labels = labels.contiguous().view(-1, 1)
-        labels = labels.repeat(2, 1)
-
-        logits = torch.matmul(features, features.T)
-        mask = torch.eq(labels, labels.T)
+    def training_step(self, batch, batch_idx):
+        (q, k, _), labels = batch
+        queries, keys = self.representation(q=q, k=k)
+        features, labels = prepare_features(queries, keys, labels)
+        logits, mask = clone_classification_step(features, labels)
 
         loss = self._loss(logits, mask)
 
         with torch.no_grad():
-            logits = logits.reshape(-1)
-            logits = (logits - logits.min()) / (logits.max() - logits.min())
-            mask = mask.reshape(-1)
-            roc_auc = auroc(logits, mask)
+            logits = min_max_scale(logits)
+            roc_auc = auroc(logits.reshape(-1), mask.reshape(-1))
 
-        return loss, roc_auc, features, labels
-
-    def training_step(self, batch, batch_idx):
-        loss, roc_auc, *_ = self.shared_step(batch)
-
-        log = {"train_loss": loss, "train_roc_auc": roc_auc}
-        self.log_dict(log)
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, _, features, labels = self.shared_step(batch)
+        (q, k, _), labels = batch
+        queries, keys = self.representation(q=q, k=k)
+        features, labels = prepare_features(queries, keys, labels)
+        logits, mask = clone_classification_step(features, labels)
 
-        logs = {"loss": loss, "features": features, "labels": labels}
-        return logs
+        loss = self._loss(logits, mask)
+
+        return {"loss": loss, "features": features, "labels": labels}
 
     def validation_epoch_end(self, outputs):
-        log = validation(outputs)
+        log = validation_metrics(outputs)
         self.log_dict(log)
 
 

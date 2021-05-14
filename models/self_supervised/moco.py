@@ -10,7 +10,7 @@ from torch.nn import functional as F
 from torchmetrics.functional import auroc
 
 from models.encoders import encoder_models
-from .utils import validation_metrics, prepare_features, min_max_scale, clone_classification_step
+from .utils import validation_metrics, prepare_features, clone_classification_step, scale
 
 
 class MocoV2Model(Moco_v2):
@@ -136,7 +136,7 @@ class MocoV2Model(Moco_v2):
         with torch.no_grad():
             features, labels = prepare_features(queries, keys, labels)
             logits, mask = clone_classification_step(features, labels)
-            logits = min_max_scale(logits)
+            logits = scale(logits)
             roc_auc = auroc(logits.reshape(-1), mask.reshape(-1))
 
         self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})

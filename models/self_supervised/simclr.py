@@ -8,7 +8,7 @@ from pl_bolts.models.self_supervised import SimCLR
 from torchmetrics.functional import auroc
 
 from models.encoders import encoder_models
-from .utils import validation_metrics, prepare_features, min_max_scale, clone_classification_step
+from .utils import validation_metrics, prepare_features, clone_classification_step, scale
 
 
 class SimCLRModel(SimCLR):
@@ -122,7 +122,7 @@ class SimCLRModel(SimCLR):
         loss = self._loss(logits, mask)
 
         with torch.no_grad():
-            logits = min_max_scale(logits)
+            logits = scale(logits)
             roc_auc = auroc(logits.reshape(-1), mask.reshape(-1))
 
         self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})

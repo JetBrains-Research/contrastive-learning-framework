@@ -18,17 +18,18 @@ def validation_metrics(outputs):
 
     dataset = TensorDataset(features_all, labels_all)
 
-    a_loader = DataLoader(dataset, batch_size=32)
-    b_loader = DataLoader(dataset, batch_size=32)
+    a_loader = DataLoader(dataset, batch_size=1024)
+    b_loader = DataLoader(dataset, batch_size=1024)
 
-    conf_matrix = torch.zeros((2, 2))
+    device = features_all.device()
+
+    conf_matrix = torch.zeros((2, 2), device=device)
 
     for a_features, a_labels in a_loader:
         for b_features, b_labels in b_loader:
-            features = torch.cat([a_features, b_features], dim=0)
-            labels = torch.cat([a_labels, b_labels], dim=0)
+            logits = torch.matmul(a_features, b_features.T)
+            mask = torch.eq(a_labels, b_labels.T)
 
-            logits, mask = clone_classification_step(features, labels)
             logits = logits.reshape(-1)
             logits = scale(logits)
 

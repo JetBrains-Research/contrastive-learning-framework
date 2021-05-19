@@ -1,5 +1,6 @@
-from typing import Any, Callable
 from collections.abc import Iterable
+from typing import Any, Callable
+
 import torch
 from omegaconf import DictConfig
 from torch_geometric.data import Batch

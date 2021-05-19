@@ -1,6 +1,6 @@
-from os.path import join
-from typing import Callable, Any, Optional, Tuple
 from collections.abc import Iterable
+from os.path import join
+from typing import Callable, Any
 
 import torch
 from code2seq.dataset import PathContextBatch

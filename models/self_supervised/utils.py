@@ -21,7 +21,7 @@ def validation_metrics(outputs):
     a_loader = DataLoader(dataset, batch_size=1024)
     b_loader = DataLoader(dataset, batch_size=1024)
 
-    device = features_all.device()
+    device = features_all.device
 
     conf_matrix = torch.zeros((2, 2), device=device)
 

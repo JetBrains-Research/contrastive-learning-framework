@@ -38,10 +38,10 @@ class ContrastiveDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Dict:
         a_idx, b_idx = self.idx2pair[idx]
-        a_encoding, _ = self.clf_dataset[a_idx]
+        a_encoding, label = self.clf_dataset[a_idx]
         b_encoding, _ = self.clf_dataset[b_idx]
         return {
             "a_encoding": a_encoding,
             "b_encoding": b_encoding,
-            "label": self.idx2label[a_idx]
+            "label": label
         }

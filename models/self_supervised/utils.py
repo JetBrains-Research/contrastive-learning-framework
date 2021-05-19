@@ -1,5 +1,4 @@
 import torch
-from pl_bolts.metrics import mean
 from torch.utils.data import TensorDataset, DataLoader
 from torchmetrics.functional import confusion_matrix
 

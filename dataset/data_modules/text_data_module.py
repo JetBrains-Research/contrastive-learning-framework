@@ -22,12 +22,18 @@ class TextDataModule(BaseContrastiveDataModule):
     def create_dataset(self, stage: str) -> Any:
         return TextDataset(config=self.config, stage=stage)
 
-    def collate_fn(self, batch: Any) -> Any:
+    def collate_single_fn(self, batch: Any) -> Any:
+        # batch contains a list of tuples of structure (sequence, target)
+        inputs = pad_sequence([item[0].squeeze() for item in batch])
+        labels = torch.LongTensor([item[1] for item in batch])
+        return inputs, labels
+
+    def collate_pair_fn(self, batch: Any) -> Any:
         # batch contains a list of tuples of structure (sequence, target)
         a = pad_sequence([item["a_encoding"].squeeze() for item in batch])
         b = pad_sequence([item["b_encoding"].squeeze() for item in batch])
-        label = torch.LongTensor([item["label"] for item in batch])
-        return (a, b), label
+        labels = torch.LongTensor([item["label"] for item in batch])
+        return (a, b), labels
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
         inputs, label = batch

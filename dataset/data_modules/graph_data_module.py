@@ -22,12 +22,18 @@ class GraphDataModule(BaseContrastiveDataModule):
     def create_dataset(self, stage: str) -> Any:
         return GraphDataset(config=self.config, stage=stage)
 
-    def collate_fn(self, batch: Any) -> Any:
+    def collate_single_fn(self, batch: Any) -> Any:
+        # batch contains a list of tuples of structure (sequence, target)
+        inputs = Batch.from_data_list([item[0] for item in batch])
+        labels = torch.LongTensor([item[1] for item in batch])
+        return inputs, labels
+
+    def collate_pair_fn(self, batch: Any) -> Any:
         # batch contains a list of tuples of structure (sequence, target)
         a = Batch.from_data_list([item["a_encoding"]for item in batch])
         b = Batch.from_data_list([item["b_encoding"] for item in batch])
-        label = torch.LongTensor([item["label"] for item in batch])
-        return (a, b), label
+        labels = torch.LongTensor([item["label"] for item in batch])
+        return (a, b), labels
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
         inputs, label = batch

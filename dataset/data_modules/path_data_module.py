@@ -45,13 +45,18 @@ class PathDataModule(BaseContrastiveDataModule):
         )
         return PathDataset(self.stage2path[stage], self.config, self._vocabulary, False)
 
-    def collate_fn(self, batch: Any) -> Any:
+    def collate_single_fn(self, batch: Any) -> Any:
+        pc = PathContextBatch([sample[0] for sample in batch])
+        labels = torch.LongTensor([sample[1] for sample in batch])
+        return pc, labels
+
+    def collate_pair_fn(self, batch: Any) -> Any:
         a_pc = [sample["a_encoding"] for sample in batch]
         b_pc = [sample["b_encoding"] for sample in batch]
-        labels = [sample["label"] for sample in batch]
         a_pc = PathContextBatch(a_pc)
         b_pc = PathContextBatch(b_pc)
-        return (a_pc, b_pc), torch.LongTensor(labels)
+        labels = torch.LongTensor([sample["label"] for sample in batch])
+        return (a_pc, b_pc), labels
 
     def transfer_batch_to_device(
             self,

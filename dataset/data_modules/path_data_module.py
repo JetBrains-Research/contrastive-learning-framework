@@ -1,5 +1,6 @@
 from os.path import join
 from typing import Callable, Any, Optional, Tuple
+from collections.abc import Iterable
 
 import torch
 from code2seq.dataset import PathContextBatch
@@ -58,14 +59,17 @@ class PathDataModule(BaseContrastiveDataModule):
         labels = torch.LongTensor([sample["label"] for sample in batch])
         return (a_pc, b_pc), labels
 
-    def transfer_batch_to_device(
-            self,
-            batch: Tuple[Tuple[PathContextBatch, PathContextBatch], torch.Tensor],
-            device: Optional[torch.device] = None
-    ) -> Tuple[Tuple[Optional[Any], ...], torch.Tensor]:
+    def transfer_batch_to_device(self, batch, device: torch.device):
         inputs, labels = batch
-        inputs = tuple(
-            input_.move_to_device(device) if input_ is not None else None for input_ in inputs
-        )
+
+        if isinstance(inputs, PathContextBatch):
+            inputs = inputs.move_to_device(device)
+        elif isinstance(inputs, Iterable):
+            inputs = [
+                input_.move_to_device(device) if input_ is not None else None for input_ in inputs
+            ]
+        else:
+            raise ValueError(f"Unsupported type of inputs {type(inputs)}")
+
         labels.to(device)
         return inputs, labels

@@ -1,5 +1,5 @@
 from typing import Any, Callable
-
+from collections.abc import Iterable
 import torch
 from omegaconf import DictConfig
 from torch_geometric.data import Batch
@@ -37,9 +37,16 @@ class GraphDataModule(BaseContrastiveDataModule):
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
         inputs, label = batch
-        inputs = [
-            input_.to(device) if input_ is not None else None for input_ in inputs
-        ]
+
+        if isinstance(inputs, torch.Tensor):
+            inputs = inputs.to(device)
+        elif isinstance(inputs, Iterable):
+            inputs = [
+                input_.to(device) if input_ is not None else None for input_ in inputs
+            ]
+        else:
+            raise ValueError(f"Unsupported type of inputs {type(inputs)}")
+
         if isinstance(label, torch.Tensor):
             label = label.to(device)
         return inputs, label

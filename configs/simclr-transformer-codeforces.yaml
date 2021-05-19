@@ -28,7 +28,7 @@ hyper_parameters:
 
 dataset:
   dir: raw
-  name: poj_104
+  name: codeforces
   tokenizer_name: model.yttm
   vocab_size: 40000
   pad_id: 0

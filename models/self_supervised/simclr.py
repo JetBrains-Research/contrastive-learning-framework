@@ -123,8 +123,7 @@ class SimCLRModel(SimCLR):
 
         with torch.no_grad():
             logits = scale(logits)
-            roc_auc = 0
-            # roc_auc = auroc(logits.reshape(-1), mask.reshape(-1))
+            roc_auc = auroc(logits.reshape(-1), mask.reshape(-1))
 
         self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
         return loss

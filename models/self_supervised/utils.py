@@ -12,7 +12,6 @@ def compute_f1(conf_matrix):
 
 
 def validation_metrics(outputs):
-    val_loss = mean(outputs, "loss")
     features_all = torch.cat([out["features"] for out in outputs])
     labels_all = torch.cat([out["labels"] for out in outputs])
 
@@ -39,7 +38,7 @@ def validation_metrics(outputs):
             conf_matrix += confusion_matrix(preds, mask, num_classes=2)
 
     f1 = compute_f1(conf_matrix=conf_matrix)
-    return {"val_loss": val_loss, "val_f1": f1}
+    return {"val_f1": f1}
 
 
 def clone_classification_step(features, labels):

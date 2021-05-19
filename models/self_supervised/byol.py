@@ -94,15 +94,12 @@ class BYOLModel(BYOL):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        (q, k, _), labels = batch
+        features, labels = batch
+        *_, features = self.online_network(features)
+        features = F.normalize(features, dim=1)
+        labels = labels.contiguous().view(-1, 1)
 
-        h1_1, h2_1, z1_2, z2_2 = self.representation(q=q, k=k)
-        loss = self._loss(h1_1, h2_1, z1_2, z2_2)
-        queries, keys = h1_1, h2_1
-
-        features, labels = prepare_features(queries, keys, labels)
-
-        return {"loss": loss, "features": features, "labels": labels}
+        return {"features": features, "labels": labels}
 
     def validation_epoch_end(self, outputs):
         log = validation_metrics(outputs)

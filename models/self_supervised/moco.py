@@ -143,15 +143,11 @@ class MocoV2Model(Moco_v2):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        (q, k), labels = batch
+        features, labels = batch
+        features = self(features)
+        labels = labels.contiguous().view(-1, 1)
 
-        queries, keys = self.representation(q=q, k=k)
-        loss = self._loss(queries, keys, self.val_queue)
-        self._dequeue_and_enqueue(keys, queue=self.val_queue, queue_ptr=self.val_queue_ptr)  # dequeue and enqueue
-
-        features, labels = prepare_features(queries, keys, labels)
-
-        return {"loss": loss, "features": features, "labels": labels}
+        return {"features": features, "labels": labels}
 
     def validation_epoch_end(self, outputs):
         log = validation_metrics(outputs)

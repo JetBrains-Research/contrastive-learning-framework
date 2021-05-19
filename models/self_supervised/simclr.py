@@ -123,20 +123,19 @@ class SimCLRModel(SimCLR):
 
         with torch.no_grad():
             logits = scale(logits)
-            roc_auc = auroc(logits.reshape(-1), mask.reshape(-1))
+            roc_auc = 0
+            # roc_auc = auroc(logits.reshape(-1), mask.reshape(-1))
 
         self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
         return loss
 
     def validation_step(self, batch, batch_idx):
-        (q, k, _), labels = batch
-        queries, keys = self.representation(q=q, k=k)
-        features, labels = prepare_features(queries, keys, labels)
-        logits, mask = clone_classification_step(features, labels)
+        features, labels = batch
+        features = self(features)
+        features = self.projection(features)
+        labels = labels.contiguous().view(-1, 1)
 
-        loss = self._loss(logits, mask)
-
-        return {"loss": loss, "features": features, "labels": labels}
+        return {"features": features, "labels": labels}
 
     def validation_epoch_end(self, outputs):
         log = validation_metrics(outputs)

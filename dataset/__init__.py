@@ -1,4 +1,4 @@
-from dataset.classification_datasets.text_dataset import TextDataset
+from dataset.classification_datasets import TextDataset, PathDataset, GraphDataset
 from dataset.data_modules import TextDataModule, PathDataModule, GraphDataModule
 from .base_data_module import BaseContrastiveDataModule
 from .contrastive_dataset import ContrastiveDataset
@@ -6,7 +6,9 @@ from .contrastive_dataset import ContrastiveDataset
 __all__ = [
     "TextDataset",
     "TextDataModule",
+    "PathDataset",
     "PathDataModule",
+    "GraphDataset",
     "GraphDataModule",
     "ContrastiveDataset",
     "BaseContrastiveDataModule",

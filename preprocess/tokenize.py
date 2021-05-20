@@ -3,7 +3,7 @@ from os import listdir, remove
 from os.path import splitext, join, isdir, exists
 
 import youtokentome as yttm
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 
 def tokenize(config: DictConfig):
@@ -43,4 +43,5 @@ if __name__ == "__main__":
     arg_parser = ArgumentParser()
     arg_parser.add_argument("--config_path", type=str)
     args = arg_parser.parse_args()
-    tokenize(config=args.config)
+    config_ = OmegaConf.load(args.config_path)
+    tokenize(config=config_)

@@ -3,7 +3,7 @@
 DATA_DIR=data
 DATASET_NAME=poj_104
 ASTMINER_SOURCE=build/astminer
-ASTMINER_BINARY=build/shadow/lib-0.6.jar
+ASTMINER_BINARY=build/shadow/astminer.jar
 ASTMINER_PATH=${ASTMINER_SOURCE}/${ASTMINER_BINARY}
 
 while (( "$#" )); do

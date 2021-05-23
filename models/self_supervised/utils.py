@@ -1,6 +1,5 @@
 import torch
-from torch.utils.data import TensorDataset, DataLoader
-from torchmetrics.functional import confusion_matrix
+from torch_cluster import knn
 
 
 def compute_f1(conf_matrix):
@@ -10,34 +9,30 @@ def compute_f1(conf_matrix):
     return f1
 
 
+def compute_map_at_k(preds):
+    avg_precisions = []
+    for pred in preds:
+        positions = torch.arange(1, pred.shape[0] + 1, device=preds.device)[pred > 0]
+        avg = torch.arange(1, positions.shape[0] + 1, device=positions.device) / positions
+        avg_precisions.append(avg.mean())
+    return torch.stack(avg_precisions).mean().item()
+
+
 def validation_metrics(outputs):
-    features_all = torch.cat([out["features"] for out in outputs])
-    labels_all = torch.cat([out["labels"] for out in outputs])
+    features = torch.cat([out["features"] for out in outputs])
+    _, hidden_size = features.shape
 
-    dataset = TensorDataset(features_all, labels_all)
+    labels = torch.cat([out["labels"] for out in outputs]).reshape(-1)
 
-    a_loader = DataLoader(dataset, batch_size=1024)
-    b_loader = DataLoader(dataset, batch_size=1024)
+    logs = {}
+    for k in [5, 10, 15]:
+        top_ids = knn(x=features, y=features, k=k)
+        top_ids = top_ids[1, :].reshape(-1, k)
 
-    device = features_all.device
-
-    conf_matrix = torch.zeros((2, 2), device=device)
-
-    for a_features, a_labels in a_loader:
-        for b_features, b_labels in b_loader:
-            logits = torch.matmul(a_features, b_features.T)
-            mask = torch.eq(a_labels, b_labels.T)
-
-            logits = logits.reshape(-1)
-            logits = scale(logits)
-
-            preds = (logits >= 0.5).long()
-            mask = mask.reshape(-1)
-
-            conf_matrix += confusion_matrix(preds, mask, num_classes=2)
-
-    f1 = compute_f1(conf_matrix=conf_matrix)
-    return {"val_f1": f1}
+        top_labels = labels[top_ids]
+        preds = torch.eq(top_labels, labels.reshape(-1, 1))
+        logs[f"val_map@{k}"] = compute_map_at_k(preds)
+    return logs
 
 
 def clone_classification_step(features, labels):

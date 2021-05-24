@@ -6,12 +6,11 @@ import torch.nn.functional as F
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import BYOL
-from torchmetrics.functional import auroc, confusion_matrix
+from torchmetrics.functional import auroc
 
 from models.encoders import SiameseArm
 from models.encoders import encoder_models
-from models.self_supervised.utils import validation_metrics, prepare_features, clone_classification_step, scale, \
-    compute_f1
+from models.self_supervised.utils import validation_metrics, prepare_features, clone_classification_step, scale
 
 
 class BYOLModel(BYOL):

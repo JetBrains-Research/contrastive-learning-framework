@@ -33,20 +33,15 @@ class ContrastiveDataset(Dataset):
                 self.idx2pair[contrastive_idx + pair_idx] = pair
             contrastive_idx += len(pairs)
 
-        # Encoding labels
-        self.label2encoding = {
-            label: label_idx for label_idx, label in enumerate(label2pairs.keys())
-        }
-
     def __len__(self) -> int:
         return len(self.idx2pair)
 
     def __getitem__(self, idx: int) -> Dict:
         a_idx, b_idx = self.idx2pair[idx]
-        a_encoding, _ = self.clf_dataset[a_idx]
+        a_encoding, label = self.clf_dataset[a_idx]
         b_encoding, _ = self.clf_dataset[b_idx]
         return {
             "a_encoding": a_encoding,
             "b_encoding": b_encoding,
-            "label": self.label2encoding[self.idx2label[a_idx]]
+            "label": label
         }

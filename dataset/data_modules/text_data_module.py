@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from typing import Any, Callable
 
 import torch
@@ -22,18 +23,31 @@ class TextDataModule(BaseContrastiveDataModule):
     def create_dataset(self, stage: str) -> Any:
         return TextDataset(config=self.config, stage=stage)
 
-    def collate_fn(self, batch: Any) -> Any:
+    def collate_single_fn(self, batch: Any) -> Any:
+        # batch contains a list of tuples of structure (sequence, target)
+        inputs = pad_sequence([item[0].squeeze() for item in batch])
+        labels = torch.LongTensor([item[1] for item in batch])
+        return inputs, labels
+
+    def collate_pair_fn(self, batch: Any) -> Any:
         # batch contains a list of tuples of structure (sequence, target)
         a = pad_sequence([item["a_encoding"].squeeze() for item in batch])
         b = pad_sequence([item["b_encoding"].squeeze() for item in batch])
-        label = torch.LongTensor([item["label"] for item in batch])
-        return (a, b), label
+        labels = torch.LongTensor([item["label"] for item in batch])
+        return (a, b), labels
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
         inputs, label = batch
-        inputs = [
-            input_.to(device) if input_ is not None else None for input_ in inputs
-        ]
+
+        if isinstance(inputs, torch.Tensor):
+            inputs = inputs.to(device)
+        elif isinstance(inputs, Iterable):
+            inputs = [
+                input_.to(device) if input_ is not None else None for input_ in inputs
+            ]
+        else:
+            raise ValueError(f"Unsupported type of inputs {type(inputs)}")
+
         if isinstance(label, torch.Tensor):
             label = label.to(device)
         return inputs, label

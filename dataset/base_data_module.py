@@ -43,49 +43,60 @@ class BaseContrastiveDataModule(LightningDataModule):
         load_dataset(self.config)
 
     def setup(self, stage: str = None):
+        assert stage is not None
+
         stages = []
-        if stage == "fit" or stage is None:
+        if stage == "fit":
             stages += [self.train_holdout, self.val_holdout]
-        if stage == "test" or stage is None:
+        if stage == "test":
             stages += [self.test_holdout]
 
-        for stage in stages:
-            self.clf_dataset[stage] = self.create_dataset(stage=stage)
-            self.contrastive_dataset[stage] = ContrastiveDataset(clf_dataset=self.clf_dataset[stage])
+        for stage_ in stages:
+            self.clf_dataset[stage_] = self.create_dataset(stage=stage_)
+
+        if stage == "fit":
+            self.contrastive_dataset[self.train_holdout] = ContrastiveDataset(
+                clf_dataset=self.clf_dataset[self.train_holdout]
+            )
 
     def train_dataloader(self):
         return DataLoader(
             self.contrastive_dataset[self.train_holdout],
             batch_size=self.train_batch_size,
-            collate_fn=self._collate,
+            collate_fn=self._collate_contrastive,
             shuffle=True,
             drop_last=True
         )
 
     def val_dataloader(self):
         return DataLoader(
-            self.contrastive_dataset[self.val_holdout],
+            self.clf_dataset[self.val_holdout],
             batch_size=self.test_batch_size,
-            collate_fn=self._collate,
+            collate_fn=self._collate_single,
             shuffle=True,
-            drop_last=True
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.contrastive_dataset[self.test_holdout],
+            self.clf_dataset[self.test_holdout],
             batch_size=self.test_batch_size,
-            collate_fn=self._collate,
+            collate_fn=self._collate_single,
             shuffle=True,
-            drop_last=True
         )
 
     @abstractmethod
-    def collate_fn(self, batch: Any) -> Any:
+    def collate_single_fn(self, batch: Any) -> Any:
         pass
 
-    def _collate(self, batch: Any) -> Any:
-        batch = self.collate_fn(batch)
+    def _collate_single(self, batch: Any) -> Any:
+        return self.collate_single_fn(batch)
+
+    @abstractmethod
+    def collate_pair_fn(self, batch: Any) -> Any:
+        pass
+
+    def _collate_contrastive(self, batch: Any) -> Any:
+        batch = self.collate_pair_fn(batch)
         if self.transform is not None:
             return self.transform(batch)
         else:

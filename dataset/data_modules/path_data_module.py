@@ -1,5 +1,6 @@
+from collections.abc import Iterable
 from os.path import join
-from typing import Callable, Any, Optional, Tuple
+from typing import Callable, Any
 
 import torch
 from code2seq.dataset import PathContextBatch
@@ -45,22 +46,30 @@ class PathDataModule(BaseContrastiveDataModule):
         )
         return PathDataset(self.stage2path[stage], self.config, self._vocabulary, False)
 
-    def collate_fn(self, batch: Any) -> Any:
+    def collate_single_fn(self, batch: Any) -> Any:
+        pc = PathContextBatch([sample[0] for sample in batch])
+        labels = torch.LongTensor([sample[1] for sample in batch])
+        return pc, labels
+
+    def collate_pair_fn(self, batch: Any) -> Any:
         a_pc = [sample["a_encoding"] for sample in batch]
         b_pc = [sample["b_encoding"] for sample in batch]
-        labels = [sample["label"] for sample in batch]
         a_pc = PathContextBatch(a_pc)
         b_pc = PathContextBatch(b_pc)
-        return (a_pc, b_pc), torch.LongTensor(labels)
+        labels = torch.LongTensor([sample["label"] for sample in batch])
+        return (a_pc, b_pc), labels
 
-    def transfer_batch_to_device(
-            self,
-            batch: Tuple[Tuple[PathContextBatch, PathContextBatch], torch.Tensor],
-            device: Optional[torch.device] = None
-    ) -> Tuple[Tuple[Optional[Any], ...], torch.Tensor]:
+    def transfer_batch_to_device(self, batch, device: torch.device):
         inputs, labels = batch
-        inputs = tuple(
-            input_.move_to_device(device) if input_ is not None else None for input_ in inputs
-        )
+
+        if isinstance(inputs, PathContextBatch):
+            inputs = inputs.move_to_device(device)
+        elif isinstance(inputs, Iterable):
+            inputs = [
+                input_.move_to_device(device) if input_ is not None else None for input_ in inputs
+            ]
+        else:
+            raise ValueError(f"Unsupported type of inputs {type(inputs)}")
+
         labels.to(device)
         return inputs, labels

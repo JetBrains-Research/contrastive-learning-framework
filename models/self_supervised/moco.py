@@ -3,13 +3,14 @@ from os.path import join
 import torch
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
-from pl_bolts.metrics import precision_at_k
 from pl_bolts.models.self_supervised import Moco_v2
 from pl_bolts.models.self_supervised.moco.moco2_module import concat_all_gather
 from torch import nn
 from torch.nn import functional as F
+from torchmetrics.functional import auroc, confusion_matrix
 
 from models.encoders import encoder_models
+from .utils import validation_metrics, prepare_features, clone_classification_step, scale, compute_f1
 
 
 class MocoV2Model(Moco_v2):
@@ -79,9 +80,14 @@ class MocoV2Model(Moco_v2):
 
         queue_ptr[0] = ptr
 
-    def forward(self, img_q, img_k, queue):
+    def forward(self, input_):
+        q = self.encoder_q(input_)
+        q = nn.functional.normalize(q, dim=1)
+        return q
+
+    def representation(self, q, k):
         # compute query features
-        q = self.encoder_q(img_q)  # queries: NxC
+        q = self.encoder_q(q)  # queries: NxC
         q = nn.functional.normalize(q, dim=1)
 
         # compute key features
@@ -89,16 +95,17 @@ class MocoV2Model(Moco_v2):
 
             # shuffle for making use of BN
             if self.trainer.use_ddp or self.trainer.use_ddp2:
-                img_k, idx_unshuffle = self._batch_shuffle_ddp(img_k)
+                img_k, idx_unshuffle = self._batch_shuffle_ddp(k)
 
-            k = self.encoder_k(img_k)  # keys: NxC
+            k = self.encoder_k(k)  # keys: NxC
             k = nn.functional.normalize(k, dim=1)
 
             # undo shuffle
             if self.trainer.use_ddp or self.trainer.use_ddp2:
                 k = self._batch_unshuffle_ddp(k, idx_unshuffle)
+        return q, k
 
-        # compute logits
+    def _loss(self, q, k, queue):
         # Einstein sum is more intuitive
         # positive logits: Nx1
         l_pos = torch.einsum('nc,nc->n', [q, k]).unsqueeze(-1)
@@ -115,33 +122,41 @@ class MocoV2Model(Moco_v2):
         labels = torch.zeros(logits.shape[0], dtype=torch.long)
         labels = labels.type_as(logits)
 
-        return logits, labels, k
-
-    def compute_metrcis(self, output, target):
-        loss = F.cross_entropy(output.float(), target.long())
-        acc1, acc5 = precision_at_k(output, target, top_k=(1, 5))
-        return loss, acc1, acc5
+        loss = F.cross_entropy(logits.float(), labels.long())
+        return loss
 
     def training_step(self, batch, batch_idx):
-        (img_1, img_2), _ = batch
+        (q, k), labels = batch
 
         self._momentum_update_key_encoder()  # update the key encoder
-        output, target, keys = self(img_q=img_1, img_k=img_2, queue=self.queue)
+        queries, keys = self.representation(q=q, k=k)
+        loss = self._loss(queries, keys, self.queue)
         self._dequeue_and_enqueue(keys, queue=self.queue, queue_ptr=self.queue_ptr)  # dequeue and enqueue
 
-        loss, acc1, acc5 = self.compute_metrcis(output, target)
+        with torch.no_grad():
+            features, labels = prepare_features(queries, keys, labels)
+            logits, mask = clone_classification_step(features, labels)
+            logits = scale(logits)
+            logits = logits.reshape(-1)
 
-        log = {'train_loss': loss, 'train_acc1': acc1, 'train_acc5': acc5}
-        self.log_dict(log)
+            preds = (logits >= 0.5).long()
+            mask = mask.reshape(-1)
+
+            roc_auc = auroc(logits, mask)
+
+            conf_matrix = confusion_matrix(preds, mask, num_classes=2)
+            f1 = compute_f1(conf_matrix=conf_matrix)
+
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc, "train_f1": f1})
         return loss
 
     def validation_step(self, batch, batch_idx):
-        (img_1, img_2), labels = batch
+        features, labels = batch
+        features = self(features)
+        labels = labels.contiguous().view(-1, 1)
 
-        output, target, keys = self(img_q=img_1, img_k=img_2, queue=self.val_queue)
-        self._dequeue_and_enqueue(keys, queue=self.val_queue, queue_ptr=self.val_queue_ptr)  # dequeue and enqueue
+        return {"features": features, "labels": labels}
 
-        loss, acc1, acc5 = self.compute_metrcis(output, target)
-
-        results = {'val_loss': loss, 'val_acc1': acc1, 'val_acc5': acc5}
-        return results
+    def validation_epoch_end(self, outputs):
+        log = validation_metrics(outputs)
+        self.log_dict(log)

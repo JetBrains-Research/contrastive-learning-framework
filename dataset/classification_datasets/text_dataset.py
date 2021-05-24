@@ -1,5 +1,4 @@
 from os.path import join, splitext, basename, dirname, exists
-from random import shuffle
 from typing import Tuple
 
 import torch
@@ -23,7 +22,12 @@ class TextDataset(Dataset):
         self.tokenizer = self._get_tokenizer(config=config)
 
         self.files = traverse_clf_dataset(self.data_path)
-        shuffle(self.files)
+
+        # Encoding labels
+        self.labels = set([basename(dirname(path)) for path in self.files])
+        self.label2encoding = {
+            label: label_idx for label_idx, label in enumerate(self.labels)
+        }
 
     def _get_tokenizer(self, config: DictConfig) -> yttm.BPE:
         model_path = join(self.dataset_path, self.tokenizer_name)
@@ -41,7 +45,8 @@ class TextDataset(Dataset):
             text = file.read()
             encoding = self.tokenizer.encode([text], bos=True)
             encoding = [encoding[0][:self.max_seq_len]]
-            return torch.LongTensor(encoding), basename(dirname(path))
+            label = basename(dirname(path))
+            return torch.LongTensor(encoding), self.label2encoding[label]
 
     def __len__(self):
         return len(self.files)

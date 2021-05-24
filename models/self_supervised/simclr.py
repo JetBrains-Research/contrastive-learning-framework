@@ -27,7 +27,7 @@ class SimCLRModel(SimCLR):
         train_data_path = join(
             config.data_folder,
             config.dataset.name,
-            config.dataset.dir,
+            "raw",
             config.train_holdout
         )
 
@@ -44,7 +44,7 @@ class SimCLRModel(SimCLR):
             batch_size=config.hyper_parameters.batch_size,
             dataset="",
             num_nodes=config.ssl.num_nodes,
-            hidden_mlp=config.encoder.num_classes,
+            hidden_mlp=config.num_classes,
             feat_dim=config.num_classes,
             warmup_epochs=config.ssl.warmup_epochs,
             max_epochs=config.ssl.max_epochs,

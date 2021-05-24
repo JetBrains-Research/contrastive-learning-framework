@@ -5,14 +5,14 @@ import torch
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import SimCLR
-from torchmetrics.functional import auroc, confusion_matrix
+from torchmetrics.functional import auroc
 
 from models.encoders import encoder_models
 from models.self_supervised.utils import (
     validation_metrics,
     prepare_features,
     clone_classification_step,
-    scale, compute_f1
+    scale
 )
 
 
@@ -27,7 +27,7 @@ class SimCLRModel(SimCLR):
         train_data_path = join(
             config.data_folder,
             config.dataset.name,
-            config.dataset.dir,
+            "raw",
             config.train_holdout
         )
 
@@ -37,13 +37,14 @@ class SimCLRModel(SimCLR):
             if isdir(class_path):
                 num_files = len([_ for _ in listdir(class_path)])
                 num_samples += num_files * (num_files - 1) // 2
+
         super().__init__(
             gpus=-1,
             num_samples=num_samples,
             batch_size=config.hyper_parameters.batch_size,
             dataset="",
             num_nodes=config.ssl.num_nodes,
-            hidden_mlp=config.encoder.num_classes,
+            hidden_mlp=config.num_classes,
             feat_dim=config.num_classes,
             warmup_epochs=config.ssl.warmup_epochs,
             max_epochs=config.ssl.max_epochs,
@@ -129,16 +130,11 @@ class SimCLRModel(SimCLR):
         with torch.no_grad():
             logits = scale(logits)
             logits = logits.reshape(-1)
-
-            preds = (logits >= 0.5).long()
             mask = mask.reshape(-1)
 
             roc_auc = auroc(logits, mask)
 
-            conf_matrix = confusion_matrix(preds, mask, num_classes=2)
-            f1 = compute_f1(conf_matrix=conf_matrix)
-
-        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc, "train_f1": f1})
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
         return loss
 
     def validation_step(self, batch, batch_idx):

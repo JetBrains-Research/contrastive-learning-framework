@@ -63,13 +63,13 @@ class PathDataModule(BaseContrastiveDataModule):
         inputs, labels = batch
 
         if isinstance(inputs, PathContextBatch):
-            inputs = inputs.move_to_device(device)
+            inputs.move_to_device(device)
         elif isinstance(inputs, Iterable):
-            inputs = [
-                input_.move_to_device(device) if input_ is not None else None for input_ in inputs
-            ]
+            for input_ in inputs:
+                if input_ is not None:
+                    input_.move_to_device(device)
         else:
             raise ValueError(f"Unsupported type of inputs {type(inputs)}")
 
-        labels.to(device)
+        labels = labels.to(device)
         return inputs, labels

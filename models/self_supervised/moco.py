@@ -6,7 +6,6 @@ from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import Moco_v2
 from pl_bolts.models.self_supervised.moco.moco2_module import concat_all_gather
 from torch import nn
-from torch.nn import functional as F
 from torchmetrics.functional import auroc
 
 from models.encoders import encoder_models
@@ -37,8 +36,7 @@ class MocoV2Model(Moco_v2):
         )
 
         # create the validation queue
-        self.register_buffer("labels_queue", torch.zeros(1, config.ssl.num_negatives))
-        self.labels_queue = F.normalize(self.labels_queue, dim=0)
+        self.register_buffer("labels_queue", torch.zeros(1, config.ssl.num_negatives) - 1)
 
         self.register_buffer("labels_queue_ptr", torch.zeros(1, dtype=torch.long))
 
@@ -124,10 +122,12 @@ class MocoV2Model(Moco_v2):
         # apply temperature
         logits /= self.hparams.softmax_temperature
 
+        batch_size, *_ = q.shape
         # positive label for the augmented version
-        target_aug = torch.ones((q.shape[0], 1), device=q.device)
+        target_aug = torch.ones((batch_size, 1), device=q.device)
         # comparing the query label with l_que
         target_que = torch.eq(labels.reshape(-1, 1), labels_queue.reshape(1, -1))
+        target_que = target_que & ~torch.eq(labels.reshape(-1, 1), -1)
         # labels: Nx(1+K)
         target = torch.cat([target_aug, target_que], dim=1)
         # calculate the contrastive loss, Eqn.(7)

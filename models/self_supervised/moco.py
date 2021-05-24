@@ -125,7 +125,7 @@ class MocoV2Model(Moco_v2):
         logits /= self.hparams.softmax_temperature
 
         # positive label for the augmented version
-        target_aug = torch.ones((q.shape[0], 1))
+        target_aug = torch.ones((q.shape[0], 1), device=q.device)
         # comparing the query label with l_que
         target_que = torch.eq(labels.reshape(-1, 1), labels_queue.reshape(1, -1))
         # labels: Nx(1+K)

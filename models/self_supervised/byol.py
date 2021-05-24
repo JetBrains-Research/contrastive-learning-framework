@@ -90,16 +90,11 @@ class BYOLModel(BYOL):
             logits, mask = clone_classification_step(features, labels)
             logits = scale(logits)
             logits = logits.reshape(-1)
-
-            preds = (logits >= 0.5).long()
             mask = mask.reshape(-1)
 
             roc_auc = auroc(logits, mask)
 
-            conf_matrix = confusion_matrix(preds, mask, num_classes=2)
-            f1 = compute_f1(conf_matrix=conf_matrix)
-
-        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc, "train_f1": f1})
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
         return loss
 
     def validation_step(self, batch, batch_idx):

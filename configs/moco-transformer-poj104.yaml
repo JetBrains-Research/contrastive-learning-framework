@@ -54,5 +54,5 @@ ssl:
   momentum: 0.9
   weight_decay: 1e-4
   batch_size: 80
-  use_mlp: True
+  use_mlp: False
   num_workers: 8

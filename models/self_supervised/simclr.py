@@ -37,6 +37,7 @@ class SimCLRModel(SimCLR):
             if isdir(class_path):
                 num_files = len([_ for _ in listdir(class_path)])
                 num_samples += num_files * (num_files - 1) // 2
+
         super().__init__(
             gpus=-1,
             num_samples=num_samples,
@@ -129,16 +130,11 @@ class SimCLRModel(SimCLR):
         with torch.no_grad():
             logits = scale(logits)
             logits = logits.reshape(-1)
-
-            preds = (logits >= 0.5).long()
             mask = mask.reshape(-1)
 
             roc_auc = auroc(logits, mask)
 
-            conf_matrix = confusion_matrix(preds, mask, num_classes=2)
-            f1 = compute_f1(conf_matrix=conf_matrix)
-
-        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc, "train_f1": f1})
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
         return loss
 
     def validation_step(self, batch, batch_idx):

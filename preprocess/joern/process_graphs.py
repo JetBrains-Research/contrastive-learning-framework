@@ -64,7 +64,8 @@ def process_graphs(config: DictConfig):
                         file=file,
                         class_path=class_path,
                         class_cpg=class_cpg
-                    ) for file in class_files_tqdm)
+                    ) for file in class_files_tqdm
+                )
 
         subprocess.check_call([
             "joern",

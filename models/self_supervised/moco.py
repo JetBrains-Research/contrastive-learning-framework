@@ -36,7 +36,7 @@ class MocoV2Model(Moco_v2):
         )
 
         # create the validation queue
-        self.register_buffer("labels_queue", torch.zeros(1, config.ssl.num_negatives) - 1)
+        self.register_buffer("labels_queue", torch.zeros(1, config.ssl.num_negatives).long() - 1)
 
         self.register_buffer("labels_queue_ptr", torch.zeros(1, dtype=torch.long))
 

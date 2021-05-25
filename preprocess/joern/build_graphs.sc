@@ -31,8 +31,8 @@ val selectKeys =
       v.property("CODE").toString
   }
 
-def build_graph(cpgPath: String, outputPath: String) = {
-  val Some(cpg) = importCpg(cpgPath)
+def build_graph(cpgPath: String, cpgProject: String, outputPath: String) = Future {
+  val Some(cpg) = importCpg(cpgPath, cpgProject)
 
   val valid_v = cpg.all.filterNot(v => skip_types.contains(v.label)).toList
   val ids_map = valid_v
@@ -91,13 +91,15 @@ def build_graph(cpgPath: String, outputPath: String) = {
     }
     .toList
 
-  val result = Future {
-    fileList.foreach { f =>
+  val result =
+    Future.traverse(fileList) { f => Future {
       val cpg_path =
         cpg_storage_ / f.parent.name / (f.nameWithoutExtension + ".bin")
+      val cpg_project =
+        f.parent.name + "-" + f.nameWithoutExtension
       val output_path =
         output_ / f.parent.name / (f.nameWithoutExtension + ".json")
-      build_graph(cpg_path.pathAsString, output_path.pathAsString)
+      build_graph(cpg_path.pathAsString, cpg_project, output_path.pathAsString)
     }
   }
   Await.result(result, Duration.Inf)

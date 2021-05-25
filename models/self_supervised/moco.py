@@ -125,7 +125,6 @@ class MocoV2Model(Moco_v2):
         target_aug = torch.ones((batch_size, 1), device=q.device)
         # comparing the query label with l_que
         target_que = torch.eq(labels.reshape(-1, 1), labels_queue)
-        target_que = target_que & ~torch.eq(labels.reshape(-1, 1), -1)
         target_que = target_que.float()
         # labels: Nx(1+K)
         target = torch.cat([target_aug, target_que], dim=1)

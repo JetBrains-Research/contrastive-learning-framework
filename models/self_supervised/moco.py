@@ -128,6 +128,7 @@ class MocoV2Model(Moco_v2):
         # comparing the query label with l_que
         target_que = torch.eq(labels.reshape(-1, 1), labels_queue.reshape(1, -1))
         target_que = target_que & ~torch.eq(labels.reshape(-1, 1), -1)
+        target_que = target_que.float()
         # labels: Nx(1+K)
         target = torch.cat([target_aug, target_que], dim=1)
         # calculate the contrastive loss, Eqn.(7)

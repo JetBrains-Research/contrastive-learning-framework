@@ -38,8 +38,6 @@ class MocoV2Model(Moco_v2):
         # create the validation queue
         self.register_buffer("labels_queue", torch.zeros(1, config.ssl.num_negatives).long() - 1)
 
-        self.register_buffer("labels_queue_ptr", torch.zeros(1, dtype=torch.long))
-
     def init_encoders(self, base_encoder: str):
         if base_encoder == "transformer":
             encoder_q = encoder_models[base_encoder](self.config)
@@ -126,13 +124,13 @@ class MocoV2Model(Moco_v2):
         # positive label for the augmented version
         target_aug = torch.ones((batch_size, 1), device=q.device)
         # comparing the query label with l_que
-        target_que = torch.eq(labels.reshape(-1, 1), labels_queue.reshape(1, -1))
+        target_que = torch.eq(labels.reshape(-1, 1), labels_queue)
         target_que = target_que & ~torch.eq(labels.reshape(-1, 1), -1)
         target_que = target_que.float()
         # labels: Nx(1+K)
         target = torch.cat([target_aug, target_que], dim=1)
         # calculate the contrastive loss, Eqn.(7)
-        loss = self.uni_con(logits, target)
+        loss = self.uni_con(logits=logits, target=target)
         return loss
 
     def training_step(self, batch, batch_idx):
@@ -152,7 +150,7 @@ class MocoV2Model(Moco_v2):
 
         # dequeue and enqueue
         self._dequeue_and_enqueue(keys, queue=self.queue, queue_ptr=self.queue_ptr)
-        self._dequeue_and_enqueue(labels, queue=self.labels_queue, queue_ptr=self.labels_queue_ptr)
+        self._dequeue_and_enqueue(labels, queue=self.labels_queue, queue_ptr=self.queue_ptr)
 
         with torch.no_grad():
             features, labels = prepare_features(queries, keys, labels)

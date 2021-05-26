@@ -15,22 +15,22 @@ test_holdout: test
 save_every_epoch: 1
 val_every_epoch: 1
 val_check_interval: 0.5
-log_every_n_steps: 100
+log_every_n_steps: 200
 progress_bar_refresh_rate: 1
 
 hyper_parameters:
   n_epochs: 10
   patience: 1
-  batch_size: 80
-  test_batch_size: 80
+  batch_size: 24
+  test_batch_size: 24
   clip_norm: 1
   shuffle_data: true
 
 dataset:
   dir: raw
-  name: poj_104
+  name: codeforces
   tokenizer_name: model.yttm
-  vocab_size: 20000
+  vocab_size: 40000
   pad_id: 0
   unk_id: 1
   bos_id: 2
@@ -39,20 +39,22 @@ dataset:
 encoder:
   hidden_size: 128
   num_classes: 128
-  vocab_size: 20000
+  vocab_size: 40000
   num_heads: 8
-  num_layers: 4
-  dim_feedforward: 1024
-  max_seq_len: 384
+  num_layers: 2
+  dim_feedforward: 512
+  max_seq_len: 1024
 
 ssl:
-  name: MocoV2
-  num_negatives: 15360
-  encoder_momentum: 0.999
-  softmax_temperature: 0.07
-  learning_rate: 0.03
-  momentum: 0.9
-  weight_decay: 1e-4
-  batch_size: 80
-  use_mlp: True
-  num_workers: 8
+  name: SimCLR
+  gpus: -1
+  num_nodes: 1
+  warmup_epochs: 1
+  max_epochs: 10
+  temperature: 0.1
+  optimizer: adam
+  exclude_bn_bias: False
+  start_lr: 0.
+  learning_rate: 1e-3
+  final_lr: 0.
+  weight_decay: 1e-6

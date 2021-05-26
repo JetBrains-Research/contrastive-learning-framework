@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from os import listdir
-from os.path import join, dirname, isdir
+from os.path import join, dirname, isdir, basename
 
 import torch
 from omegaconf import DictConfig
@@ -30,6 +30,12 @@ class GraphDataset(InMemoryDataset):
                 self.raw_files += [
                     join(class_, file) for file in listdir(class_path) if is_json_file(join(class_path, file))
                 ]
+
+        # Encoding labels
+        self.labels = set([basename(dirname(path)) for path in self.raw_files])
+        self.label2encoding = {
+            label: label_idx for label_idx, label in enumerate(self.labels)
+        }
 
         super(GraphDataset, self).__init__(self.root, transform, pre_transform)
 
@@ -73,4 +79,4 @@ class GraphDataset(InMemoryDataset):
 
     def get(self, idx):
         graphs = super().get(idx)
-        return graphs, graphs.y
+        return graphs, self.label2encoding[graphs.y]

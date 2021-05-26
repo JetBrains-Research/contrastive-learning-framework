@@ -39,7 +39,7 @@ class GraphDataModule(BaseContrastiveDataModule):
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
         inputs, label = batch
 
-        if isinstance(inputs, torch.Tensor):
+        if isinstance(inputs, Batch):
             inputs = inputs.to(device)
         elif isinstance(inputs, Iterable):
             inputs = [

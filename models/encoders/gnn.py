@@ -20,7 +20,7 @@ class GNNModel(nn.Module):
         num_e_types = len(vocab["e_type2id"].keys())
 
         self.gen_conv = GENConv(
-            in_channels=8,
+            in_channels=config.encoder.embedding_size,
             out_channels=config.encoder.out_channels,
             num_layers=config.encoder.num_layers
         )

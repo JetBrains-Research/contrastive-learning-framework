@@ -26,8 +26,9 @@ def validation_metrics(outputs):
 
     logs = {}
     for k in [5, 10, 15]:
-        top_ids = knn(x=features, y=features, k=k)
-        top_ids = top_ids[1, :].reshape(-1, k)
+        top_ids = knn(x=features, y=features, k=k + 1)
+        top_ids = top_ids[1, :].reshape(-1, k + 1)
+        top_ids = top_ids[:, 1:]
 
         top_labels = labels[top_ids]
         preds = torch.eq(top_labels, labels.reshape(-1, 1))

@@ -13,9 +13,13 @@ def compute_map_at_k(preds):
     avg_precisions = []
     for pred in preds:
         positions = torch.arange(1, pred.shape[0] + 1, device=preds.device)[pred > 0]
-        avg = torch.arange(1, positions.shape[0] + 1, device=positions.device) / positions
-        avg_precisions.append(avg.mean())
-    return torch.stack(avg_precisions).mean().item()
+        if positions.shape[0]:
+            avg = torch.arange(1, positions.shape[0] + 1, device=positions.device) / positions
+            avg_precisions.append(avg.mean())
+    if avg_precisions:
+        return torch.stack(avg_precisions).mean().item()
+    else:
+        return 0
 
 
 def validation_metrics(outputs):
@@ -26,13 +30,14 @@ def validation_metrics(outputs):
 
     logs = {}
     for k in [5, 10, 15]:
-        top_ids = knn(x=features, y=features, k=k + 1)
-        top_ids = top_ids[1, :].reshape(-1, k + 1)
-        top_ids = top_ids[:, 1:]
+        if k < labels.shape[0]:
+            top_ids = knn(x=features, y=features, k=k + 1)
+            top_ids = top_ids[1, :].reshape(-1, k + 1)
+            top_ids = top_ids[:, 1:]
 
-        top_labels = labels[top_ids]
-        preds = torch.eq(top_labels, labels.reshape(-1, 1))
-        logs[f"val_map@{k}"] = compute_map_at_k(preds)
+            top_labels = labels[top_ids]
+            preds = torch.eq(top_labels, labels.reshape(-1, 1))
+            logs[f"val_map@{k}"] = compute_map_at_k(preds)
     return logs
 
 

@@ -1,15 +1,20 @@
+import multiprocessing
 import subprocess
 from argparse import ArgumentParser
 from os import listdir
 from os import mkdir
-from os.path import exists, join, isdir
-import multiprocessing
-from joblib import Parallel, delayed
+from os.path import exists, join, isdir, isfile
 
+from joblib import Parallel, delayed
 from omegaconf import DictConfig, OmegaConf
 from tqdm import tqdm
 
-from utils import is_c_family_file
+c_family_exts = ["c", "cpp"]
+
+
+def _is_c_family_file(path: str):
+    ext = path.rsplit(".", 1)[-1]
+    return isfile(path) and (ext in c_family_exts)
 
 
 def run_joern_parse(file: str, class_path: str, class_cpg: str):
@@ -48,7 +53,7 @@ def process_graphs(config: DictConfig):
         for class_ in tqdm(listdir(holdout_path)):
             class_path = join(holdout_path, class_)
             if isdir(class_path):
-                class_files = [file for file in listdir(class_path) if is_c_family_file(join(class_path, file))]
+                class_files = [file for file in listdir(class_path) if _is_c_family_file(join(class_path, file))]
                 class_output = join(holdout_output, class_)
                 class_cpg = join(cpg_path, class_)
 

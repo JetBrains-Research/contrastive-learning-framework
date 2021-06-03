@@ -25,8 +25,8 @@ val selectKeys =
       v.property("CODE").toString
   }
 
-def build_graph(cpgPath: String, outputPath: String) = {
- val Some(cpg) = importCpg(cpgPath)
+def build_graph(cpgPath: String, cpgProject: String, outputPath: String) = {
+ val Some(cpg) = importCpg(cpgPath, cpgProject)
  val ids_map = cpg.all
    .filterNot(v => skip_types.contains(v.label))
    .map(v => v.id)
@@ -65,6 +65,7 @@ def build_graph(cpgPath: String, outputPath: String) = {
    .toString
 
  output |> outputPath
+ close(workspace.projectByCpg(cpg).map(_.name).get)
 }
 
 @main def main(inputPath: String, cpgPath: String, outputPath: String) = {
@@ -76,8 +77,12 @@ def build_graph(cpgPath: String, outputPath: String) = {
         .filter{ e => e.isRegularFile }
         .filterNot{ f => (output_ / f.parent.name / (f.nameWithoutExtension + ".json")).exists }
         .map { f =>
-          val cpg_path = cpg_storage_ / f.parent.name / (f.nameWithoutExtension + ".bin")
-          val output_path = output_ / f.parent.name / (f.nameWithoutExtension + ".json")
-          build_graph(cpg_path.pathAsString, output_path.pathAsString)
+         val cpg_path =
+            cpg_storage_ / f.parent.name / (f.nameWithoutExtension + ".bin")
+         val cpg_project =
+            f.parent.name + "-" + f.nameWithoutExtension
+         val output_path =
+            output_ / f.parent.name / (f.nameWithoutExtension + ".json")
+         build_graph(cpg_path.pathAsString, cpg_project, output_path.pathAsString)
         }.toList
 }

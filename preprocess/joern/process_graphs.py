@@ -1,11 +1,12 @@
 import subprocess
+from argparse import ArgumentParser
 from os import listdir
 from os import mkdir
 from os.path import exists, join, isdir
 import multiprocessing
 from joblib import Parallel, delayed
 
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from tqdm import tqdm
 
 from utils import is_c_family_file
@@ -71,3 +72,11 @@ def process_graphs(config: DictConfig):
             "--script", "preprocess/joern/build_graphs.sc",
             "--params", f"inputPath={holdout_path},cpgPath={cpg_path},outputPath={holdout_output}"
         ])
+
+
+if __name__ == "__main__":
+    arg_parser = ArgumentParser()
+    arg_parser.add_argument("--config_path", type=str)
+    args = arg_parser.parse_args()
+    config_ = OmegaConf.load(args.config_path)
+    process_graphs(config=config_)

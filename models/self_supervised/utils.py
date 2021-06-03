@@ -11,15 +11,16 @@ def compute_f1(conf_matrix):
 
 def compute_map_at_k(preds):
     avg_precisions = []
+
+    k = preds.shape[1]
     for pred in preds:
-        positions = torch.arange(1, pred.shape[0] + 1, device=preds.device)[pred > 0]
+        positions = torch.arange(1, k + 1, device=preds.device)[pred > 0]
         if positions.shape[0]:
             avg = torch.arange(1, positions.shape[0] + 1, device=positions.device) / positions
-            avg_precisions.append(avg.mean())
-    if avg_precisions:
-        return torch.stack(avg_precisions).mean().item()
-    else:
-        return 0
+            avg_precisions.append(avg.sum() / k)
+        else:
+            avg_precisions.append(torch.tensor(0.0, device=preds.device))
+    return torch.stack(avg_precisions).mean().item()
 
 
 def validation_metrics(outputs):

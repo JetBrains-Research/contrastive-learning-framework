@@ -15,7 +15,46 @@ def test_f1():
     assert numpy.isclose(custom_f1, sklearn_f1)
 
 
+def _test(preds, result):
+    map_at_k = compute_map_at_k(preds)
+    assert numpy.isclose(map_at_k, result)
+
+
 def test_map_at_k():
+    preds = torch.Tensor(
+        [
+            [False, False, False, False],
+            [False, False, False, False],
+            [False, False, False, False]
+        ]
+    )
+    _test(preds, 0)
+    preds = torch.Tensor(
+        [
+            [True, False, False, False],
+            [False, True, False, False],
+            [False, False, True, False],
+            [False, False, False, True],
+        ]
+    )
+    _test(preds, (1 + 1 / 2 + 1 / 3 + 1 / 4) / 16)
+    preds = torch.Tensor(
+        [
+            [True, False, True, False],
+            [False, False, True, True],
+            [True, True, True, True],
+            [False, False, False, False],
+        ]
+    )
+    _test(preds, ((1 + 2 / 3) + (1 / 3 + 2 / 4) + 4) / 16)
+    preds = torch.Tensor(
+        [
+            [True, True, True, False],
+            [False, False, True, True],
+            [True, True, False, True],
+        ]
+    )
+    _test(preds, (3 + (1 / 3 + 2 / 4) + (2 + 3 / 4)) / 12)
     preds = torch.Tensor(
         [
             [True, False, False, False],
@@ -23,8 +62,11 @@ def test_map_at_k():
             [False, False, True, False],
             [False, False, False, True],
             [True, False, True, False],
+            [False, False, True, True],
             [True, True, True, True],
+            [False, False, False, False],
+            [False, False, False, False],
+            [False, False, False, False]
         ]
     )
-    map_at_k = compute_map_at_k(preds)
-    assert numpy.isclose(map_at_k * 6, (1 + 1/2 + 1/3 + 1/4 + 0.5 * (1 + 2/3) + 1))
+    _test(preds, (1 + 1 / 2 + 1 / 3 + 1 / 4 + (1 + 2 / 3) + (1 / 3 + 2 / 4) + 4 ) / 40)

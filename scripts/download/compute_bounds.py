@@ -10,9 +10,9 @@ def get_task(clones_dir: str):
 
 
 def compute_bounds(
-        data_path: str,
-        train_part: float,
-        test_part: float,
+    data_path: str,
+    train_part: float,
+    test_part: float,
 ):
     sum_ = 0
     task2count = defaultdict(int)

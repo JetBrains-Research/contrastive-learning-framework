@@ -28,6 +28,9 @@ class TextDataset(Dataset):
         self.label2encoding = {
             label: label_idx for label_idx, label in enumerate(self.labels)
         }
+        self.encoding2label = {
+            label_idx: label for label_idx, label in enumerate(self.labels)
+        }
 
     def _get_tokenizer(self, config: DictConfig) -> yttm.BPE:
         model_path = join(self.dataset_path, self.tokenizer_name)

@@ -36,6 +36,9 @@ class GraphDataset(InMemoryDataset):
         self.label2encoding = {
             label: label_idx for label_idx, label in enumerate(self.labels)
         }
+        self.encoding2label = {
+            label_idx: label for label_idx, label in enumerate(self.labels)
+        }
 
         super(GraphDataset, self).__init__(self.root, transform, pre_transform)
 

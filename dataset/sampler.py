@@ -27,23 +27,27 @@ class CodeforcesBatchSampler(Sampler[List[int]]):
         tasks = list(task2idx.keys())
         shuffle(tasks)
 
-        for task in tasks:
+        while len(task2idx.keys()):
+            task = np.random.choice(list(task2idx.keys()), replace=False)
             ids = task2idx[task]
-            while ids:
-                if len(ids) >= self.batch_size:
-                    sampled_ids = np.random.choice(ids, self.batch_size, replace=False)
-                else:
-                    if self.drop_last:
-                        break
-                    sampled_ids = ids
 
-                batch = []
-                for sampled_id in sampled_ids:
-                    batch.append(sampled_id)
-                    ids.remove(sampled_id)
+            if len(ids) >= self.batch_size:
+                sampled_ids = np.random.choice(ids, self.batch_size, replace=False)
+            else:
+                if self.drop_last:
+                    break
+                sampled_ids = deepcopy(ids)
 
-                np.random.shuffle(batch)
-                yield batch
+            batch = []
+            for sampled_id in sampled_ids:
+                batch.append(sampled_id)
+                ids.remove(sampled_id)
+
+            np.random.shuffle(batch)
+            yield batch
+
+            if not ids:
+                del task2idx[task]
 
     def __len__(self):
         if self.drop_last:

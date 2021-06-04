@@ -1,14 +1,20 @@
+import multiprocessing
 import subprocess
+from argparse import ArgumentParser
 from os import listdir
 from os import mkdir
-from os.path import exists, join, isdir
-import multiprocessing
-from joblib import Parallel, delayed
+from os.path import exists, join, isdir, isfile
 
-from omegaconf import DictConfig
+from joblib import Parallel, delayed
+from omegaconf import DictConfig, OmegaConf
 from tqdm import tqdm
 
-from utils import is_c_family_file
+c_family_exts = ["c", "cpp"]
+
+
+def _is_c_family_file(path: str):
+    ext = path.rsplit(".", 1)[-1]
+    return isfile(path) and (ext in c_family_exts)
 
 
 def run_joern_parse(file: str, class_path: str, class_cpg: str):
@@ -47,7 +53,7 @@ def process_graphs(config: DictConfig):
         for class_ in tqdm(listdir(holdout_path)):
             class_path = join(holdout_path, class_)
             if isdir(class_path):
-                class_files = [file for file in listdir(class_path) if is_c_family_file(join(class_path, file))]
+                class_files = [file for file in listdir(class_path) if _is_c_family_file(join(class_path, file))]
                 class_output = join(holdout_output, class_)
                 class_cpg = join(cpg_path, class_)
 
@@ -71,3 +77,11 @@ def process_graphs(config: DictConfig):
             "--script", "preprocess/joern/build_graphs.sc",
             "--params", f"inputPath={holdout_path},cpgPath={cpg_path},outputPath={holdout_output}"
         ])
+
+
+if __name__ == "__main__":
+    arg_parser = ArgumentParser()
+    arg_parser.add_argument("--config_path", type=str)
+    args = arg_parser.parse_args()
+    config_ = OmegaConf.load(args.config_path)
+    process_graphs(config=config_)

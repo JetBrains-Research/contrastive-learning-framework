@@ -1,6 +1,7 @@
 from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets import CIFAR10
 
+from dataset import ContrastiveDataset
 from dataset.sampler import CodeforcesBatchSampler
 
 
@@ -15,23 +16,23 @@ class WrappedDataset(Dataset):
         return self.dataset[index]
 
     def __len__(self):
-        return len(self.dataset)
+        return 1000
 
 
 def collate_fn(batch):
-    samples, labels = [], []
-    for sample, label in batch:
-        samples.append(sample)
-        labels.append(label)
-    return samples, labels
+    labels = []
+    for data in batch:
+        labels.append(data["label"])
+    return None, labels
 
 
-def test_contrastive_dataset():
+def test_codeforces_batch_sampler():
     dataset = WrappedDataset()
-    batch_sampler = CodeforcesBatchSampler(dataset, batch_size=80, drop_last=True)
-    dataloader = DataLoader(dataset, batch_sampler=batch_sampler, collate_fn=collate_fn)
+    contr_dataset = ContrastiveDataset(clf_dataset=dataset)
+    batch_sampler = CodeforcesBatchSampler(contr_dataset, batch_size=8, drop_last=True)
+    dataloader = DataLoader(contr_dataset, batch_sampler=batch_sampler, collate_fn=collate_fn)
 
-    for batch_idx, (samples, labels) in enumerate(iter(dataloader)):
+    for batch_idx, (_, labels) in enumerate(iter(dataloader)):
         if batch_idx == 200:
             break
         assert len(set(labels)) == 1

@@ -29,7 +29,6 @@ class CodeforcesBatchSampler(Sampler[List[int]]):
 
         while len(task2idx.keys()):
             task = np.random.choice(list(task2idx.keys()), replace=False)
-            print(task)
             ids = task2idx[task]
 
             if len(ids) >= self.batch_size:

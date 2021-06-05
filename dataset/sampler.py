@@ -6,7 +6,7 @@ from typing import List
 import numpy as np
 from torch.utils.data.sampler import Sampler
 
-from utils import get_task
+from utils import get_task, chunk
 
 
 class CodeforcesBatchSampler(Sampler[List[int]]):
@@ -23,32 +23,19 @@ class CodeforcesBatchSampler(Sampler[List[int]]):
             self.task2idx[task].append(idx)
 
     def __iter__(self):
-        task2idx = deepcopy(self.task2idx)
-        tasks = list(task2idx.keys())
-        shuffle(tasks)
+        batches = []
 
-        while len(task2idx.keys()):
-            task = np.random.choice(list(task2idx.keys()), replace=False)
-            ids = task2idx[task]
+        for task in self.task2idx:
+            shuffle(self.task2idx[task])
+            batched_ids = list(chunk(self.task2idx[task], self.batch_size))
 
-            if len(ids) >= self.batch_size:
-                sampled_ids = np.random.choice(ids, self.batch_size, replace=False)
-            else:
-                if self.drop_last:
-                    del task2idx[task]
-                    continue
-                sampled_ids = deepcopy(ids)
+            if self.drop_last and (len(batched_ids[-1]) < self.batch_size):
+                batched_ids = batched_ids[:-1]
 
-            batch = []
-            for sampled_id in sampled_ids:
-                batch.append(sampled_id)
-                task2idx[task].remove(sampled_id)
+            batches += batched_ids
 
-            np.random.shuffle(batch)
-            yield batch
-
-            if not task2idx[task]:
-                del task2idx[task]
+        shuffle(batches)
+        return iter(batches)
 
     def __len__(self):
         if self.drop_last:

@@ -42,12 +42,12 @@ class CodeforcesBatchSampler(Sampler[List[int]]):
             batch = []
             for sampled_id in sampled_ids:
                 batch.append(sampled_id)
-                ids.remove(sampled_id)
+                task2idx[task].remove(sampled_id)
 
             np.random.shuffle(batch)
             yield batch
 
-            if not ids:
+            if not task2idx[task]:
                 del task2idx[task]
 
     def __len__(self):

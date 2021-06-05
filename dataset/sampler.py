@@ -1,9 +1,7 @@
 from collections import defaultdict
-from copy import deepcopy
 from random import shuffle
 from typing import List
 
-import numpy as np
 from torch.utils.data.sampler import Sampler
 
 from utils import get_task, chunk

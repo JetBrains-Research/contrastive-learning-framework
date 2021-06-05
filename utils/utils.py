@@ -1,5 +1,5 @@
-from os.path import isfile
 from itertools import islice
+from os.path import isfile
 
 
 def is_json_file(path: str):

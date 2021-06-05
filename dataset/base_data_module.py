@@ -77,7 +77,7 @@ class BaseContrastiveDataModule(LightningDataModule):
         return DataLoader(
             dataset=dataset,
             batch_sampler=self.get_batch_sampler(
-                dataset=dataset.clf_dataset,
+                dataset=dataset,
                 batch_size=self.train_batch_size,
                 drop_last=True
             ),

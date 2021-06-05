@@ -17,8 +17,8 @@ class CodeforcesBatchSampler(Sampler[List[int]]):
 
         self.task2idx = defaultdict(list)
         for idx in range(len(dataset)):
-            _, label_idx = dataset[idx]
-            label = dataset.encoding2label[label_idx]
+            label_idx = dataset[idx]["label"]
+            label = dataset.clf_dataset.encoding2label[label_idx]
             task = get_task(label)
             self.task2idx[task].append(idx)
 
@@ -29,13 +29,15 @@ class CodeforcesBatchSampler(Sampler[List[int]]):
 
         while len(task2idx.keys()):
             task = np.random.choice(list(task2idx.keys()), replace=False)
+            print(task)
             ids = task2idx[task]
 
             if len(ids) >= self.batch_size:
                 sampled_ids = np.random.choice(ids, self.batch_size, replace=False)
             else:
                 if self.drop_last:
-                    break
+                    del task2idx[task]
+                    continue
                 sampled_ids = deepcopy(ids)
 
             batch = []

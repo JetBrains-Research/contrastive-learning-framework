@@ -20,9 +20,9 @@ progress_bar_refresh_rate: 1
 
 hyper_parameters:
   n_epochs: 10
-  patience: 10
-  batch_size: 24
-  test_batch_size: 24
+  patience: 1
+  batch_size: 80
+  test_batch_size: 80
   clip_norm: 1
   shuffle_data: true
 
@@ -41,9 +41,9 @@ encoder:
   num_classes: 128
   vocab_size: 40000
   num_heads: 8
-  num_layers: 2
-  dim_feedforward: 512
-  max_seq_len: 1024
+  num_layers: 4
+  dim_feedforward: 1024
+  max_seq_len: 386
 
 ssl:
   name: MocoV2

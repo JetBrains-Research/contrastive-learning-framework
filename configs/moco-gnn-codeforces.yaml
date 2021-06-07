@@ -27,7 +27,7 @@ hyper_parameters:
   shuffle_data: true
 
 dataset:
-  name: poj_104
+  name: codeforces
   vocab_file: vocab.json
   dir: graphs
 

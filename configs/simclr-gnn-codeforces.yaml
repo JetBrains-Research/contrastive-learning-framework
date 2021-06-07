@@ -12,6 +12,9 @@ train_holdout: train
 val_holdout: val
 test_holdout: test
 
+joern_path: joern
+script_path: preprocess/joern
+
 save_every_epoch: 1
 val_every_epoch: 1
 val_check_interval: 0.5
@@ -27,9 +30,9 @@ hyper_parameters:
   shuffle_data: true
 
 dataset:
-  name: poj_104
-  vocab_file: vocab.json
   dir: graphs
+  vocab_file: vocab.json
+  name: codeforces
 
 encoder:
   embedding_size: 128
@@ -38,13 +41,15 @@ encoder:
   out_channels: 128
 
 ssl:
-  name: MocoV2
-  num_negatives: 15360
-  encoder_momentum: 0.999
-  softmax_temperature: 0.07
-  learning_rate: 0.03
-  momentum: 0.9
-  weight_decay: 1e-4
-  batch_size: 80
-  use_mlp: False
-  num_workers: 8
+  name: SimCLR
+  gpus: -1
+  num_nodes: 1
+  warmup_epochs: 1
+  max_epochs: 10
+  temperature: 0.1
+  optimizer: adam
+  exclude_bn_bias: False
+  start_lr: 0.
+  learning_rate: 1e-3
+  final_lr: 0.
+  weight_decay: 1e-6

@@ -1,4 +1,4 @@
-name: transformer
+name: gnn
 
 seed: 9
 num_workers: 8
@@ -27,23 +27,15 @@ hyper_parameters:
   shuffle_data: true
 
 dataset:
-  dir: raw
   name: codeforces
-  tokenizer_name: model.yttm
-  vocab_size: 40000
-  pad_id: 0
-  unk_id: 1
-  bos_id: 2
-  eos_id: 3
+  vocab_file: vocab.json
+  dir: graphs
 
 encoder:
+  embedding_size: 128
   hidden_size: 128
-  num_classes: 128
-  vocab_size: 40000
-  num_heads: 8
-  num_layers: 4
-  dim_feedforward: 1024
-  max_seq_len: 386
+  num_layers: 6
+  out_channels: 128
 
 ssl:
   name: MocoV2

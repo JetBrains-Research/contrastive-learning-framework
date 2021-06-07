@@ -1,10 +1,10 @@
 name: gnn
 
 seed: 9
-num_workers: 2
+num_workers: 8
 log_offline: false
 
-num_classes: 5
+num_classes: 128
 
 # data keys
 data_folder: data
@@ -14,16 +14,16 @@ test_holdout: test
 
 save_every_epoch: 1
 val_every_epoch: 1
-val_check_interval: 0.01
+val_check_interval: 0.5
 log_every_n_steps: 200
 progress_bar_refresh_rate: 1
 
 hyper_parameters:
   n_epochs: 10
-  patience: 10
-  batch_size: 8
-  test_batch_size: 512
-  clip_norm: 5
+  patience: 1
+  batch_size: 80
+  test_batch_size: 80
+  clip_norm: 1
   shuffle_data: true
 
 dataset:
@@ -32,17 +32,19 @@ dataset:
   dir: graphs
 
 encoder:
-  embedding_size: 8
-  hidden_size: 8
-  num_layers: 2
-  out_channels: 8
+  embedding_size: 128
+  hidden_size: 128
+  num_layers: 6
+  out_channels: 128
 
 ssl:
-  name: BYOL
-  learning_rate: 0.2
-  weight_decay: 1.5e-6
-  input_height: 32
-  batch_size: 32
-  num_workers: -1
-  warmup_epochs: 10
-  max_epochs: 1000
+  name: MocoV2
+  num_negatives: 15360
+  encoder_momentum: 0.999
+  softmax_temperature: 0.07
+  learning_rate: 0.03
+  momentum: 0.9
+  weight_decay: 1e-4
+  batch_size: 80
+  use_mlp: False
+  num_workers: 8

@@ -1,10 +1,10 @@
 name: code2class
 
 seed: 9
-num_workers: 2
+num_workers: 8
 log_offline: false
 
-num_classes: 5
+num_classes: 32
 
 # data keys
 data_folder: data
@@ -15,16 +15,16 @@ test_holdout: test
 
 save_every_epoch: 1
 val_every_epoch: 1
-val_check_interval: 0.01
+val_check_interval: 0.5
 log_every_n_steps: 200
 progress_bar_refresh_rate: 1
 
 hyper_parameters:
-  n_epochs: 3000
-  patience: 10
-  batch_size: 8
-  test_batch_size: 512
-  clip_norm: 5
+  n_epochs: 10
+  patience: 1
+  batch_size: 80
+  test_batch_size: 80
+  clip_norm: 1
   max_context: 200
   random_context: true
   shuffle_data: true
@@ -37,7 +37,7 @@ hyper_parameters:
 
 dataset:
   dir: paths
-  name: poj_104
+  name: codeforces
   target:
     max_parts: 1
     is_wrapped: false
@@ -56,8 +56,8 @@ dataset:
 
 encoder:
   model: code2class
-  embedding_size: 16
-  rnn_size: 16
+  embedding_size: 32
+  rnn_size: 32
   use_bi_rnn: true
   embedding_dropout: 0.25
   rnn_num_layers: 1
@@ -65,16 +65,18 @@ encoder:
 
 classifier:
   n_hidden_layers: 2
-  hidden_size: 16
-  classifier_input_size: 16
+  hidden_size: 32
+  classifier_input_size: 32
   activation: relu
 
 ssl:
-  name: BYOL
-  learning_rate: 0.2
-  weight_decay: 1.5e-6
-  input_height: 32
-  batch_size: 32
-  num_workers: -1
-  warmup_epochs: 10
-  max_epochs: 1000
+  name: MocoV2
+  num_negatives: 24576
+  encoder_momentum: 0.999
+  softmax_temperature: 0.07
+  learning_rate: 0.03
+  momentum: 0.9
+  weight_decay: 1e-4
+  batch_size: 80
+  use_mlp: False
+  num_workers: 8

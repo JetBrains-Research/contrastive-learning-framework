@@ -15,7 +15,7 @@ test_holdout: test
 save_every_epoch: 1
 val_every_epoch: 1
 val_check_interval: 0.5
-log_every_n_steps: 100
+log_every_n_steps: 200
 progress_bar_refresh_rate: 1
 
 hyper_parameters:
@@ -54,5 +54,5 @@ ssl:
   momentum: 0.9
   weight_decay: 1e-4
   batch_size: 80
-  use_mlp: True
+  use_mlp: False
   num_workers: 8

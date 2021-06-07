@@ -1,7 +1,7 @@
 name: code2class
 
 seed: 9
-num_workers: 2
+num_workers: 8
 log_offline: false
 
 num_classes: 32
@@ -22,8 +22,8 @@ progress_bar_refresh_rate: 1
 hyper_parameters:
   n_epochs: 10
   patience: 1
-  batch_size: 64
-  test_batch_size: 64
+  batch_size: 80
+  test_batch_size: 80
   clip_norm: 1
   max_context: 200
   random_context: true

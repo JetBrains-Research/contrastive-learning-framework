@@ -6,12 +6,11 @@ import torch.nn.functional as F
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import BYOL
-from torchmetrics.functional import auroc, confusion_matrix
+from torchmetrics.functional import auroc
 
 from models.encoders import SiameseArm
 from models.encoders import encoder_models
-from models.self_supervised.utils import validation_metrics, prepare_features, clone_classification_step, scale, \
-    compute_f1
+from models.self_supervised.utils import validation_metrics, prepare_features, clone_classification_step, scale
 
 
 class BYOLModel(BYOL):
@@ -90,16 +89,11 @@ class BYOLModel(BYOL):
             logits, mask = clone_classification_step(features, labels)
             logits = scale(logits)
             logits = logits.reshape(-1)
-
-            preds = (logits >= 0.5).long()
             mask = mask.reshape(-1)
 
             roc_auc = auroc(logits, mask)
 
-            conf_matrix = confusion_matrix(preds, mask, num_classes=2)
-            f1 = compute_f1(conf_matrix=conf_matrix)
-
-        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc, "train_f1": f1})
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
         return loss
 
     def validation_step(self, batch, batch_idx):

@@ -6,11 +6,10 @@ from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import Moco_v2
 from pl_bolts.models.self_supervised.moco.moco2_module import concat_all_gather
 from torch import nn
-from torch.nn import functional as F
-from torchmetrics.functional import auroc, confusion_matrix
+from torchmetrics.functional import auroc
 
 from models.encoders import encoder_models
-from .utils import validation_metrics, prepare_features, clone_classification_step, scale, compute_f1
+from .utils import validation_metrics, prepare_features, clone_classification_step, scale
 
 
 class MocoV2Model(Moco_v2):
@@ -37,10 +36,7 @@ class MocoV2Model(Moco_v2):
         )
 
         # create the validation queue
-        self.register_buffer("val_queue", torch.randn(config.num_classes, config.ssl.num_negatives))
-        self.queue = F.normalize(self.val_queue, dim=0)
-
-        self.register_buffer("val_queue_ptr", torch.zeros(1, dtype=torch.long))
+        self.register_buffer("labels_queue", torch.zeros(1, config.ssl.num_negatives).long() - 1)
 
     def init_encoders(self, base_encoder: str):
         if base_encoder == "transformer":
@@ -105,7 +101,13 @@ class MocoV2Model(Moco_v2):
                 k = self._batch_unshuffle_ddp(k, idx_unshuffle)
         return q, k
 
-    def _loss(self, q, k, queue):
+    def uni_con(self, logits, target):
+        sum_neg = ((1 - target) * torch.exp(logits)).sum(1)
+        sum_pos = (target * torch.exp(-logits)).sum(1)
+        loss = torch.log(1 + sum_neg * sum_pos)
+        return torch.mean(loss)
+
+    def _loss(self, q, k, labels, queue, labels_queue):
         # Einstein sum is more intuitive
         # positive logits: Nx1
         l_pos = torch.einsum('nc,nc->n', [q, k]).unsqueeze(-1)
@@ -118,36 +120,47 @@ class MocoV2Model(Moco_v2):
         # apply temperature
         logits /= self.hparams.softmax_temperature
 
-        # labels: positive key indicators
-        labels = torch.zeros(logits.shape[0], dtype=torch.long)
-        labels = labels.type_as(logits)
-
-        loss = F.cross_entropy(logits.float(), labels.long())
+        batch_size, *_ = q.shape
+        # positive label for the augmented version
+        target_aug = torch.ones((batch_size, 1), device=q.device)
+        # comparing the query label with l_que
+        target_que = torch.eq(labels.reshape(-1, 1), labels_queue)
+        target_que = target_que.float()
+        # labels: Nx(1+K)
+        target = torch.cat([target_aug, target_que], dim=1)
+        # calculate the contrastive loss, Eqn.(7)
+        loss = self.uni_con(logits=logits, target=target)
         return loss
 
     def training_step(self, batch, batch_idx):
         (q, k), labels = batch
 
-        self._momentum_update_key_encoder()  # update the key encoder
+        # update the key encoder
+        self._momentum_update_key_encoder()
+
         queries, keys = self.representation(q=q, k=k)
-        loss = self._loss(queries, keys, self.queue)
-        self._dequeue_and_enqueue(keys, queue=self.queue, queue_ptr=self.queue_ptr)  # dequeue and enqueue
+        loss = self._loss(
+            q=queries,
+            k=keys,
+            labels=labels,
+            queue=self.queue,
+            labels_queue=self.labels_queue
+        )
+
+        # dequeue and enqueue
+        self._dequeue_and_enqueue(keys, queue=self.queue, queue_ptr=self.queue_ptr)
+        self._dequeue_and_enqueue(labels, queue=self.labels_queue, queue_ptr=self.queue_ptr)
 
         with torch.no_grad():
             features, labels = prepare_features(queries, keys, labels)
             logits, mask = clone_classification_step(features, labels)
             logits = scale(logits)
             logits = logits.reshape(-1)
-
-            preds = (logits >= 0.5).long()
             mask = mask.reshape(-1)
 
             roc_auc = auroc(logits, mask)
 
-            conf_matrix = confusion_matrix(preds, mask, num_classes=2)
-            f1 = compute_f1(conf_matrix=conf_matrix)
-
-        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc, "train_f1": f1})
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
         return loss
 
     def validation_step(self, batch, batch_idx):

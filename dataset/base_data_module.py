@@ -4,10 +4,11 @@ from typing import Any, Callable
 
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, BatchSampler, RandomSampler
 
 from .contrastive_dataset import ContrastiveDataset
 from .download import load_dataset
+from .sampler import CodeforcesBatchSampler
 
 SEED = 9
 
@@ -42,6 +43,18 @@ class BaseContrastiveDataModule(LightningDataModule):
     def prepare_data(self):
         load_dataset(self.config)
 
+    def get_batch_sampler(self, dataset, batch_size, drop_last):
+        if self.config.dataset.name == "poj_104":
+            return BatchSampler(sampler=RandomSampler(dataset), batch_size=batch_size, drop_last=drop_last)
+        elif self.config.dataset.name == "codeforces":
+            return CodeforcesBatchSampler(
+                dataset=dataset,
+                batch_size=batch_size,
+                drop_last=drop_last
+            )
+        else:
+            raise ValueError(f"Unknown ssl method {self.config.ssl.name}")
+
     def setup(self, stage: str = None):
         assert stage is not None
 
@@ -60,12 +73,15 @@ class BaseContrastiveDataModule(LightningDataModule):
             )
 
     def train_dataloader(self):
+        dataset = self.contrastive_dataset[self.train_holdout]
         return DataLoader(
-            self.contrastive_dataset[self.train_holdout],
-            batch_size=self.train_batch_size,
+            dataset=dataset,
+            batch_sampler=self.get_batch_sampler(
+                dataset=dataset,
+                batch_size=self.train_batch_size,
+                drop_last=True
+            ),
             collate_fn=self._collate_contrastive,
-            shuffle=True,
-            drop_last=True
         )
 
     def val_dataloader(self):

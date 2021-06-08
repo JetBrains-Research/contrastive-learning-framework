@@ -9,6 +9,7 @@ from utils import get_task, chunk
 
 class CodeforcesBatchSampler(Sampler[List[int]]):
     def __init__(self, dataset, batch_size, drop_last):
+        super().__init__(dataset)
         self.dataset = dataset
         self.batch_size = batch_size
         self.drop_last = drop_last

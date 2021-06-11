@@ -7,10 +7,9 @@ from random import seed
 from shutil import move
 
 from code2seq.preprocessing.astminer_to_code2seq import preprocess_csv
-from code2seq.preprocessing.build_vocabulary import preprocess as build_code2seq_vocab
 from omegaconf import DictConfig, OmegaConf
 
-from preprocess import tokenize, process_graphs, build_graphs_vocab
+from preprocess import tokenize, process_graphs, build_graphs_vocab, build_code2seq_vocab
 
 DOWNLOAD_SCRIPT = "download_data.sh"
 

@@ -36,7 +36,7 @@ class MocoV2Model(Moco_v2):
         )
 
         # create the validation queue
-        self.register_buffer("labels_queue", torch.zeros(1, config.ssl.num_negatives).long() - 1)
+        self.register_buffer("labels_queue", torch.zeros(config.ssl.num_negatives).long() - 1)
 
     def init_encoders(self, base_encoder: str):
         if base_encoder == "transformer":
@@ -60,21 +60,23 @@ class MocoV2Model(Moco_v2):
         return encoder_q, encoder_k
 
     @torch.no_grad()
-    def _dequeue_and_enqueue(self, keys, queue_ptr, queue):
+    def _dequeue_and_enqueue(self, keys, labels):
         # gather keys before updating queue
         if self.trainer.use_ddp or self.trainer.use_ddp2:
             keys = concat_all_gather(keys)
+            labels = concat_all_gather(labels)
 
         batch_size = keys.shape[0]
 
-        ptr = int(queue_ptr)
+        ptr = int(self.queue_ptr)
         assert self.hparams.num_negatives % batch_size == 0  # for simplicity
 
         # replace the keys at ptr (dequeue and enqueue)
-        queue[:, ptr:ptr + batch_size] = keys.T
+        self.queue[:, ptr:ptr + batch_size] = keys.T
+        self.labels_queue[ptr:ptr + batch_size] = labels
         ptr = (ptr + batch_size) % self.hparams.num_negatives  # move pointer
 
-        queue_ptr[0] = ptr
+        self.queue_ptr[0] = ptr
 
     def forward(self, input_):
         q = self.encoder_q(input_)
@@ -148,8 +150,7 @@ class MocoV2Model(Moco_v2):
         )
 
         # dequeue and enqueue
-        self._dequeue_and_enqueue(keys, queue=self.queue, queue_ptr=self.queue_ptr)
-        self._dequeue_and_enqueue(labels, queue=self.labels_queue, queue_ptr=self.queue_ptr)
+        self._dequeue_and_enqueue(keys, labels)
 
         with torch.no_grad():
             features, labels = prepare_features(queries, keys, labels)

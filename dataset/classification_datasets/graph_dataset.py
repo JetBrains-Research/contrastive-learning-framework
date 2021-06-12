@@ -65,6 +65,9 @@ class GraphDataset(InMemoryDataset):
             e = json.loads(graph["edges"])
             v = json.loads(graph["vertexes"])
 
+            if (not e) or (not v):
+                continue
+
             unk_v_type_id = self.v_type2id["UNKNOWN"]
             x = torch.LongTensor([self.v_type2id.get(v_["label"], unk_v_type_id) for v_ in v])
 

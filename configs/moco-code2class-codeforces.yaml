@@ -42,7 +42,7 @@ dataset:
     max_parts: 1
     is_wrapped: false
     is_splitted: false
-    vocabulary_size: 27000
+    vocabulary_size: 100000
   token:
     max_parts: 5
     is_wrapped: false
@@ -71,7 +71,7 @@ classifier:
 
 ssl:
   name: MocoV2
-  num_negatives: 24576
+  num_negatives: 15360
   encoder_momentum: 0.999
   softmax_temperature: 0.07
   learning_rate: 0.03

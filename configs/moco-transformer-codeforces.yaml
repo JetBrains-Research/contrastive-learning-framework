@@ -47,7 +47,7 @@ encoder:
 
 ssl:
   name: MocoV2
-  num_negatives: 24576
+  num_negatives: 15360
   encoder_momentum: 0.999
   softmax_temperature: 0.07
   learning_rate: 0.03

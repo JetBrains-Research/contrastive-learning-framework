@@ -42,7 +42,7 @@ dataset:
     max_parts: 1
     is_wrapped: false
     is_splitted: false
-    vocabulary_size: 27000
+    vocabulary_size: 100000
   token:
     max_parts: 5
     is_wrapped: false

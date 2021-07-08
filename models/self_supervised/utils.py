@@ -1,5 +1,9 @@
+from os import listdir
+from os.path import isdir, join
+
 import torch
 from torch_cluster import knn
+from omegaconf import DictConfig
 
 
 def compute_f1(conf_matrix):
@@ -58,3 +62,13 @@ def prepare_features(queries, keys, labels):
 def scale(x):
     x = torch.clamp(x, min=-1, max=1)
     return (x + 1) / 2
+
+
+def compute_num_samples(train_data_path: str):
+    num_samples = 0
+    for class_ in listdir(train_data_path):
+        class_path = join(train_data_path, class_)
+        if isdir(class_path):
+            num_files = len([_ for _ in listdir(class_path)])
+            num_samples += num_files * (num_files - 1) // 2
+    return num_samples

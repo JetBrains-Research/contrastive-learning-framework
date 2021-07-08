@@ -1,21 +1,16 @@
-from os import listdir
-from os.path import join, isdir
+from os.path import join
 
-import torch
 import numpy as np
+import torch
 from code2seq.utils.vocabulary import Vocabulary
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import SwAV
 from pl_bolts.models.self_supervised.swav.swav_resnet import MultiPrototypes
-from torchmetrics.functional import auroc
 
 from models.encoders import encoder_models
 from models.self_supervised.utils import (
     validation_metrics,
-    prepare_features,
-    clone_classification_step,
-    compute_num_samples,
-    scale
+    compute_num_samples
 )
 
 

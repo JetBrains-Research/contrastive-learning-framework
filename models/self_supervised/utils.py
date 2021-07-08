@@ -3,7 +3,6 @@ from os.path import isdir, join
 
 import torch
 from torch_cluster import knn
-from omegaconf import DictConfig
 
 
 def compute_f1(conf_matrix):

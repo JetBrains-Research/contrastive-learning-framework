@@ -1,5 +1,4 @@
-from os import listdir
-from os.path import join, isdir
+from os.path import join
 
 import torch
 from code2seq.utils.vocabulary import Vocabulary
@@ -12,6 +11,7 @@ from models.self_supervised.utils import (
     validation_metrics,
     prepare_features,
     clone_classification_step,
+    compute_num_samples,
     scale
 )
 
@@ -31,12 +31,7 @@ class SimCLRModel(SimCLR):
             config.train_holdout
         )
 
-        num_samples = 0
-        for class_ in listdir(train_data_path):
-            class_path = join(train_data_path, class_)
-            if isdir(class_path):
-                num_files = len([_ for _ in listdir(class_path)])
-                num_samples += num_files * (num_files - 1) // 2
+        num_samples = compute_num_samples(train_data_path)
 
         super().__init__(
             gpus=-1,

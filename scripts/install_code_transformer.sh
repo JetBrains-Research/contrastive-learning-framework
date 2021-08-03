@@ -19,5 +19,5 @@ fi
 cp configs/code-transformer/.env "$ENV_FILE_PATH"
 
 git clone https://github.com/maximzubkov/code-transformer.git "$BUILD_DIR"/"$CODE_TRANSFORMER"
-cd "$BUILD_DIR"/"$CODE_TRANSFORMER" && git checkout cpp-dataset && pip install -e .
+cd "$BUILD_DIR"/"$CODE_TRANSFORMER" && pip install -e .
 pip install git+https://github.com/tree-sitter/py-tree-sitter.git

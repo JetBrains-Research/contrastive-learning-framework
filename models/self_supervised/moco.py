@@ -55,6 +55,9 @@ class MocoV2Model(Moco_v2):
         elif self.config.name == "gnn":
             encoder_q = encoder_models[self.config.name](self.config)
             encoder_k = encoder_models[self.config.name](self.config)
+        elif self.config.name == "code-transformer":
+            encoder_q = encoder_models[self.config.name](self.config)
+            encoder_k = encoder_models[self.config.name](self.config)
         else:
             raise ValueError(f"Unknown model: {self.config.name}")
         return encoder_q, encoder_k

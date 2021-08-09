@@ -1,14 +1,5 @@
-from os.path import join, splitext, basename, dirname, exists
-from typing import Tuple
-
-import torch
-import youtokentome as yttm
+from torch.utils.data import Dataset, IterableDataset
 from tqdm import tqdm
-from omegaconf import DictConfig
-from torch.utils.data import Dataset, IterableDataset, DataLoader
-
-from dataset.utils import traverse_clf_dataset
-from preprocess import tokenize
 
 
 class CodeTransformerDataset(Dataset):
@@ -16,7 +7,7 @@ class CodeTransformerDataset(Dataset):
         super().__init__()
 
         self.samples = []
-        list_dataset = iter_dataset.to_dataloader()
+        list_dataset = [next(iter_dataset)]
         num_samples = len(list_dataset)
         print(num_samples)
 

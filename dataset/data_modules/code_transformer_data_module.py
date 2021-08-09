@@ -32,7 +32,6 @@ class Setup(CTCodeSummarizationMixin, ExperimentSetup):
         self._init_data(
             language=dataset_config.language,
             use_validation=dataset_config.use_validation,
-            mini_dataset=dataset_config.mini_dataset,
             use_no_punctuation=dataset_config.use_no_punctuation,
             use_pointer_network=dataset_config.use_pointer_network,
             sort_by_length=dataset_config.sort_by_length,
@@ -42,7 +41,9 @@ class Setup(CTCodeSummarizationMixin, ExperimentSetup):
             num_sub_tokens=dataset_config.num_sub_tokens,
             num_subtokens_output=dataset_config.num_subtokens_output,
             use_only_ast=dataset_config.use_only_ast,
-            mask_all_tokens=dataset_config.mask_all_tokens
+            mask_all_tokens=dataset_config.mask_all_tokens,
+            mini_dataset=False,
+            infinite_loading=False,
         )
         self.use_pretrained_model = False
 
@@ -84,7 +85,7 @@ class CodeTransformerModule(BaseContrastiveDataModule):
             )
 
     def collate_single_fn(self, batch: Any) -> Any:
-        ctb = self.setup_.dataset_validation.collate_fn([sample[0] for sample in batch])
+        ctb = self.setup_.dataset_train.collate_fn([sample[0] for sample in batch])
         labels = torch.LongTensor([sample[1] for sample in batch])
         return ctb, labels
 

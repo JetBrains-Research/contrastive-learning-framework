@@ -74,7 +74,7 @@ model:
     transformer:                          # CodeTransformer hyperparameters
       num_layers: 1
       encoder_layer:
-        d_model: 16                         # Internal embedding dimension
+        d_model: 32                         # Internal embedding dimension
         nhead: 8                            # Number of attention heads
         dim_feedforward: 144                # Dimension of feed-forward layer
         dropout: 0.2

@@ -6,13 +6,7 @@ class CodeTransformerDataset(Dataset):
     def __init__(self, iter_dataset: IterableDataset):
         super().__init__()
 
-        self.samples = []
-        list_dataset = [next(iter_dataset)]
-        num_samples = len(list_dataset)
-        print(num_samples)
-
-        for sample in tqdm(list_dataset, total=num_samples):
-            self.samples.append(sample)
+        self.samples = list(iter(iter_dataset))
 
         # Encoding labels
         self.labels = set([sample.func_name for sample in self.samples])

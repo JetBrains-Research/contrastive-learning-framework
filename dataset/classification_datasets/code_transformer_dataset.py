@@ -1,5 +1,4 @@
 from torch.utils.data import Dataset, IterableDataset
-from tqdm import tqdm
 
 
 class CodeTransformerDataset(Dataset):

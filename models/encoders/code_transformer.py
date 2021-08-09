@@ -23,5 +23,4 @@ class CodeTransformerModel(nn.Module):
             need_weights=need_weights,
             languages=batch.languages
         )
-        print("hi", transformer_output.out_emb.shape)
-        return transformer_output.out_emb
+        return transformer_output.out_emb[:, 0, :]

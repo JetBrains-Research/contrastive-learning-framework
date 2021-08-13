@@ -42,6 +42,7 @@ dataset:
   dir2: stage2
   name: poj_104
   language: poj_104                     # The dataset to use
+  max_num_tokens: 384                   # Max len of input sequence
   use_validation: True
   num_sub_tokens: 5                     # Number of sub-tokens that input tokens should be split into
   num_subtokens_output: 6               # Number of sub-tokens of the method name to predict

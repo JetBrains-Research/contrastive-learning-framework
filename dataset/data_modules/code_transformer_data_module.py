@@ -44,6 +44,7 @@ class Setup(CTCodeSummarizationMixin, ExperimentSetup):
             mask_all_tokens=dataset_config.mask_all_tokens,
             mini_dataset=False,
             infinite_loading=False,
+            max_num_tokens=dataset_config.max_num_tokens
         )
         self.use_pretrained_model = False
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BUILD_DIR=build
-CODE_TRANSFORMER=code-transformer
+CODE_TRANSFORMER=code_transformer
 CONFIG_PATH=~/.config
 CONFIGS_DIR="$CONFIG_PATH"/"$CODE_TRANSFORMER"
 ENV_FILE_PATH="$CONFIGS_DIR"/.env

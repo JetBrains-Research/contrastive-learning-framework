@@ -4,7 +4,7 @@ seed: 9
 num_workers: 8
 log_offline: false
 
-num_classes: 32
+num_classes: 128
 
 # data keys
 data_folder: data
@@ -70,13 +70,14 @@ model:
   label_smoothing: 0.1                    # Apply label smoothing to ground truth
   encoder:                                # Hyperparameters of the encoder
     input_nonlinearity: 'tanh'
+    vocab_size: 20000
     num_languages: None                   # only relevant for multi-language datasets. How many different languages have been fused together
     transformer:                          # CodeTransformer hyperparameters
-      num_layers: 1
+      num_layers: 4
       encoder_layer:
-        d_model: 32                         # Internal embedding dimension
+        d_model: 128                        # Internal embedding dimension
         nhead: 8                            # Number of attention heads
-        dim_feedforward: 144                # Dimension of feed-forward layer
+        dim_feedforward: 1024               # Dimension of feed-forward layer
         dropout: 0.2
         activation: 'gelu'
         use_content_content: True           # Whether to use the content-content term in attention computation

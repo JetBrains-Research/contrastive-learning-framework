@@ -12,6 +12,7 @@ RUN apt-get update \
                        git \
                        ssh \
                        sudo \
+                       vim \
                        default-jre \
                        python3.8-dev python3-pip python3-setuptools
 
@@ -24,7 +25,7 @@ ENV LC_ALL C.UTF-8
 RUN python -m pip install --upgrade pip
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
-COPY ./scripts .
+COPY ./scripts ./scripts
 RUN sh scripts/build.sh
 
-COPY . .
+COPY . ./contrastive-learning-framework

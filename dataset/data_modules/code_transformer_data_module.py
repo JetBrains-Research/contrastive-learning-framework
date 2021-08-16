@@ -104,6 +104,7 @@ class CodeTransformerModule(BaseContrastiveDataModule):
         if isinstance(inputs, CTBatch):
             inputs = batch_to_device(inputs, device)
         elif isinstance(inputs, Iterable):
+            inputs = list(inputs)
             for i, input_ in enumerate(inputs):
                 if input_ is not None:
                     inputs[i] = batch_to_device(input_, device)

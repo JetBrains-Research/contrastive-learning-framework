@@ -80,15 +80,29 @@ model:
         use_token_distances: True           # Whether to also compute the simple hop-distance between the input tokens
 
 ssl:
-  name: MocoV2
-  num_negatives: 15360
-  encoder_momentum: 0.999
-  softmax_temperature: 0.07
-  learning_rate: 0.03
-  momentum: 0.9
-  weight_decay: 1e-4
+  name: SwAV
+  gpus: -1
   batch_size: 80
-  use_mlp: False
-  num_workers: 8
-
-
+  num_nodes: 1
+  hidden_mlp: 256
+  feat_dim: 128
+  warmup_epochs: 1
+  max_epochs: 10
+  nmb_prototypes: 20
+  freeze_prototypes_epochs: 1
+  temperature: 0.1
+  sinkhorn_iterations: 3
+  queue_length: 0
+  queue_path: "queue"
+  epoch_queue_starts: 15
+  crops_for_assign: [0, 1]
+  nmb_crops: [2]
+  first_conv: True
+  maxpool1: True
+  optimizer: "adam"
+  exclude_bn_bias: False
+  start_lr: 0.
+  learning_rate: 1e-3
+  final_lr: 0.
+  weight_decay: 1e-6
+  epsilon: 0.05

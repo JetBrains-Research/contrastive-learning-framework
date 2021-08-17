@@ -1,0 +1,98 @@
+name: code2class
+
+seed: 9
+num_workers: 8
+log_offline: false
+
+num_classes: 32
+
+# data keys
+data_folder: data
+vocabulary_name: vocabulary.pkl
+train_holdout: train
+val_holdout: val
+test_holdout: test
+
+save_every_epoch: 1
+val_every_epoch: 1
+val_check_interval: 0.5
+log_every_n_steps: 200
+progress_bar_refresh_rate: 1
+
+hyper_parameters:
+  n_epochs: 10
+  patience: 1
+  batch_size: 80
+  test_batch_size: 80
+  clip_norm: 1
+  max_context: 200
+  random_context: true
+  shuffle_data: true
+
+  optimizer: "Momentum"
+  nesterov: true
+  learning_rate: 0.01
+  weight_decay: 0
+  decay_gamma: 0.95
+
+dataset:
+  dir: paths
+  name: poj_104
+  target:
+    max_parts: 1
+    is_wrapped: false
+    is_splitted: false
+    vocabulary_size: 27000
+  token:
+    max_parts: 5
+    is_wrapped: false
+    is_splitted: true
+    vocabulary_size: 190000
+  path:
+    max_parts: 9
+    is_wrapped: false
+    is_splitted: true
+    vocabulary_size: null
+
+encoder:
+  model: code2class
+  embedding_size: 32
+  rnn_size: 32
+  use_bi_rnn: true
+  embedding_dropout: 0.25
+  rnn_num_layers: 1
+  rnn_dropout: 0.5
+
+classifier:
+  n_hidden_layers: 2
+  hidden_size: 32
+  classifier_input_size: 32
+  activation: relu
+
+ssl:
+  name: SwAV
+  gpus: -1
+  batch_size: 80
+  num_nodes: 1
+  hidden_mlp: 256
+  feat_dim: 128
+  warmup_epochs: 1
+  max_epochs: 10
+  nmb_prototypes: 20
+  freeze_prototypes_epochs: 1
+  temperature: 0.1
+  sinkhorn_iterations: 3
+  queue_length: 0
+  queue_path: "queue"
+  epoch_queue_starts: 15
+  crops_for_assign: [0, 1]
+  nmb_crops: [2]
+  first_conv: True
+  maxpool1: True
+  optimizer: "adam"
+  exclude_bn_bias: False
+  start_lr: 0.
+  learning_rate: 1e-3
+  final_lr: 0.
+  weight_decay: 1e-6
+  epsilon: 0.05

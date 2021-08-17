@@ -76,6 +76,21 @@ def load_dataset(config: DictConfig):
             process_graphs(config)
 
         build_graphs_vocab(config)
+    elif config.name == "code-transformer":
+        if not (exists(join(dataset_path, config.dataset.dir1)) and exists(join(dataset_path, config.dataset.dir2))):
+            script = ["python", "-m", "scripts.run-preprocessing"]
+            for holdout in [config.train_holdout, config.val_holdout, config.test_holdout]:
+                for stage in [1, 2]:
+                    stage_script = script + [
+                        join(
+                            "configs",
+                            "code-transformer",
+                            f"preprocess-{stage}.yaml"
+                        ),
+                        config.dataset.name,
+                        holdout
+                    ]
+                    subprocess.call(' '.join(stage_script), shell=True)
     else:
         raise ValueError(f"Model {config.name} is not currently supported")
 

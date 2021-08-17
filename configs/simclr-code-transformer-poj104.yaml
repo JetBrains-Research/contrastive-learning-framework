@@ -1,0 +1,94 @@
+name: code-transformer
+
+seed: 9
+num_workers: 8
+log_offline: false
+
+num_classes: 128
+
+# data keys
+data_folder: data
+train_holdout: train
+val_holdout: val
+test_holdout: test
+
+save_every_epoch: 1
+val_every_epoch: 1
+val_check_interval: 0.5
+log_every_n_steps: 200
+progress_bar_refresh_rate: 1
+
+hyper_parameters:
+  n_epochs: 10
+  patience: 1
+  batch_size: 80
+  test_batch_size: 80
+  clip_norm: 1
+  shuffle_data: true
+
+experiment_setup:
+  executable: 'build/code-transformer/code_transformer/experiments/code_transformer/code_summarization.py'
+
+dataset:
+  dir1: stage1
+  dir2: stage2
+  name: poj_104
+  language: poj_104                     # The dataset to use
+  max_num_tokens: 384                   # Max len of input sequence
+  use_validation: True
+  num_sub_tokens: 5                     # Number of sub-tokens that input tokens should be split into
+  num_subtokens_output: 6               # Number of sub-tokens of the method name to predict
+  use_only_ast: False                   # Whether to use the only-ast ablation
+  mask_all_tokens: False                # Only relevant if use_only_ast=True. Replaces all input tokens with a dummy token
+  use_no_punctuation: True              # Whether to drop punctuation tokens before feeding the snippets into the model
+  use_pointer_network: True             # Whether to use a pointer network in the decoder
+  sort_by_length: False                 # Whether to sort loaded slices by number of tokens. Useful to minimize amount of zero-padding needed
+  shuffle: False                        # Whether load order of snippets should be randomized
+  chunk_size: 32                         # Only relevant if shuffle=True and sort_by_lenght=True. Snippets will be chunked into chunks of `chunk_size`, which will then be randomly shuffled.
+
+data_transforms:
+  max_distance_mask: None               # Mask nodes if their relative distances exceed a certain treshold
+  relative_distances:                   # Which relative distances to use (have to be pre-computed in stage 2 preprocessing)
+    - ppr
+    - ancestor_sp
+    - sibling_sp
+    - shortest_paths
+  distance_binning:                     # Distance binning for dealing with real-valued distances
+    type: 'exponential'                 # "exponential" or "equal". Exponential binning has more diversified (smaller) bins for smaller distances
+    growth_factor: 1.3
+    n_fixed_bins: 9
+
+model:
+  with_cuda: False                        # Run model on GPU
+  label_smoothing: 0.1                    # Apply label smoothing to ground truth
+  encoder:                                # Hyperparameters of the encoder
+    input_nonlinearity: 'tanh'
+    vocab_size: 20000
+    num_languages: None                   # only relevant for multi-language datasets. How many different languages have been fused together
+    transformer:                          # CodeTransformer hyperparameters
+      num_layers: 4
+      encoder_layer:
+        d_model: 128                        # Internal embedding dimension
+        nhead: 8                            # Number of attention heads
+        dim_feedforward: 1024               # Dimension of feed-forward layer
+        dropout: 0.2
+        activation: 'gelu'
+        use_content_content: True           # Whether to use the content-content term in attention computation
+        use_content_pos: True               # Whether to use the content-content term in attention computation
+        use_pos_content: True               # Whether to use the content-content term in attention computation
+        use_pos_pos: True                   # Whether to use the content-content term in attention computation
+        use_token_distances: True           # Whether to also compute the simple hop-distance between the input tokens
+
+ssl:
+  name: SimCLR
+  gpus: -1
+  num_nodes: 1
+  warmup_epochs: 1
+  max_epochs: 10
+  temperature: 0.1
+  optimizer: adam
+  exclude_bn_bias: False
+  start_lr: 0.
+  learning_rate: 1e-3
+  final_lr: 0.
+  weight_decay: 1e-6

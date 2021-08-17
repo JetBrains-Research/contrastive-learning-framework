@@ -59,6 +59,8 @@ class SwAVModel(SwAV):
             encoder = encoder_models[self.base_encoder](config=self.config, vocabulary=_vocabulary)
         elif self.config.name == "gnn":
             encoder = encoder_models[self.config.name](self.config)
+        elif self.config.name == "code-transformer":
+            encoder = encoder_models[self.config.name](self.config)
         else:
             raise ValueError(f"Unknown model: {self.config.name}")
 

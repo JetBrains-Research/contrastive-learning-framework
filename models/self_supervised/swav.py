@@ -35,8 +35,11 @@ class SwAVModel(SwAV):
             gpus=config.ssl.gpus,
             num_samples=num_samples,
             batch_size=config.hyper_parameters.batch_size,
+            hidden_mlp=config.ssl.hidden_mlp,
+            feat_dim=config.ssl.feat_dim,
             dataset="",
             nmb_crops=config.ssl.nmb_crops,
+            nmb_prototypes=config.ssl.nmb_prototypes
         )
 
         self.prototypes = None

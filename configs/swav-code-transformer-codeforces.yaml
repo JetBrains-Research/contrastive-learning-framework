@@ -81,14 +81,14 @@ model:
 
 ssl:
   name: SwAV
-  gpus: -1
+  gpus: 1
   batch_size: 80
   num_nodes: 1
   hidden_mlp: 256
   feat_dim: 128
   warmup_epochs: 1
   max_epochs: 10
-  nmb_prototypes: 20
+  nmb_prototypes: 100
   freeze_prototypes_epochs: 1
   temperature: 0.1
   sinkhorn_iterations: 3

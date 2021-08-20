@@ -70,7 +70,9 @@ class SwAVModel(SwAV):
         return encoder
 
     def forward(self, x):
-        return self.model(x)
+        q = self.model(x)
+        q = torch.nn.functional.normalize(q, dim=1)
+        return q
 
     def _loss(self, embedding, output, bs):
         # 3. swav loss computation

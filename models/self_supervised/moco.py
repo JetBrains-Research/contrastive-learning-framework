@@ -1,7 +1,7 @@
 from os.path import join
 
 import torch
-from code2seq.utils.vocabulary import Vocabulary
+from code2seq.data.vocabulary import Vocabulary
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import Moco_v2
 from pl_bolts.models.self_supervised.moco.moco2_module import concat_all_gather
@@ -49,7 +49,16 @@ class MocoV2Model(Moco_v2):
                 self.config.dataset.dir,
                 self.config.vocabulary_name
             )
-            _vocabulary = Vocabulary.load_vocabulary(_vocab_path)
+            _vocabulary = Vocabulary(
+                join(
+                    self.config.data_folder,
+                    self.config.dataset.name,
+                    self.config.dataset.dir,
+                    self.config.vocabulary_name
+                ),
+                self.config.dataset.max_labels,
+                self.config.dataset.max_tokens
+            )
             encoder_q = encoder_models[base_encoder](config=self.config, vocabulary=_vocabulary)
             encoder_k = encoder_models[base_encoder](config=self.config, vocabulary=_vocabulary)
         elif self.config.name == "gnn":

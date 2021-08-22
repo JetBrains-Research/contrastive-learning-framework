@@ -24,7 +24,7 @@ class TextDataset(Dataset):
         self.files = traverse_clf_dataset(self.data_path)
 
         # Encoding labels
-        self.labels = set([basename(dirname(path)) for path in self.files])
+        self.labels = sorted(list(set([basename(dirname(path)) for path in self.files])))
         self.label2encoding = {
             label: label_idx for label_idx, label in enumerate(self.labels)
         }

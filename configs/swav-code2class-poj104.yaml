@@ -37,36 +37,31 @@ hyper_parameters:
 
 dataset:
   dir: paths
-  name: poj_104
-  target:
-    max_parts: 1
-    is_wrapped: false
-    is_splitted: false
-    vocabulary_size: 27000
-  token:
-    max_parts: 5
-    is_wrapped: false
-    is_splitted: true
-    vocabulary_size: 190000
-  path:
-    max_parts: 9
-    is_wrapped: false
-    is_splitted: true
-    vocabulary_size: null
+  name: codeforces
+
+  max_context: 200
+  random_context: true
+
+  max_label_parts: 1
+  max_labels: 100000
+
+  max_token_parts: 5
+  max_tokens: 190000
+
+  path_length: 9
 
 encoder:
   model: code2class
   embedding_size: 32
-  rnn_size: 32
-  use_bi_rnn: true
-  embedding_dropout: 0.25
+  encoder_rnn_size: 32
+  encoder_dropout: 0.25
   rnn_num_layers: 1
-  rnn_dropout: 0.5
+  classifier_size: 32
+  use_bi_rnn: true
 
 classifier:
-  n_hidden_layers: 2
-  hidden_size: 32
-  classifier_input_size: 32
+  classifier_layers: 2
+  classifier_size: 32
   activation: relu
 
 ssl:

@@ -31,7 +31,7 @@ class GraphDataModule(BaseContrastiveDataModule):
 
     def collate_pair_fn(self, batch: Any) -> Any:
         # batch contains a list of tuples of structure (sequence, target)
-        a = Batch.from_data_list([item["a_encoding"]for item in batch])
+        a = Batch.from_data_list([item["a_encoding"] for item in batch])
         b = Batch.from_data_list([item["b_encoding"] for item in batch])
         labels = torch.LongTensor([item["label"] for item in batch])
         return (a, b), labels

@@ -34,7 +34,9 @@ def build_graphs_vocab(config: DictConfig):
                 edges_types.update(set(e_["label"] for e_ in e))
 
     vertexes_types.add("UNKNOWN")
+    vertexes_types = sorted(list(vertexes_types))
     edges_types.add("UNKNOWN")
+    edges_types = sorted(list(edges_types))
     vocab = {
         "v_type2id": {v_type: id_ for id_, v_type in enumerate(vertexes_types)},
         "v_name2id": {v_name: id_ for id_, v_name in enumerate(vertexes_names)},

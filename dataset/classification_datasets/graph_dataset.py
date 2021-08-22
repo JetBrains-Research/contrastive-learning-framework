@@ -32,7 +32,7 @@ class GraphDataset(InMemoryDataset):
                 ]
 
         # Encoding labels
-        self.labels = set([basename(dirname(path)) for path in self.raw_files])
+        self.labels = sorted(list(set([basename(dirname(path)) for path in self.raw_files])))
         self.label2encoding = {
             label: label_idx for label_idx, label in enumerate(self.labels)
         }

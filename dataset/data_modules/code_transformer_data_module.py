@@ -12,13 +12,12 @@ from dataset.base_data_module import BaseContrastiveDataModule
 from dataset.classification_datasets import CodeTransformerDataset
 from dataset.contrastive_dataset import ContrastiveDataset
 from dataset.download import load_dataset
-from utils import replace_str_none
 
 
 class Setup(CTCodeSummarizationMixin, ExperimentSetup):
     def __init__(self, config: DictConfig):
         self.config = config
-        config = replace_str_none(config)
+        config = self.replace_str_none(config)
 
         data_transforms_config = config.data_transforms
         self._init_data_transforms(
@@ -50,6 +49,14 @@ class Setup(CTCodeSummarizationMixin, ExperimentSetup):
         dict_config = OmegaConf.to_container(config.model.encoder)
         config.model.encoder = dict(self.generate_transformer_lm_encoder_config(dict_config))
 
+    def replace_str_none(self, cfg):
+        for k, v in cfg.items():
+            if isinstance(v, DictConfig):
+                self.replace_str_none(v)
+            else:
+                if v == "None":
+                    cfg[k] = None
+        return cfg
 
 class CodeTransformerModule(BaseContrastiveDataModule):
     def __init__(

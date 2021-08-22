@@ -1,14 +1,12 @@
 import json
 from copy import deepcopy
 from os import listdir
-from os.path import join, dirname, isdir, basename
+from os.path import join, dirname, isdir, basename, isfile
 
 import torch
 from omegaconf import DictConfig
 from torch_geometric.data import InMemoryDataset, Data
 from tqdm import tqdm
-
-from utils import is_json_file
 
 
 class GraphDataset(InMemoryDataset):
@@ -28,7 +26,7 @@ class GraphDataset(InMemoryDataset):
             class_path = join(self.root, class_)
             if isdir(class_path):
                 self.raw_files += [
-                    join(class_, file) for file in listdir(class_path) if is_json_file(join(class_path, file))
+                    join(class_, file) for file in listdir(class_path) if self.is_json_file(join(class_path, file))
                 ]
 
         # Encoding labels
@@ -43,6 +41,11 @@ class GraphDataset(InMemoryDataset):
         super(GraphDataset, self).__init__(self.root, transform, pre_transform)
 
         self.data, self.slices = torch.load(self.processed_file_path)
+
+    @staticmethod
+    def is_json_file(path: str):
+        ext = path.rsplit(".", 1)[-1]
+        return isfile(path) and (ext == "json")
 
     @property
     def raw_file_names(self):

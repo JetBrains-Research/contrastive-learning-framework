@@ -1,8 +1,8 @@
 from .code2class import Code2ClassModel
+from .code_transformer import CodeTransformerModel
 from .gnn import GNNModel
 from .siamese_arm import SiameseArm
 from .transformer import TransformerModel
-from .code_transformer import CodeTransformerModel
 
 __all__ = [
     "TransformerModel",

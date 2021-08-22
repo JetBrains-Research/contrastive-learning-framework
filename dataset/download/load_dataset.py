@@ -6,10 +6,9 @@ from os.path import join, exists, isfile
 from random import seed
 from shutil import move
 
-from code2seq.preprocessing.astminer_to_code2seq import preprocess_csv
 from omegaconf import DictConfig, OmegaConf
 
-from preprocess import tokenize, process_graphs, build_graphs_vocab, build_code2seq_vocab
+from preprocess import tokenize, process_graphs, build_graphs_vocab, build_code2seq_vocab, process_astminer_csv
 
 DOWNLOAD_SCRIPT = "download_data.sh"
 
@@ -44,13 +43,19 @@ def load_dataset(config: DictConfig):
             )
             for holdout in [config.train_holdout, config.val_holdout, config.test_holdout]:
                 print(f"preprocessing {holdout} data")
-                preprocess_csv(
+                process_astminer_csv(
                     data_folder=config.data_folder,
                     dataset_name=config.dataset.name,
                     holdout_name=holdout,
                     is_shuffled=config.hyper_parameters.shuffle_data
                 )
-            build_code2seq_vocab(config)
+            build_code2seq_vocab(*[
+                join(dataset_path, f"{config.dataset.name}.{holdout}.c2s") for holdout in [
+                    config.train_holdout,
+                    config.test_holdout,
+                    config.val_holdout
+                ]
+            ])
 
             dataset_path = join(config.data_folder, config.dataset.name)
             paths_storage = join(dataset_path, config.dataset.dir)

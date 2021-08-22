@@ -1,4 +1,5 @@
 from typing import Optional, Tuple, Any
+
 from code2seq.data.path_context import LabeledPathContext
 from code2seq.data.path_context_dataset import PathContextDataset
 from code2seq.data.vocabulary import Vocabulary

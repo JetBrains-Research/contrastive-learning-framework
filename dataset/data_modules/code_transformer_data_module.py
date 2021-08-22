@@ -2,16 +2,15 @@ from collections.abc import Iterable
 from typing import Any, Callable
 
 import torch
+from code_transformer.experiments.experiment import ExperimentSetup
 from code_transformer.experiments.mixins.code_summarization import CTCodeSummarizationMixin
 from code_transformer.preprocessing.datamanager.base import CTBatch
-from omegaconf import DictConfig, OmegaConf
-from dataset.classification_datasets import CodeTransformerDataset
-
-from dataset.contrastive_dataset import ContrastiveDataset
-from dataset.base_data_module import BaseContrastiveDataModule
-from code_transformer.experiments.experiment import ExperimentSetup
 from code_transformer.preprocessing.datamanager.base import batch_to_device
+from omegaconf import DictConfig, OmegaConf
 
+from dataset.base_data_module import BaseContrastiveDataModule
+from dataset.classification_datasets import CodeTransformerDataset
+from dataset.contrastive_dataset import ContrastiveDataset
 from dataset.download import load_dataset
 from utils import replace_str_none
 

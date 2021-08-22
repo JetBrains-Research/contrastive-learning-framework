@@ -1,12 +1,12 @@
 import pickle
 from collections import Counter
-from os.path import join, dirname, exists
 from os import remove
+from os.path import join, dirname, exists
+from random import shuffle
 from typing import Counter as CounterType, Type, Dict
-from random import shuffle, seed
 
-from commode_utils.filesystem import count_lines_in_file
 from code2seq.data.vocabulary import Vocabulary
+from commode_utils.filesystem import count_lines_in_file
 from commode_utils.vocabulary import BaseVocabulary
 from tqdm import tqdm
 

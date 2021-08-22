@@ -1,10 +1,9 @@
 from collections import defaultdict
+from itertools import islice
 from random import shuffle
 from typing import List
 
 from torch.utils.data.sampler import Sampler
-
-from utils import get_task, chunk
 
 
 class CodeforcesBatchSampler(Sampler[List[int]]):
@@ -18,7 +17,7 @@ class CodeforcesBatchSampler(Sampler[List[int]]):
         for idx in range(len(dataset)):
             label_idx = dataset[idx]["label"]
             label = dataset.clf_dataset.encoding2label[label_idx]
-            task = get_task(label)
+            task = self._get_task(label)
             self.task2idx[task].append(idx)
 
     def __iter__(self):
@@ -26,7 +25,7 @@ class CodeforcesBatchSampler(Sampler[List[int]]):
 
         for task in self.task2idx:
             shuffle(self.task2idx[task])
-            batched_ids = list(chunk(self.task2idx[task], self.batch_size))
+            batched_ids = list(self._chunk(self.task2idx[task], self.batch_size))
 
             if self.drop_last and (len(batched_ids[-1]) < self.batch_size):
                 batched_ids = batched_ids[:-1]
@@ -41,3 +40,13 @@ class CodeforcesBatchSampler(Sampler[List[int]]):
             return len(self.dataset) // self.batch_size
         else:
             return (len(self.dataset) + self.batch_size - 1) // self.batch_size
+
+    @staticmethod
+    def _get_task(label: str):
+        parts = label.split("_")
+        return f"{parts[-6]}{parts[-5]}"
+
+    @staticmethod
+    def _chunk(it, size):
+        it = iter(it)
+        return iter(lambda: tuple(islice(it, size)), ())

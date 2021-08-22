@@ -1,7 +1,7 @@
 from code2seq.data.path_context import BatchedLabeledPathContext
+from code2seq.data.vocabulary import Vocabulary
 from code2seq.model.modules import PathEncoder
 from commode_utils.modules import Classifier
-from code2seq.data.vocabulary import Vocabulary
 from omegaconf import DictConfig
 from torch import nn
 

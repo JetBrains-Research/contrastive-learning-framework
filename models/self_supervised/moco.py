@@ -43,12 +43,6 @@ class MocoV2Model(Moco_v2):
             encoder_q = encoder_models[base_encoder](self.config)
             encoder_k = encoder_models[base_encoder](self.config)
         elif base_encoder == "code2class":
-            _vocab_path = join(
-                self.config.data_folder,
-                self.config.dataset.name,
-                self.config.dataset.dir,
-                self.config.vocabulary_name
-            )
             _vocabulary = Vocabulary(
                 join(
                     self.config.data_folder,

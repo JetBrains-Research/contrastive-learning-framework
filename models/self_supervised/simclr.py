@@ -57,12 +57,6 @@ class SimCLRModel(SimCLR):
         if self.base_encoder == "transformer":
             encoder = encoder_models[self.base_encoder](self.config)
         elif self.base_encoder == "code2class":
-            _vocab_path = join(
-                self.config.data_folder,
-                self.config.dataset.name,
-                self.config.dataset.dir,
-                self.config.vocabulary_name
-            )
             _vocabulary = Vocabulary(
                 join(
                     self.config.data_folder,

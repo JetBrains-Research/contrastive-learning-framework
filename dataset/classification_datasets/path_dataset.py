@@ -1,7 +1,7 @@
 from typing import Optional, Tuple, Any
-
-from code2seq.dataset import PathContextDataset, PathContextSample
-from code2seq.utils.vocabulary import Vocabulary
+from code2seq.data.path_context import LabeledPathContext
+from code2seq.data.path_context_dataset import PathContextDataset
+from code2seq.data.vocabulary import Vocabulary
 from omegaconf import DictConfig
 
 
@@ -12,6 +12,6 @@ class PathDataset(PathContextDataset):
             label_id: label for label, label_id in vocabulary.label_to_id.items()
         }
 
-    def __getitem__(self, index) -> Optional[Tuple[PathContextSample, Any]]:
+    def __getitem__(self, index) -> Optional[Tuple[LabeledPathContext, Any]]:
         pcs = super().__getitem__(index)
-        return pcs, pcs.label[0][0]
+        return pcs, pcs.label[0].item()

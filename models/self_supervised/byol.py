@@ -1,16 +1,12 @@
 from copy import deepcopy
-from os.path import join
 
 import torch
 import torch.nn.functional as F
-from code2seq.data.vocabulary import Vocabulary
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import BYOL
-from torchmetrics.functional import auroc
 
 from models.encoders import SiameseArm
-from models.encoders import encoder_models
-from models.self_supervised.utils import validation_metrics, prepare_features, clone_classification_step, scale
+from models.self_supervised.utils import validation_metrics, init_model, roc_auc
 
 
 class BYOLModel(BYOL):
@@ -36,24 +32,7 @@ class BYOLModel(BYOL):
         self._init_encoders()
 
     def _init_encoders(self):
-        if self.config.name == "transformer":
-            encoder = encoder_models[self.config.name](self.config)
-        elif self.config.name == "code2class":
-            _vocabulary = Vocabulary(
-                join(
-                    self.config.data_folder,
-                    self.config.dataset.name,
-                    self.config.dataset.dir,
-                    self.config.vocabulary_name
-                ),
-                self.config.dataset.max_labels,
-                self.config.dataset.max_tokens
-            )
-            encoder = encoder_models[self.config.name](config=self.config, vocabulary=_vocabulary)
-        elif self.config.name == "gnn":
-            encoder = encoder_models[self.config.name](self.config)
-        else:
-            raise ValueError(f"Unknown model: {self.config.name}")
+        encoder = init_model(self.config)
         self.online_network = SiameseArm(
             encoder=encoder,
             input_dim=self.config.num_classes,
@@ -61,6 +40,11 @@ class BYOLModel(BYOL):
             hidden_size=self.config.num_classes
         )
         self.target_network = deepcopy(self.online_network)
+
+    def forward(self, x):
+        *_, x = self.online_network(x)
+        x = F.normalize(x, dim=1)
+        return x
 
     def _loss(self, h1_1, h2_1, z1_2, z2_2):
         loss_a = -2 * F.cosine_similarity(h1_1, z1_2).mean()
@@ -87,22 +71,13 @@ class BYOLModel(BYOL):
         loss = self._loss(h1_1, h2_1, z1_2, z2_2)
         queries, keys = h1_1, h2_1
 
-        with torch.no_grad():
-            features, labels = prepare_features(queries, keys, labels)
-            logits, mask = clone_classification_step(features, labels)
-            logits = scale(logits)
-            logits = logits.reshape(-1)
-            mask = mask.reshape(-1)
-
-            roc_auc = auroc(logits, mask)
-
-        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
+        roc_auc_ = roc_auc(queries=queries, keys=keys, labels=labels)
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc_})
         return loss
 
     def validation_step(self, batch, batch_idx):
         features, labels = batch
-        *_, features = self.online_network(features)
-        features = F.normalize(features, dim=1)
+        features = self(features)
         labels = labels.contiguous().view(-1, 1)
 
         return {"features": features, "labels": labels}

@@ -1,11 +1,14 @@
 import json
 from os import listdir
-from os.path import join, isdir
+from os.path import join, isdir, isfile
 
 from omegaconf import DictConfig
 from tqdm import tqdm
 
-from utils import is_json_file
+
+def is_json_file(path: str):
+    ext = path.rsplit(".", 1)[-1]
+    return isfile(path) and (ext == "json")
 
 
 def build_graphs_vocab(config: DictConfig):

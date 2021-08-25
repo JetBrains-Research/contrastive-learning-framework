@@ -1,18 +1,17 @@
 from os.path import join
 
 import torch
-from code2seq.data.vocabulary import Vocabulary
+import torch.nn.functional as F
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import SimCLR
-from torchmetrics.functional import auroc
 
-from models.encoders import encoder_models
 from models.self_supervised.utils import (
     validation_metrics,
     prepare_features,
     clone_classification_step,
     compute_num_samples,
-    scale
+    init_model,
+    roc_auc
 )
 
 
@@ -54,41 +53,13 @@ class SimCLRModel(SimCLR):
         )
 
     def init_model(self):
-        if self.base_encoder == "transformer":
-            encoder = encoder_models[self.base_encoder](self.config)
-        elif self.base_encoder == "code2class":
-            _vocabulary = Vocabulary(
-                join(
-                    self.config.data_folder,
-                    self.config.dataset.name,
-                    self.config.dataset.dir,
-                    self.config.vocabulary_name
-                ),
-                self.config.dataset.max_labels,
-                self.config.dataset.max_tokens
-            )
-            encoder = encoder_models[self.base_encoder](config=self.config, vocabulary=_vocabulary)
-        elif self.config.name == "gnn":
-            encoder = encoder_models[self.config.name](self.config)
-        elif self.config.name == "code-transformer":
-            encoder = encoder_models[self.config.name](self.config)
-        else:
-            raise ValueError(f"Unknown model: {self.config.name}")
+        encoder = init_model(self.config)
         return encoder
 
     def forward(self, x):
-        return self.encoder(x)
-
-    def representation(self, q, k):
-        # get h representations, bolts resnet returns a list
-        h1 = self(q)
-        h2 = self(k)
-
-        # get z representations
-        z1 = self.projection(h1)
-        z2 = self.projection(h2)
-
-        return z1, z2
+        x = self.encoder(x)
+        x = F.normalize(x, dim=1)
+        return x
 
     def _loss(self, logits, mask):
         batch_size = mask.shape[0] // 2
@@ -121,26 +92,23 @@ class SimCLRModel(SimCLR):
 
     def training_step(self, batch, batch_idx):
         (q, k, _), labels = batch
-        queries, keys = self.representation(q=q, k=k)
-        features, labels = prepare_features(queries, keys, labels)
-        logits, mask = clone_classification_step(features, labels)
+        queries, keys = self(q), self(k)
 
-        loss = self._loss(logits, mask)
+        # get z representations
+        z1 = self.projection(queries)
+        z2 = self.projection(keys)
 
-        with torch.no_grad():
-            logits = scale(logits)
-            logits = logits.reshape(-1)
-            mask = mask.reshape(-1)
+        embeddings, loss_labels = prepare_features(z1, z2, labels)
+        loss_logits, loss_mask = clone_classification_step(embeddings, loss_labels)
+        loss = self._loss(loss_logits, loss_mask)
 
-            roc_auc = auroc(logits, mask)
-
-        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
+        roc_auc_ = roc_auc(queries=queries, keys=keys, labels=labels)
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc_})
         return loss
 
     def validation_step(self, batch, batch_idx):
         features, labels = batch
         features = self(features)
-        features = self.projection(features)
         labels = labels.contiguous().view(-1, 1)
 
         return {"features": features, "labels": labels}

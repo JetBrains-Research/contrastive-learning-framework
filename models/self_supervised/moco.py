@@ -2,7 +2,6 @@ import torch
 import torch.nn.functional as F
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import Moco_v2
-from pl_bolts.models.self_supervised.moco.moco2_module import concat_all_gather
 
 from .utils import validation_metrics, init_model, roc_auc
 

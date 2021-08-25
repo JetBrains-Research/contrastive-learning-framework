@@ -80,12 +80,16 @@ model:
         use_token_distances: True           # Whether to also compute the simple hop-distance between the input tokens
 
 ssl:
+  # Name of SSL method
   name: SimCLR
+  # Training params
   gpus: 1
   num_nodes: 1
+   # SSL method hyperparams
+  temperature: 0.1
+  # Optimizer params
   warmup_epochs: 1
   max_epochs: 10
-  temperature: 0.1
   optimizer: adam
   exclude_bn_bias: False
   start_lr: 0.

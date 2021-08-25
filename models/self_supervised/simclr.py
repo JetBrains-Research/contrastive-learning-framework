@@ -36,19 +36,19 @@ class SimCLRModel(SimCLR):
             gpus=-1,
             num_samples=num_samples,
             batch_size=config.hyper_parameters.batch_size,
-            dataset="",
             num_nodes=config.ssl.num_nodes,
             hidden_mlp=config.num_classes,
             feat_dim=config.num_classes,
-            warmup_epochs=config.ssl.warmup_epochs,
             max_epochs=config.ssl.max_epochs,
             temperature=config.ssl.temperature,
             optimizer=config.ssl.optimizer,
             exclude_bn_bias=config.ssl.exclude_bn_bias,
+            warmup_epochs=config.ssl.warmup_epochs,
             start_lr=config.ssl.start_lr,
             learning_rate=config.ssl.learning_rate,
             final_lr=config.ssl.final_lr,
             weight_decay=config.ssl.weight_decay,
+            dataset="",
             **kwargs
         )
 

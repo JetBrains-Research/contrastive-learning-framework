@@ -2,7 +2,44 @@ from os import listdir
 from os.path import isdir, join
 
 import torch
+from code2seq.data.vocabulary import Vocabulary
 from torch_cluster import knn
+from torchmetrics.functional import auroc
+
+from models import encoder_models
+
+
+def init_model(config):
+    if config.name == "transformer":
+        encoder = encoder_models[config.name](config)
+    elif config.name == "code2class":
+        _vocabulary = Vocabulary(
+            join(
+                config.data_folder,
+                config.dataset.name,
+                config.dataset.dir,
+                config.vocabulary_name
+            ),
+            config.dataset.max_labels,
+            config.dataset.max_tokens
+        )
+        encoder = encoder_models[config.name](config=config, vocabulary=_vocabulary)
+    elif config.name == "gnn":
+        encoder = encoder_models[config.name](config)
+    else:
+        raise ValueError(f"Unknown model: {config.name}")
+    return encoder
+
+
+@torch.no_grad()
+def roc_auc(queries, keys, labels):
+    features, labels = prepare_features(queries, keys, labels)
+    logits, mask = clone_classification_step(features, labels)
+    logits = scale(logits)
+    logits = logits.reshape(-1)
+    mask = mask.reshape(-1)
+
+    return auroc(logits, mask)
 
 
 def compute_f1(conf_matrix):

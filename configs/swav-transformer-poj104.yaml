@@ -50,7 +50,7 @@ ssl:
   gpus: 1
   batch_size: 80
   num_nodes: 1
-  hidden_mlp: 256
+  hidden_mlp: 128
   feat_dim: 128
   warmup_epochs: 1
   max_epochs: 10
@@ -58,13 +58,6 @@ ssl:
   freeze_prototypes_epochs: 1
   temperature: 0.1
   sinkhorn_iterations: 3
-  queue_length: 0
-  queue_path: "queue"
-  epoch_queue_starts: 15
-  crops_for_assign: [0, 1]
-  nmb_crops: [2]
-  first_conv: True
-  maxpool1: True
   optimizer: "adam"
   exclude_bn_bias: False
   start_lr: 0.
@@ -72,3 +65,4 @@ ssl:
   final_lr: 0.
   weight_decay: 1e-6
   epsilon: 0.05
+  normalize: True

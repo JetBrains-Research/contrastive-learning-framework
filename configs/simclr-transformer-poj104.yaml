@@ -47,7 +47,7 @@ encoder:
 
 ssl:
   name: SimCLR
-  gpus: -1
+  gpus: 1
   num_nodes: 1
   warmup_epochs: 1
   max_epochs: 10

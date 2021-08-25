@@ -36,12 +36,20 @@ class SwAVModel(SwAV):
             num_samples=num_samples,
             batch_size=config.hyper_parameters.batch_size,
             max_epochs=config.ssl.max_epochs,
-            freeze_prototypes_epochs=config.ssl.freeze_prototypes_epochs,
             epsilon=config.ssl.epsilon,
             hidden_mlp=config.ssl.hidden_mlp,
             feat_dim=config.ssl.feat_dim,
+            nmb_prototypes=config.ssl.nmb_prototypes,
+            freeze_prototypes_epochs=config.ssl.freeze_prototypes_epochs,
+            sinkhorn_iterations=config.ssl.sinkhorn_iterations,
+            optimizer=config.ssl.optimizer,
+            exclude_bn_bias=config.ssl.exclude_bn_bias,
+            start_lr=config.ssl.start_lr,
+            warmup_epochs=config.ssl.warmup_epochs,
+            learning_rate=config.ssl.learning_rate,
+            final_lr=config.ssl.final_lr,
+            weight_decay=config.ssl.weight_decay,
             dataset="",
-            nmb_prototypes=config.ssl.nmb_prototypes
         )
 
         self.prototypes = None

@@ -1,15 +1,10 @@
-from os.path import join
-
 import torch
-from code2seq.data.vocabulary import Vocabulary
+import torch.nn.functional as F
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import Moco_v2
 from pl_bolts.models.self_supervised.moco.moco2_module import concat_all_gather
-from torch import nn
-from torchmetrics.functional import auroc
 
-from models.encoders import encoder_models
-from .utils import validation_metrics, prepare_features, clone_classification_step, scale
+from .utils import validation_metrics, init_model, roc_auc
 
 
 class MocoV2Model(Moco_v2):
@@ -39,38 +34,18 @@ class MocoV2Model(Moco_v2):
         self.register_buffer("labels_queue", torch.zeros(config.ssl.num_negatives).long() - 1)
 
     def init_encoders(self, base_encoder: str):
-        if base_encoder == "transformer":
-            encoder_q = encoder_models[base_encoder](self.config)
-            encoder_k = encoder_models[base_encoder](self.config)
-        elif base_encoder == "code2class":
-            _vocabulary = Vocabulary(
-                join(
-                    self.config.data_folder,
-                    self.config.dataset.name,
-                    self.config.dataset.dir,
-                    self.config.vocabulary_name
-                ),
-                self.config.dataset.max_labels,
-                self.config.dataset.max_tokens
-            )
-            encoder_q = encoder_models[base_encoder](config=self.config, vocabulary=_vocabulary)
-            encoder_k = encoder_models[base_encoder](config=self.config, vocabulary=_vocabulary)
-        elif self.config.name == "gnn":
-            encoder_q = encoder_models[self.config.name](self.config)
-            encoder_k = encoder_models[self.config.name](self.config)
-        elif self.config.name == "code-transformer":
-            encoder_q = encoder_models[self.config.name](self.config)
-            encoder_k = encoder_models[self.config.name](self.config)
-        else:
-            raise ValueError(f"Unknown model: {self.config.name}")
+        encoder_q = init_model(self.config)
+        encoder_k = init_model(self.config)
         return encoder_q, encoder_k
+
+    def forward(self, x):
+        x = self.encoder_q(x)
+        x = F.normalize(x, dim=1)
+        return x
 
     @torch.no_grad()
     def _dequeue_and_enqueue(self, keys, labels):
         # gather keys before updating queue
-        if self.trainer.use_ddp or self.trainer.use_ddp2:
-            keys = concat_all_gather(keys)
-            labels = concat_all_gather(labels)
 
         batch_size = keys.shape[0]
 
@@ -84,29 +59,15 @@ class MocoV2Model(Moco_v2):
 
         self.queue_ptr[0] = ptr
 
-    def forward(self, input_):
-        q = self.encoder_q(input_)
-        q = nn.functional.normalize(q, dim=1)
-        return q
-
     def representation(self, q, k):
         # compute query features
         q = self.encoder_q(q)  # queries: NxC
-        q = nn.functional.normalize(q, dim=1)
+        q = F.normalize(q, dim=1)
 
         # compute key features
         with torch.no_grad():  # no gradient to keys
-
-            # shuffle for making use of BN
-            if self.trainer.use_ddp or self.trainer.use_ddp2:
-                img_k, idx_unshuffle = self._batch_shuffle_ddp(k)
-
             k = self.encoder_k(k)  # keys: NxC
-            k = nn.functional.normalize(k, dim=1)
-
-            # undo shuffle
-            if self.trainer.use_ddp or self.trainer.use_ddp2:
-                k = self._batch_unshuffle_ddp(k, idx_unshuffle)
+            k = F.normalize(k, dim=1)
         return q, k
 
     def uni_con(self, logits, target):
@@ -158,16 +119,8 @@ class MocoV2Model(Moco_v2):
         # dequeue and enqueue
         self._dequeue_and_enqueue(keys, labels)
 
-        with torch.no_grad():
-            features, labels = prepare_features(queries, keys, labels)
-            logits, mask = clone_classification_step(features, labels)
-            logits = scale(logits)
-            logits = logits.reshape(-1)
-            mask = mask.reshape(-1)
-
-            roc_auc = auroc(logits, mask)
-
-        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc})
+        roc_auc_ = roc_auc(queries=queries, keys=keys, labels=labels)
+        self.log_dict({"train_loss": loss, "train_roc_auc": roc_auc_})
         return loss
 
     def validation_step(self, batch, batch_idx):

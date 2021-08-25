@@ -80,23 +80,26 @@ model:
         use_token_distances: True           # Whether to also compute the simple hop-distance between the input tokens
 
 ssl:
+  # Name of SSL method
   name: SwAV
+  # Training params
   gpus: 1
-  batch_size: 80
   num_nodes: 1
+  # SSL method hyperparams
   hidden_mlp: 128
   feat_dim: 128
-  warmup_epochs: 1
-  max_epochs: 10
+  epsilon: 0.05
+  normalize: True
   nmb_prototypes: 100
   freeze_prototypes_epochs: 1
   temperature: 0.1
   sinkhorn_iterations: 3
-  optimizer: "adam"
+  # Optimizer params
+  warmup_epochs: 1
+  max_epochs: 10
+  optimizer: adam
   exclude_bn_bias: False
   start_lr: 0.
   learning_rate: 1e-3
   final_lr: 0.
   weight_decay: 1e-6
-  epsilon: 0.05
-  normalize: True

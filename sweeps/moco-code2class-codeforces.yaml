@@ -4,7 +4,7 @@ command:
   - --config_path=configs/moco-code2class-codeforces.yaml
   - --seed=9
   - ${args}
-method: bayes
+method: grid
 metric:
   goal: maximize
   name: val_map@5

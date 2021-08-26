@@ -4,7 +4,7 @@ command:
   - --config_path=configs/swav-code-transformer-poj104.yaml
   - --seed=9
   - ${args}
-method: bayes
+method: grid
 metric:
   goal: maximize
   name: val_map@500

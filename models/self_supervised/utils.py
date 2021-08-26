@@ -104,14 +104,21 @@ def compute_map_at_k(preds):
     return torch.stack(avg_precisions).mean().item()
 
 
-def validation_metrics(outputs):
+def validation_metrics(outputs, task: str = "poj_104"):
     features = torch.cat([out["features"] for out in outputs])
     _, hidden_size = features.shape
 
     labels = torch.cat([out["labels"] for out in outputs]).reshape(-1)
 
+    if task == "poj_104":
+        ks = [100, 200, 500]
+    elif task == "codeforces":
+        ks = [5, 10, 15]
+    else:
+        raise ValueError(f"Unknown task {task}")
+
     logs = {}
-    for k in [5, 10, 15]:
+    for k in ks:
         if k < labels.shape[0]:
             top_ids = knn(x=features, y=features, k=k + 1)
             top_ids = top_ids[1, :].reshape(-1, k + 1)

@@ -132,7 +132,7 @@ class MocoV2Model(Moco_v2):
         return {"features": features, "labels": labels}
 
     def validation_epoch_end(self, outputs):
-        log = validation_metrics(outputs)
+        log = validation_metrics(outputs, task=self.config.dataset.name)
         self.log_dict(log)
 
     def configure_optimizers(self):

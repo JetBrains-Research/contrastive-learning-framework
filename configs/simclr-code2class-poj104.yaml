@@ -28,7 +28,7 @@ hyper_parameters:
 
 dataset:
   dir: paths
-  name: codeforces
+  name: poj_104
 
   max_context: 200
   random_context: true

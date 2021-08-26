@@ -20,7 +20,7 @@ log_every_n_steps: 200
 progress_bar_refresh_rate: 1
 
 hyper_parameters:
-  n_epochs: 10
+  n_epochs: 8
   patience: 1
   batch_size: 80
   test_batch_size: 80

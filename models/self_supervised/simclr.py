@@ -40,11 +40,9 @@ class SimCLRModel(SimCLR):
             hidden_mlp=config.num_classes,
             feat_dim=config.num_classes,
             temperature=config.ssl.temperature,
-            optimizer=config.ssl.optimizer,
             warmup_epochs=config.ssl.warmup_epochs,
             start_lr=config.ssl.start_lr,
             learning_rate=config.ssl.learning_rate,
-            final_lr=config.ssl.final_lr,
             weight_decay=config.ssl.weight_decay,
             exclude_bn_bias=config.ssl.exclude_bn_bias,
             num_samples=num_samples,
@@ -124,7 +122,7 @@ class SimCLRModel(SimCLR):
             learning_rate=self.config.ssl.learning_rate,
             weight_decay=self.config.ssl.weight_decay,
             warmup_epochs=self.config.ssl.warmup_epochs,
-            max_epochs=self.config.hyper_parameters.n_epoches,
+            max_epochs=self.config.hyper_parameters.n_epochs,
             exclude_bn_bias=self.config.ssl.exclude_bn_bias
         )
 

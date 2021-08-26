@@ -26,7 +26,6 @@ class MocoV2Model(Moco_v2):
             encoder_momentum=config.ssl.encoder_momentum,
             softmax_temperature=config.ssl.softmax_temperature,
             learning_rate=config.ssl.learning_rate,
-            momentum=config.ssl.momentum,
             weight_decay=config.ssl.weight_decay,
             use_mlp=config.ssl.use_mlp,
             **kwargs
@@ -143,6 +142,6 @@ class MocoV2Model(Moco_v2):
             learning_rate=self.config.ssl.learning_rate,
             weight_decay=self.config.ssl.weight_decay,
             warmup_epochs=self.config.ssl.warmup_epochs,
-            max_epochs=self.config.hyper_parameters.n_epoches,
+            max_epochs=self.config.hyper_parameters.n_epochs,
             exclude_bn_bias=self.config.ssl.exclude_bn_bias
         )

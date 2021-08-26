@@ -9,8 +9,6 @@ from pytorch_lightning.loggers import WandbLogger
 from dataset import data_modules
 from models import encoder_models, ssl_models, ssl_models_transforms
 
-SEED = 9
-
 
 def train(config_path: str, resume: str, seed: int = None, learning_rate: float = None):
     config = OmegaConf.load(config_path)

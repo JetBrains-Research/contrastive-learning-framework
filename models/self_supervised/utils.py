@@ -3,7 +3,7 @@ from os.path import isdir, join
 
 import torch
 from code2seq.data.vocabulary import Vocabulary
-from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR, linear_warmup_decay
+from pl_bolts.optimizers.lr_scheduler import linear_warmup_decay
 from torch.optim import Adam
 from torch_cluster import knn
 from torchmetrics.functional import auroc

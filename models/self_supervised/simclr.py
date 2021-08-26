@@ -21,6 +21,7 @@ class SimCLRModel(SimCLR):
         config: DictConfig,
         **kwargs
     ):
+        self.save_hyperparameters()
         self.config = config
         self.base_encoder = config.name
         train_data_path = join(

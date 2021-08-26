@@ -20,6 +20,7 @@ class BYOLModel(BYOL):
         config: DictConfig,
         **kwargs
     ):
+        self.save_hyperparameters()
         self.config = config
 
         super().__init__(

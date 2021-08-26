@@ -17,6 +17,7 @@ class MocoV2Model(Moco_v2):
         config: DictConfig,
         **kwargs
     ):
+        self.save_hyperparameters()
         self.config = config
 
         super().__init__(

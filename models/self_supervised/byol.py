@@ -93,11 +93,13 @@ class BYOLModel(BYOL):
 
     def configure_optimizers(self):
         configure_optimizers(
-            self.parameters(),
+            self,
+            start_learning_rate=self.config.ssl.start_lr,
             learning_rate=self.config.ssl.learning_rate,
             weight_decay=self.config.ssl.weight_decay,
             warmup_epochs=self.config.ssl.warmup_epochs,
-            max_epochs=self.config.hyper_parameters.n_epoches
+            max_epochs=self.config.hyper_parameters.n_epoches,
+            exclude_bn_bias=self.config.ssl.exclude_bn_bias
         )
 
 

@@ -3,17 +3,50 @@ from os.path import isdir, join
 
 import torch
 from code2seq.data.vocabulary import Vocabulary
-from torch_cluster import knn
-from torch.optim import Adam
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+from torch.optim import Adam
+from torch_cluster import knn
 from torchmetrics.functional import auroc
 
 from models import encoder_models
 
 
-def configure_optimizers(params, learning_rate, weight_decay, warmup_epochs, max_epochs):
+def exclude_from_wt_decay(named_params, weight_decay, skip_list=("bias", "bn")):
+    params = []
+    excluded_params = []
+
+    for name, param in named_params:
+        if not param.requires_grad:
+            continue
+        elif any(layer_name in name for layer_name in skip_list):
+            excluded_params.append(param)
+        else:
+            params.append(param)
+
+    return [{"params": params, "weight_decay": weight_decay}, {"params": excluded_params, "weight_decay": 0.0}]
+
+
+def configure_optimizers(
+    model,
+    start_learning_rate: float,
+    learning_rate: float,
+    weight_decay: float,
+    warmup_epochs: int,
+    max_epochs: int,
+    exclude_bn_bias: bool
+):
+    if exclude_bn_bias:
+        params = exclude_from_wt_decay(model.named_parameters(), weight_decay=weight_decay)
+    else:
+        params = model.parameters()
+
     optimizer = Adam(params, lr=learning_rate, weight_decay=weight_decay)
-    scheduler = LinearWarmupCosineAnnealingLR(optimizer, warmup_epochs=warmup_epochs, max_epochs=max_epochs)
+    scheduler = LinearWarmupCosineAnnealingLR(
+        optimizer,
+        warmup_epochs=warmup_epochs,
+        max_epochs=max_epochs,
+        warmup_start_lr=start_learning_rate
+    )
     return [optimizer], [scheduler]
 
 

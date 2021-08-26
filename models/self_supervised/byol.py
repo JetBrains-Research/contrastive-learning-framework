@@ -29,7 +29,7 @@ class BYOLModel(BYOL):
             learning_rate=self.config.ssl.learning_rate,
             weight_decay=self.config.ssl.weight_decay,
             input_height=self.config.ssl.input_height,
-            batch_size=self.config.ssl.batch_size,
+            batch_size=self.config.hyper_parameters.batch_size,
             num_workers=self.config.ssl.num_workers,
             warmup_epochs=self.config.ssl.warmup_epochs,
             max_epochs=config.hyper_parameters.n_epochs,
@@ -45,7 +45,7 @@ class BYOLModel(BYOL):
             config.train_holdout
         )
 
-        self.train_iters_per_epoch = compute_num_samples(train_data_path) // self.config.ssl.batch_size
+        self.train_iters_per_epoch = compute_num_samples(train_data_path) // self.config.hyper_parameters.batch_size
 
     def _init_encoders(self):
         encoder = init_model(self.config)

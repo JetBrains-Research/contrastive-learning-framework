@@ -44,7 +44,7 @@ class MocoV2Model(Moco_v2):
             config.train_holdout
         )
 
-        self.train_iters_per_epoch = compute_num_samples(train_data_path) // self.config.ssl.batch_size
+        self.train_iters_per_epoch = compute_num_samples(train_data_path) // self.config.hyper_parameters.batch_size
 
     def init_encoders(self, base_encoder: str):
         encoder_q = init_model(self.config)

@@ -6,7 +6,12 @@ from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import BYOL
 
 from models.encoders import SiameseArm
-from models.self_supervised.utils import validation_metrics, init_model, roc_auc
+from models.self_supervised.utils import (
+    validation_metrics,
+    init_model,
+    roc_auc,
+    configure_optimizers
+)
 
 
 class BYOLModel(BYOL):
@@ -15,6 +20,7 @@ class BYOLModel(BYOL):
         config: DictConfig,
         **kwargs
     ):
+        self.save_hyperparameters()
         self.config = config
 
         super().__init__(
@@ -25,7 +31,7 @@ class BYOLModel(BYOL):
             batch_size=self.config.ssl.batch_size,
             num_workers=self.config.ssl.num_workers,
             warmup_epochs=self.config.ssl.warmup_epochs,
-            max_epochs=self.config.ssl.max_epochs,
+            max_epochs=config.hyper_parameters.n_epochs,
             **kwargs
         )
 
@@ -83,8 +89,19 @@ class BYOLModel(BYOL):
         return {"features": features, "labels": labels}
 
     def validation_epoch_end(self, outputs):
-        log = validation_metrics(outputs)
+        log = validation_metrics(outputs, task=self.config.dataset.name)
         self.log_dict(log)
+
+    def configure_optimizers(self):
+        configure_optimizers(
+            self,
+            start_learning_rate=self.config.ssl.start_lr,
+            learning_rate=self.config.ssl.learning_rate,
+            weight_decay=self.config.ssl.weight_decay,
+            warmup_epochs=self.config.ssl.warmup_epochs,
+            max_epochs=self.config.hyper_parameters.n_epochs,
+            exclude_bn_bias=self.config.ssl.exclude_bn_bias
+        )
 
 
 class BYOLTransform:

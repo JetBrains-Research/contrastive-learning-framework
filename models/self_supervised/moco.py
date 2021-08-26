@@ -3,7 +3,12 @@ import torch.nn.functional as F
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import Moco_v2
 
-from .utils import validation_metrics, init_model, roc_auc
+from models.self_supervised.utils import (
+    validation_metrics,
+    init_model,
+    roc_auc,
+    configure_optimizers
+)
 
 
 class MocoV2Model(Moco_v2):
@@ -12,6 +17,7 @@ class MocoV2Model(Moco_v2):
         config: DictConfig,
         **kwargs
     ):
+        self.save_hyperparameters()
         self.config = config
 
         super().__init__(
@@ -21,7 +27,6 @@ class MocoV2Model(Moco_v2):
             encoder_momentum=config.ssl.encoder_momentum,
             softmax_temperature=config.ssl.softmax_temperature,
             learning_rate=config.ssl.learning_rate,
-            momentum=config.ssl.momentum,
             weight_decay=config.ssl.weight_decay,
             use_mlp=config.ssl.use_mlp,
             **kwargs
@@ -128,5 +133,16 @@ class MocoV2Model(Moco_v2):
         return {"features": features, "labels": labels}
 
     def validation_epoch_end(self, outputs):
-        log = validation_metrics(outputs)
+        log = validation_metrics(outputs, task=self.config.dataset.name)
         self.log_dict(log)
+
+    def configure_optimizers(self):
+        configure_optimizers(
+            self,
+            start_learning_rate=self.config.ssl.start_lr,
+            learning_rate=self.config.ssl.learning_rate,
+            weight_decay=self.config.ssl.weight_decay,
+            warmup_epochs=self.config.ssl.warmup_epochs,
+            max_epochs=self.config.hyper_parameters.n_epochs,
+            exclude_bn_bias=self.config.ssl.exclude_bn_bias
+        )

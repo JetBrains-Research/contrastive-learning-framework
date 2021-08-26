@@ -3,10 +3,51 @@ from os.path import isdir, join
 
 import torch
 from code2seq.data.vocabulary import Vocabulary
+from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+from torch.optim import Adam
 from torch_cluster import knn
 from torchmetrics.functional import auroc
 
 from models import encoder_models
+
+
+def exclude_from_wt_decay(named_params, weight_decay, skip_list=("bias", "bn")):
+    params = []
+    excluded_params = []
+
+    for name, param in named_params:
+        if not param.requires_grad:
+            continue
+        elif any(layer_name in name for layer_name in skip_list):
+            excluded_params.append(param)
+        else:
+            params.append(param)
+
+    return [{"params": params, "weight_decay": weight_decay}, {"params": excluded_params, "weight_decay": 0.0}]
+
+
+def configure_optimizers(
+    model,
+    start_learning_rate: float,
+    learning_rate: float,
+    weight_decay: float,
+    warmup_epochs: int,
+    max_epochs: int,
+    exclude_bn_bias: bool
+):
+    if exclude_bn_bias:
+        params = exclude_from_wt_decay(model.named_parameters(), weight_decay=weight_decay)
+    else:
+        params = model.parameters()
+
+    optimizer = Adam(params, lr=learning_rate, weight_decay=weight_decay)
+    scheduler = LinearWarmupCosineAnnealingLR(
+        optimizer,
+        warmup_epochs=warmup_epochs,
+        max_epochs=max_epochs,
+        warmup_start_lr=start_learning_rate
+    )
+    return [optimizer], [scheduler]
 
 
 def init_model(config):
@@ -63,14 +104,21 @@ def compute_map_at_k(preds):
     return torch.stack(avg_precisions).mean().item()
 
 
-def validation_metrics(outputs):
+def validation_metrics(outputs, task: str = "poj_104"):
     features = torch.cat([out["features"] for out in outputs])
     _, hidden_size = features.shape
 
     labels = torch.cat([out["labels"] for out in outputs]).reshape(-1)
 
+    if task == "poj_104":
+        ks = [100, 200, 500]
+    elif task == "codeforces":
+        ks = [5, 10, 15]
+    else:
+        raise ValueError(f"Unknown task {task}")
+
     logs = {}
-    for k in [5, 10, 15]:
+    for k in ks:
         if k < labels.shape[0]:
             top_ids = knn(x=features, y=features, k=k + 1)
             top_ids = top_ids[1, :].reshape(-1, k + 1)

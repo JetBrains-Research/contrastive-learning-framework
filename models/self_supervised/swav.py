@@ -9,7 +9,11 @@ from torch import nn
 
 from models.self_supervised.utils import (
     validation_metrics,
-    compute_num_samples, init_model, prepare_features, roc_auc
+    compute_num_samples,
+    init_model,
+    prepare_features,
+    roc_auc,
+    configure_optimizers
 )
 
 
@@ -19,6 +23,7 @@ class SwAVModel(SwAV):
         config: DictConfig,
         **kwargs
     ):
+        self.save_hyperparameters()
         self.config = config
         self.base_encoder = config.name
         train_data_path = join(
@@ -41,11 +46,9 @@ class SwAVModel(SwAV):
             nmb_prototypes=config.ssl.nmb_prototypes,
             freeze_prototypes_epochs=config.ssl.freeze_prototypes_epochs,
             sinkhorn_iterations=config.ssl.sinkhorn_iterations,
-            optimizer=config.ssl.optimizer,
             warmup_epochs=config.ssl.warmup_epochs,
             start_lr=config.ssl.start_lr,
             learning_rate=config.ssl.learning_rate,
-            final_lr=config.ssl.final_lr,
             weight_decay=config.ssl.weight_decay,
             exclude_bn_bias=config.ssl.exclude_bn_bias,
             num_samples=num_samples,
@@ -129,5 +132,16 @@ class SwAVModel(SwAV):
         return {"features": features, "labels": labels}
 
     def validation_epoch_end(self, outputs):
-        log = validation_metrics(outputs)
+        log = validation_metrics(outputs, task=self.config.dataset.name)
         self.log_dict(log)
+
+    def configure_optimizers(self):
+        configure_optimizers(
+            self,
+            start_learning_rate=self.config.ssl.start_lr,
+            learning_rate=self.config.ssl.learning_rate,
+            weight_decay=self.config.ssl.weight_decay,
+            warmup_epochs=self.config.ssl.warmup_epochs,
+            max_epochs=self.config.hyper_parameters.n_epochs,
+            exclude_bn_bias=self.config.ssl.exclude_bn_bias
+        )

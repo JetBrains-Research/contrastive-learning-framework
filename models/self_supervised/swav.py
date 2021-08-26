@@ -32,9 +32,9 @@ class SwAVModel(SwAV):
 
         super().__init__(
             gpus=config.ssl.gpus,
-            num_samples=num_samples,
+            num_nodes=config.ssl.num_nodes,
             batch_size=config.hyper_parameters.batch_size,
-            max_epochs=config.ssl.max_epochs,
+            max_epochs=config.hyper_parameters.n_epochs,
             epsilon=config.ssl.epsilon,
             hidden_mlp=config.ssl.hidden_mlp,
             feat_dim=config.ssl.feat_dim,
@@ -42,12 +42,13 @@ class SwAVModel(SwAV):
             freeze_prototypes_epochs=config.ssl.freeze_prototypes_epochs,
             sinkhorn_iterations=config.ssl.sinkhorn_iterations,
             optimizer=config.ssl.optimizer,
-            exclude_bn_bias=config.ssl.exclude_bn_bias,
-            start_lr=config.ssl.start_lr,
             warmup_epochs=config.ssl.warmup_epochs,
+            start_lr=config.ssl.start_lr,
             learning_rate=config.ssl.learning_rate,
             final_lr=config.ssl.final_lr,
             weight_decay=config.ssl.weight_decay,
+            exclude_bn_bias=config.ssl.exclude_bn_bias,
+            num_samples=num_samples,
             dataset="",
         )
 

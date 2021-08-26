@@ -23,9 +23,7 @@ class MocoV2Model(Moco_v2):
             learning_rate=config.ssl.learning_rate,
             momentum=config.ssl.momentum,
             weight_decay=config.ssl.weight_decay,
-            batch_size=config.ssl.batch_size,
             use_mlp=config.ssl.use_mlp,
-            num_workers=config.ssl.num_workers,
             **kwargs
         )
 

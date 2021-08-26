@@ -1,4 +1,5 @@
 from copy import deepcopy
+from os.path import join
 
 import torch
 import torch.nn.functional as F
@@ -10,7 +11,7 @@ from models.self_supervised.utils import (
     validation_metrics,
     init_model,
     roc_auc,
-    configure_optimizers
+    configure_optimizers, compute_num_samples
 )
 
 
@@ -36,6 +37,15 @@ class BYOLModel(BYOL):
         )
 
         self._init_encoders()
+
+        train_data_path = join(
+            config.data_folder,
+            config.dataset.name,
+            "raw",
+            config.train_holdout
+        )
+
+        self.train_iters_per_epoch = compute_num_samples(train_data_path) // self.config.ssl.batch_size
 
     def _init_encoders(self):
         encoder = init_model(self.config)
@@ -93,14 +103,14 @@ class BYOLModel(BYOL):
         self.log_dict(log)
 
     def configure_optimizers(self):
-        configure_optimizers(
+        return configure_optimizers(
             self,
-            start_learning_rate=self.config.ssl.start_lr,
             learning_rate=self.config.ssl.learning_rate,
             weight_decay=self.config.ssl.weight_decay,
             warmup_epochs=self.config.ssl.warmup_epochs,
             max_epochs=self.config.hyper_parameters.n_epochs,
-            exclude_bn_bias=self.config.ssl.exclude_bn_bias
+            exclude_bn_bias=self.config.ssl.exclude_bn_bias,
+            train_iters_per_epoch=self.train_iters_per_epoch
         )
 
 

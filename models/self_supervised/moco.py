@@ -1,3 +1,5 @@
+from os.path import join
+
 import torch
 import torch.nn.functional as F
 from omegaconf import DictConfig
@@ -7,7 +9,7 @@ from models.self_supervised.utils import (
     validation_metrics,
     init_model,
     roc_auc,
-    configure_optimizers
+    configure_optimizers, compute_num_samples
 )
 
 
@@ -34,6 +36,15 @@ class MocoV2Model(Moco_v2):
 
         # create the validation queue
         self.register_buffer("labels_queue", torch.zeros(config.ssl.num_negatives).long() - 1)
+
+        train_data_path = join(
+            config.data_folder,
+            config.dataset.name,
+            "raw",
+            config.train_holdout
+        )
+
+        self.train_iters_per_epoch = compute_num_samples(train_data_path) // self.config.ssl.batch_size
 
     def init_encoders(self, base_encoder: str):
         encoder_q = init_model(self.config)
@@ -137,12 +148,12 @@ class MocoV2Model(Moco_v2):
         self.log_dict(log)
 
     def configure_optimizers(self):
-        configure_optimizers(
+        return configure_optimizers(
             self,
-            start_learning_rate=self.config.ssl.start_lr,
             learning_rate=self.config.ssl.learning_rate,
             weight_decay=self.config.ssl.weight_decay,
             warmup_epochs=self.config.ssl.warmup_epochs,
             max_epochs=self.config.hyper_parameters.n_epochs,
-            exclude_bn_bias=self.config.ssl.exclude_bn_bias
+            exclude_bn_bias=self.config.ssl.exclude_bn_bias,
+            train_iters_per_epoch=self.train_iters_per_epoch
         )

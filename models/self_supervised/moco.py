@@ -146,4 +146,3 @@ class MocoV2Model(Moco_v2):
             max_epochs=self.config.hyper_parameters.n_epoches,
             exclude_bn_bias=self.config.ssl.exclude_bn_bias
         )
-

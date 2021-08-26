@@ -12,10 +12,9 @@ from models import encoder_models, ssl_models, ssl_models_transforms
 SEED = 9
 
 
-def train(config_path: str, resume: str):
-    seed_everything(SEED)
-
+def train(config_path: str, resume: str, seed: int = None):
     config = OmegaConf.load(config_path)
+    seed_everything(seed if seed is not None else config.seed)
     encoder = config.name
     ssl_model = config.ssl.name
     dataset = config.dataset
@@ -74,9 +73,11 @@ if __name__ == "__main__":
     arg_parser = ArgumentParser()
     arg_parser.add_argument("--config_path", type=str)
     arg_parser.add_argument("--resume", type=str, default=None)
+    arg_parser.add_argument("--seed", type=int, default=None)
     args = arg_parser.parse_args()
 
     train(
         config_path=args.config_path,
-        resume=args.resume
+        resume=args.resume,
+        seed=args.seed,
     )

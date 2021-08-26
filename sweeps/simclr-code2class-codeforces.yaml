@@ -1,0 +1,18 @@
+command:
+  - python
+  - train.py
+  - --config_path=configs/simclr-code2class-codeforces.yaml
+  - --seed=9
+  - ${args}
+method: grid
+metric:
+  goal: maximize
+  name: val_map@5
+parameters:
+  learning_rate:
+    values: [
+        1e-2,
+        1e-3,
+        1e-4,
+        1e-5
+    ]

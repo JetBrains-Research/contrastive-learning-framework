@@ -3,7 +3,12 @@ import torch.nn.functional as F
 from omegaconf import DictConfig
 from pl_bolts.models.self_supervised import Moco_v2
 
-from .utils import validation_metrics, init_model, roc_auc
+from models.self_supervised.utils import (
+    validation_metrics,
+    init_model,
+    roc_auc,
+    configure_optimizers
+)
 
 
 class MocoV2Model(Moco_v2):
@@ -130,3 +135,12 @@ class MocoV2Model(Moco_v2):
     def validation_epoch_end(self, outputs):
         log = validation_metrics(outputs)
         self.log_dict(log)
+
+    def configure_optimizers(self):
+        configure_optimizers(
+            self.parameters(),
+            learning_rate=self.config.ssl.learning_rate,
+            weight_decay=self.config.ssl.weight_decay,
+            warmup_epochs=self.config.ssl.warmup_epochs,
+            max_epochs=self.config.hyper_parameters.n_epoches
+        )

@@ -9,7 +9,11 @@ from torch import nn
 
 from models.self_supervised.utils import (
     validation_metrics,
-    compute_num_samples, init_model, prepare_features, roc_auc
+    compute_num_samples,
+    init_model,
+    prepare_features,
+    roc_auc,
+    configure_optimizers
 )
 
 
@@ -131,3 +135,12 @@ class SwAVModel(SwAV):
     def validation_epoch_end(self, outputs):
         log = validation_metrics(outputs)
         self.log_dict(log)
+
+    def configure_optimizers(self):
+        configure_optimizers(
+            self.parameters(),
+            learning_rate=self.config.ssl.learning_rate,
+            weight_decay=self.config.ssl.weight_decay,
+            warmup_epochs=self.config.ssl.warmup_epochs,
+            max_epochs=self.config.hyper_parameters.n_epoches
+        )

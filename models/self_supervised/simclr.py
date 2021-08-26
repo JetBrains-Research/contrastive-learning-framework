@@ -11,7 +11,7 @@ from models.self_supervised.utils import (
     clone_classification_step,
     compute_num_samples,
     init_model,
-    roc_auc
+    roc_auc, configure_optimizers
 )
 
 
@@ -116,6 +116,15 @@ class SimCLRModel(SimCLR):
     def validation_epoch_end(self, outputs):
         log = validation_metrics(outputs)
         self.log_dict(log)
+
+    def configure_optimizers(self):
+        configure_optimizers(
+            self.parameters(),
+            learning_rate=self.config.ssl.learning_rate,
+            weight_decay=self.config.ssl.weight_decay,
+            warmup_epochs=self.config.ssl.warmup_epochs,
+            max_epochs=self.config.hyper_parameters.n_epoches
+        )
 
 
 class SimCLRTransform:

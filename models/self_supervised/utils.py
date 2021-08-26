@@ -4,9 +4,17 @@ from os.path import isdir, join
 import torch
 from code2seq.data.vocabulary import Vocabulary
 from torch_cluster import knn
+from torch.optim import Adam
+from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 from torchmetrics.functional import auroc
 
 from models import encoder_models
+
+
+def configure_optimizers(params, learning_rate, weight_decay, warmup_epochs, max_epochs):
+    optimizer = Adam(params, lr=learning_rate, weight_decay=weight_decay)
+    scheduler = LinearWarmupCosineAnnealingLR(optimizer, warmup_epochs=warmup_epochs, max_epochs=max_epochs)
+    return [optimizer], [scheduler]
 
 
 def init_model(config):

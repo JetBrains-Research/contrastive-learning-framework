@@ -117,14 +117,14 @@ class SimCLRModel(SimCLR):
         self.log_dict(log)
 
     def configure_optimizers(self):
-        configure_optimizers(
+        return configure_optimizers(
             self,
-            start_learning_rate=self.config.ssl.start_lr,
             learning_rate=self.config.ssl.learning_rate,
             weight_decay=self.config.ssl.weight_decay,
             warmup_epochs=self.config.ssl.warmup_epochs,
             max_epochs=self.config.hyper_parameters.n_epochs,
-            exclude_bn_bias=self.config.ssl.exclude_bn_bias
+            exclude_bn_bias=self.config.ssl.exclude_bn_bias,
+            train_iters_per_epoch=self.train_iters_per_epoch
         )
 
 

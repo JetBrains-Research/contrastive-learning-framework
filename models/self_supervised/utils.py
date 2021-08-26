@@ -3,7 +3,7 @@ from os.path import isdir, join
 
 import torch
 from code2seq.data.vocabulary import Vocabulary
-from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+from pl_bolts.optimizers.lr_scheduler import linear_warmup_decay
 from torch.optim import Adam
 from torch_cluster import knn
 from torchmetrics.functional import auroc
@@ -28,12 +28,12 @@ def exclude_from_wt_decay(named_params, weight_decay, skip_list=("bias", "bn")):
 
 def configure_optimizers(
     model,
-    start_learning_rate: float,
     learning_rate: float,
     weight_decay: float,
     warmup_epochs: int,
     max_epochs: int,
-    exclude_bn_bias: bool
+    exclude_bn_bias: bool,
+    train_iters_per_epoch: int
 ):
     if exclude_bn_bias:
         params = exclude_from_wt_decay(model.named_parameters(), weight_decay=weight_decay)
@@ -41,12 +41,18 @@ def configure_optimizers(
         params = model.parameters()
 
     optimizer = Adam(params, lr=learning_rate, weight_decay=weight_decay)
-    scheduler = LinearWarmupCosineAnnealingLR(
-        optimizer,
-        warmup_epochs=warmup_epochs,
-        max_epochs=max_epochs,
-        warmup_start_lr=start_learning_rate
-    )
+
+    warmup_steps = train_iters_per_epoch * warmup_epochs
+    total_steps = train_iters_per_epoch * max_epochs
+
+    scheduler = {
+        "scheduler": torch.optim.lr_scheduler.LambdaLR(
+            optimizer,
+            linear_warmup_decay(warmup_steps, total_steps, cosine=True),
+        ),
+        "interval": "step",
+        "frequency": 1,
+    }
     return [optimizer], [scheduler]
 
 

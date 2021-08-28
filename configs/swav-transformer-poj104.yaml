@@ -56,7 +56,7 @@ ssl:
   feat_dim: 128
   epsilon: 0.05
   normalize: True
-  nmb_prototypes: 100
+  nmb_prototypes: 500
   freeze_prototypes_epochs: 1
   temperature: 0.1
   sinkhorn_iterations: 3

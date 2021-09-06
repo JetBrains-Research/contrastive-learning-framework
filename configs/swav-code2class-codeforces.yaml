@@ -4,7 +4,7 @@ seed: 9
 num_workers: 8
 log_offline: false
 
-num_classes: 32
+num_classes: 128
 
 # data keys
 data_folder: data
@@ -37,22 +37,22 @@ dataset:
   max_labels: 100000
 
   max_token_parts: 5
-  max_tokens: 190000
+  max_tokens: 20000
 
   path_length: 9
 
 encoder:
   model: code2class
-  embedding_size: 32
-  encoder_rnn_size: 32
+  embedding_size: 128
+  encoder_rnn_size: 128
   encoder_dropout: 0.25
   rnn_num_layers: 1
-  classifier_size: 32
+  classifier_size: 128
   use_bi_rnn: true
 
 classifier:
   classifier_layers: 2
-  classifier_size: 32
+  classifier_size: 128
   activation: relu
 
 ssl:

@@ -82,6 +82,7 @@ class BaseContrastiveDataModule(LightningDataModule):
                 drop_last=True
             ),
             collate_fn=self._collate_contrastive,
+            num_workers=self.config.num_workers
         )
 
     def val_dataloader(self):
@@ -90,6 +91,7 @@ class BaseContrastiveDataModule(LightningDataModule):
             batch_size=self.test_batch_size,
             collate_fn=self._collate_single,
             shuffle=True,
+            num_workers=self.config.num_workers
         )
 
     def test_dataloader(self):
@@ -98,6 +100,7 @@ class BaseContrastiveDataModule(LightningDataModule):
             batch_size=self.test_batch_size,
             collate_fn=self._collate_single,
             shuffle=True,
+            num_workers=self.config.num_workers
         )
 
     @abstractmethod

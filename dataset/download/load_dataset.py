@@ -31,7 +31,8 @@ def load_dataset(config: DictConfig):
 
     seed(seed_)
     if config.name == "code2class":
-        if not exists(join(dataset_path, config.dataset.dir)):
+        storage_path = join(dataset_path, config.dataset.dir)
+        if not exists(storage_path):
             subprocess.run(
                 args=[
                     "bash",
@@ -47,34 +48,32 @@ def load_dataset(config: DictConfig):
                     data_folder=config.data_folder,
                     dataset_name=config.dataset.name,
                     holdout_name=holdout,
-                    is_shuffled=config.hyper_parameters.shuffle_data
+                    is_shuffled=True
                 )
 
-            paths_storage = join(dataset_path, config.dataset.dir)
-            mkdir(paths_storage)
+            mkdir(storage_path)
             for elem in listdir(dataset_path):
                 path_ = join(dataset_path, elem)
                 if isfile(path_):
                     if elem.rsplit(".", 1)[1] in ["csv", "c2s"]:
-                        move(path_, paths_storage)
-        else:
-            vocab_path = join(dataset_path, config.dataset.dir, "vocabulary.pkl")
-            if not exists(vocab_path):
-                build_code2seq_vocab(*[
-                    join(dataset_path, f"{config.dataset.name}.{holdout}.c2s") for holdout in [
-                        config.train_holdout,
-                        config.test_holdout,
-                        config.val_holdout
-                    ]
-                ])
-                move(join(dataset_path, "vocabulary.pkl"), vocab_path)
+                        move(path_, storage_path)
+        if not exists(join(storage_path, "vocabulary.pkl")):
+            build_code2seq_vocab(*[
+                join(storage_path, f"{config.dataset.name}.{holdout}.c2s") for holdout in [
+                    config.train_holdout,
+                    config.test_holdout,
+                    config.val_holdout
+                ]
+            ])
 
     elif config.name == "transformer":
-        if not exists(join(dataset_path, config.dataset.dir, config.dataset.tokenizer_name)):
+        storage_path = join(dataset_path, config.dataset.dir)
+        if not exists(join(storage_path, config.dataset.tokenizer_name)):
             tokenize(config)
     elif config.name == "gnn":
+        storage_path = join(dataset_path, config.dataset.dir)
         holdouts_existence = [
-            exists(join(dataset_path, config.dataset.dir, holdout)) for holdout in [
+            exists(join(storage_path, holdout)) for holdout in [
                 config.train_holdout,
                 config.val_holdout,
                 config.test_holdout

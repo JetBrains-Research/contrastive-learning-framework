@@ -49,22 +49,25 @@ def load_dataset(config: DictConfig):
                     holdout_name=holdout,
                     is_shuffled=config.hyper_parameters.shuffle_data
                 )
-            build_code2seq_vocab(*[
-                join(dataset_path, f"{config.dataset.name}.{holdout}.c2s") for holdout in [
-                    config.train_holdout,
-                    config.test_holdout,
-                    config.val_holdout
-                ]
-            ])
 
-            dataset_path = join(config.data_folder, config.dataset.name)
             paths_storage = join(dataset_path, config.dataset.dir)
             mkdir(paths_storage)
             for elem in listdir(dataset_path):
                 path_ = join(dataset_path, elem)
                 if isfile(path_):
-                    if (elem.rsplit(".", 1)[1] in ["csv", "c2s"]) or (elem == "vocabulary.pkl"):
+                    if elem.rsplit(".", 1)[1] in ["csv", "c2s"]:
                         move(path_, paths_storage)
+        else:
+            vocab_path = join(dataset_path, config.dataset.dir, "vocabulary.pkl")
+            if not exists(vocab_path):
+                build_code2seq_vocab(*[
+                    join(dataset_path, f"{config.dataset.name}.{holdout}.c2s") for holdout in [
+                        config.train_holdout,
+                        config.test_holdout,
+                        config.val_holdout
+                    ]
+                ])
+                move(join(dataset_path, "vocabulary.pkl"), vocab_path)
 
     elif config.name == "transformer":
         if not exists(join(dataset_path, config.dataset.dir, config.dataset.tokenizer_name)):

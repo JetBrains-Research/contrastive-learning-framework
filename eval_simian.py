@@ -1,12 +1,11 @@
-from collections import defaultdict
 from itertools import combinations
+from os.path import join, dirname, basename
+
 import numpy as np
 import torch
+import yaml
 
 from models.self_supervised.utils import compute_map_at_k
-
-import yaml
-from os.path import join, dirname, basename
 
 data_dir = "data"
 

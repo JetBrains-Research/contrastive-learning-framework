@@ -1,25 +1,29 @@
 import pickle
-from itertools import combinations
 from os import listdir
 from os.path import join, dirname, basename
 
-import numpy as np
 import torch
-import yaml
 
-from models.self_supervised.utils import compute_map_at_k
+from models.self_supervised.utils import validation_metrics
 
 data_dir = "data"
 
 
-def compute_metrics(dataset, ks):
+def compute_metrics(dataset):
     storage_path = join(data_dir, dataset, "infercode")
-    vectors = []
+    labels, vectors = [], []
     for i, file in listdir(storage_path):
         file_path = join(storage_path, file)
         with open(file_path, "rb") as f:
-            vectors[i] = pickle.load(f)
-    print(vectors[0])
+            data = pickle.load(f)
+        labels += [basename(dirname(key)) for key in data]
+        vectors += [torch.Tensor(data[key]) for key in data]
+    labels_set = set(labels)
+    label2id = {label: i for i, label in enumerate(labels_set)}
+    labels = torch.LongTensor([label2id[label] for label in labels])
+    features = torch.cat(vectors)
+    log = validation_metrics({"features": features, "labels": labels}, task=dataset)
+    print(log)
 
 
 if __name__ == "__main__":

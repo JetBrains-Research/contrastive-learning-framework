@@ -64,3 +64,5 @@ WORKDIR /CodeGen
 RUN pip install sacrebleu=="1.2.11" javalang tree_sitter psutil fastBPE
 RUN pip install hydra-core --upgrade --pre
 RUN pip install black==19.10b0
+
+RUN pip install -r ci_requirements.txt

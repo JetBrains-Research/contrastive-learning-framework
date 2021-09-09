@@ -15,4 +15,4 @@ class PathDataset(PathContextDataset):
 
     def __getitem__(self, index) -> Optional[Tuple[LabeledPathContext, Any]]:
         pcs = super().__getitem__(index)
-        return pcs, pcs.label[0].item()
+        return pcs, pcs.label[0]

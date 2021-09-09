@@ -29,4 +29,38 @@ RUN wget \
 RUN conda init bash
 
 RUN git clone https://github.com/maximzubkov/CodeGen.git
-RUN cd CodeGen && bash install_env.sh
+WORKDIR /CodeGen
+
+RUN conda create --name env
+RUN conda config --add channels conda-forge
+RUN conda config --add channels pytorch
+
+RUN conda install -n env -y pytorch torchvision torchaudio cudatoolkit=11.0 six scikit-learn stringcase transformers ply slimit astunparse submitit
+RUN pip install cython
+
+WORKDIR /CodeGen/codegen_sources/model/tools
+RUN git clone https://github.com/glample/fastBPE.git
+
+WORKDIR /CodeGen/codegen_sources/model/tools/fastBPE
+RUN g++ -std=c++11 -pthread -O3 fastBPE/main.cc -IfastBPE -o fast
+RUN python setup.py install
+
+WORKDIR /CodeGen
+
+RUN mkdir tree-sitter
+WORKDIR /CodeGen/tree-sitter
+RUN git clone https://github.com/tree-sitter/tree-sitter-cpp.git
+RUN git clone https://github.com/tree-sitter/tree-sitter-java.git
+RUN git clone https://github.com/tree-sitter/tree-sitter-python.git
+
+WORKDIR /CodeGen
+
+RUN git clone https://github.com/NVIDIA/apex
+WORKDIR /CodeGen/apex
+RUN pip install -v --disable-pip-vergsion-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
+
+WORKDIR /CodeGen
+
+RUN pip install sacrebleu=="1.2.11" javalang tree_sitter psutil fastBPE
+RUN pip install hydra-core --upgrade --pre
+RUN pip install black==19.10b0

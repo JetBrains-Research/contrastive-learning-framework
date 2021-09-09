@@ -26,3 +26,4 @@ RUN python -m pip install --upgrade pip
 RUN pip install infercode
 
 COPY run_infercode.py .
+CMD [ "python", "run_infercode.py" ]

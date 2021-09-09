@@ -54,15 +54,14 @@ RUN git clone https://github.com/tree-sitter/tree-sitter-java.git
 RUN git clone https://github.com/tree-sitter/tree-sitter-python.git
 
 WORKDIR /CodeGen
+RUN pip install -r ci_requirements.txt
 
 RUN git clone https://github.com/NVIDIA/apex
 WORKDIR /CodeGen/apex
-RUN pip install -v --disable-pip-vergsion-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
+RUN pip install -v --disable-pip-version-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 
 WORKDIR /CodeGen
 
 RUN pip install sacrebleu=="1.2.11" javalang tree_sitter psutil fastBPE
 RUN pip install hydra-core --upgrade --pre
 RUN pip install black==19.10b0
-
-RUN pip install -r ci_requirements.txt

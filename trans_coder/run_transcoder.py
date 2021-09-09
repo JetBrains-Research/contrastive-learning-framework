@@ -120,22 +120,16 @@ class Translator:
                 codes=os.path.abspath(BPE_path), vocab_path=None
             )
 
-    def translate(
+    def embed(
         self,
         input,
-        lang1,
-        lang2,
+        lang="cpp",
         suffix1="_sa",
         suffix2="_sa",
         n=1,
-        beam_size=1,
         sample_temperature=None,
         device="cuda:0",
     ):
-
-        # Build language processors
-        assert lang1 in {"python", "java", "cpp"}, lang1
-        assert lang2 in {"python", "java", "cpp"}, lang2
         src_lang_processor = LangProcessor.processors[lang1](
             root_folder=Path(__file__).parents[2].joinpath("tree-sitter")
         )
@@ -248,17 +242,6 @@ if __name__ == "__main__":
     src_sent = []
     input = sys.stdin.read().strip()
 
-    print(f"Input {params.src_lang} function:")
-    print(input)
     with torch.no_grad():
-        output = translator.translate(
-            input,
-            lang1=params.src_lang,
-            lang2=params.tgt_lang,
-            beam_size=params.beam_size,
-        )
-
-    print(f"Translated {params.tgt_lang} function:")
-    for out in output:
-        print("=" * 20)
-        print(out)
+        output = translator.embed(input, lang=params.src_lang)
+    print(output)

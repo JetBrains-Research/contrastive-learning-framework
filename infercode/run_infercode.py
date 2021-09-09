@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 logging.basicConfig(level=logging.INFO)
 
-data_path = "data"
+data_path = "/data"
 
 
 def generate_embeddings(dataset: str):

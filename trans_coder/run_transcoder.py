@@ -47,9 +47,7 @@ def get_parser():
     parser.add_argument(
         "--BPE_path",
         type=str,
-        default=str(
-            Path(__file__).parents[2].joinpath("data/bpe/cpp-java-python/codes")
-        ),
+        default="data/bpe/cpp-java-python/codes",
         help="Path to BPE codes."
     )
     parser.add_argument("--code_path", type=str, default=None, help="Path to the program file")
@@ -80,13 +78,10 @@ class Encoder:
         assert self.reloaded_params.mask_index == self.dico.index(MASK_WORD)
 
         # build model / reload weights (in the build_model method)
-        encoder, decoder = build_model(self.reloaded_params, self.dico)
+        encoder, _ = build_model(self.reloaded_params, self.dico)
         self.encoder = encoder[0]
-        self.decoder = decoder[0]
         self.encoder.cuda()
-        self.decoder.cuda()
         self.encoder.eval()
-        self.decoder.eval()
 
         # reload bpe
         if getattr(self.reloaded_params, "roberta_mode", False):
@@ -103,9 +98,7 @@ class Encoder:
         suffix="_sa",
         device="cuda:0",
     ):
-        src_lang_processor = LangProcessor.processors[lang](
-            root_folder=Path(__file__).parents[2].joinpath("tree-sitter")
-        )
+        src_lang_processor = LangProcessor.processors[lang](root_folder="tree-sitter")
         tokenizer = src_lang_processor.tokenize_code
 
         lang += suffix

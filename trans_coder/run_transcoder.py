@@ -94,42 +94,35 @@ class Encoder:
                 codes=os.path.abspath(BPE_path), vocab_path=None
             )
 
+    @torch.no_grad()
     def embed(
         self,
         input_,
+        tokenizer,
         lang="cpp",
         suffix="_sa",
         device="cuda:0",
     ):
-        src_lang_processor = LangProcessor.processors[lang](root_folder="tree-sitter")
-        tokenizer = src_lang_processor.tokenize_code
-
         lang += suffix
+        lang_id = self.reloaded_params.lang2id[lang]
 
-        assert (
-            lang in self.reloaded_params.lang2id.keys()
-        ), f"{lang} should be in {self.reloaded_params.lang2id.keys()}"
+        # Convert source code to ids
+        tokens = [t for t in tokenizer(input_)]
+        tokens = self.bpe_model.apply_bpe(" ".join(tokens)).split()
+        tokens = ["</s>"] + tokens + ["</s>"]
+        input_ = " ".join(tokens)
 
-        with torch.no_grad():
-            lang_id = self.reloaded_params.lang2id[lang]
+        # Create torch batch
+        len_ = len(input_.split())
+        len_ = torch.LongTensor(1).fill_(len_).to(device)
+        x = torch.LongTensor([self.dico.index(w) for w in input_.split()]).to(device)[:, None]
+        langs = x.clone().fill_(lang_id)
 
-            # Convert source code to ids
-            tokens = [t for t in tokenizer(input_)]
-            tokens = self.bpe_model.apply_bpe(" ".join(tokens)).split()
-            tokens = ["</s>"] + tokens + ["</s>"]
-            input_ = " ".join(tokens)
+        # Encode
+        enc_ = self.encoder("fwd", x=x, lengths=len_, langs=langs, causal=False)
+        enc_ = enc_.squeeze().mean(0)
 
-            # Create torch batch
-            len_ = len(input_.split())
-            len_ = torch.LongTensor(1).fill_(len_).to(device)
-            x = torch.LongTensor([self.dico.index(w) for w in input_.split()]).to(device)[:, None]
-            langs = x.clone().fill_(lang_id)
-
-            # Encode
-            enc_ = self.encoder("fwd", x=x, lengths=len_, langs=langs, causal=False)
-            enc_ = enc_.squeeze().mean(0)
-
-            return enc_
+        return enc_
 
 
 data_path = "data_"
@@ -143,6 +136,8 @@ def generate_embeddings(model_path: str, bpe_path: str, dataset: str):
         mkdir(storage_path)
 
     encoder = Encoder(model_path, bpe_path)
+    src_lang_processor = LangProcessor.processors["cpp"](root_folder="tree-sitter")
+    tokenizer = src_lang_processor.tokenize_code
     vectors = {}
     i = 0
 
@@ -156,7 +151,7 @@ def generate_embeddings(model_path: str, bpe_path: str, dataset: str):
         for file in listdir(cluster_path):
             file_path = join(cluster_path, file)
             with open(file_path, "r", errors="ignore", encoding="utf8") as f:
-                vectors[file_path] = encoder.embed(f.read())
+                vectors[file_path] = encoder.embed(f.read(), tokenizer=tokenizer)
 
 
 if __name__ == "__main__":

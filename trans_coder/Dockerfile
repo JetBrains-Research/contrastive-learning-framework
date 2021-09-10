@@ -58,6 +58,9 @@ RUN /root/miniconda3/envs/env/bin/pip install -r ci_requirements.txt
 
 WORKDIR /CodeGen
 
+RUN wget https://dl.fbaipublicfiles.com/transcoder/pre_trained_models/TransCoder_model_1.pth
+RUN wget https://dl.fbaipublicfiles.com/transcoder/pre_trained_models/TransCoder_model_2.pth
+
 RUN /root/miniconda3/envs/env/bin/pip install sacrebleu=="1.2.11" javalang tree_sitter psutil fastBPE
 RUN /root/miniconda3/envs/env/bin/pip install hydra-core --upgrade --pre
 RUN /root/miniconda3/envs/env/bin/pip install black==19.10b0

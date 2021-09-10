@@ -12,7 +12,6 @@
 
 import argparse
 import os
-from pathlib import Path
 
 import torch
 from codegen_sources.model.src.data.dictionary import (

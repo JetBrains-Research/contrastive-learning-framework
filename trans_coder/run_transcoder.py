@@ -138,7 +138,7 @@ data_path = "data_"
 @torch.no_grad()
 def generate_embeddings(model_path: str, bpe_path: str, dataset: str):
     dataset_path = join(data_path, dataset, "raw", "val")
-    storage_path = join(data_path, dataset, "transcoder")
+    storage_path = join(data_path, dataset, f"transcoder-{model_path.split('_')[-1]}")
     if not exists(storage_path):
         mkdir(storage_path)
 

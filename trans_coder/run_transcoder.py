@@ -12,6 +12,9 @@
 
 import argparse
 import os
+import pickle
+from os import listdir, mkdir
+from os.path import join, exists, isfile
 
 import torch
 from codegen_sources.model.src.data.dictionary import (
@@ -28,6 +31,7 @@ from codegen_sources.model.src.utils import AttrDict
 from codegen_sources.preprocessing.bpe_modes.fast_bpe_mode import FastBPEMode
 from codegen_sources.preprocessing.bpe_modes.roberta_bpe_mode import RobertaBPEMode
 from codegen_sources.preprocessing.lang_processors.lang_processor import LangProcessor
+from tqdm import tqdm
 
 SUPPORTED_LANGUAGES = ["cpp", "java", "python"]
 
@@ -123,25 +127,45 @@ class Encoder:
 
             # Encode
             enc_ = self.encoder("fwd", x=x, lengths=len_, langs=langs, causal=False)
-            enc_ = enc_.transpose(0, 1)
+            enc_ = enc_.squeeze().mean(0)
 
             return enc_
 
 
+data_path = "/data_"
+
+
+@torch.no_grad()
+def generate_embeddings(model_path: str, bpe_path: str, dataset: str):
+    dataset_path = join(data_path, dataset, "raw", "val")
+    storage_path = join(data_path, dataset, "transcoder")
+    if not exists(storage_path):
+        mkdir(storage_path)
+
+    encoder = Encoder(model_path, bpe_path)
+    vectors = {}
+    i = 0
+
+    for cluster in tqdm(listdir(dataset_path), total=len(listdir(dataset_path))):
+        if len(list(vectors.keys())) == 1000:
+            with open(join(storage_path, f"vectors_{i}.pkl"), "wb") as f:
+                pickle.dump(vectors, f)
+            vectors = {}
+            i += 1
+        cluster_path = join(dataset_path, cluster)
+        for file in listdir(cluster_path):
+            file_path = join(cluster_path, file)
+            with open(file_path, "r", errors="ignore", encoding="utf8") as f:
+                vectors[file_path] = encoder.embed(f.read())
+                print(vectors[file_path].shape)
+
+
 if __name__ == "__main__":
-    # generate parser / parse parameters
     parser = get_parser()
     params = parser.parse_args()
 
-    assert os.path.isfile(params.model_path), f"The path to the model checkpoint is incorrect: {params.model_path}"
-    assert os.path.isfile(params.BPE_path), f"The path to the BPE tokens is incorrect: {params.BPE_path}"
-    assert os.path.isfile(params.code_path), f"The path to the code is incorrect: {params.code_path}"
+    assert isfile(params.model_path), f"The path to the model checkpoint is incorrect: {params.model_path}"
+    assert isfile(params.BPE_path), f"The path to the BPE tokens is incorrect: {params.BPE_path}"
 
-    encoder = Encoder(params.model_path, params.BPE_path, )
-
-    with open(params.code_path, "r", errors="ignore", encoding="utf8") as f:
-        input_ = f.read()
-
-    with torch.no_grad():
-        output = encoder.embed(input_)
-    print(output)
+    generate_embeddings(model_path=params.model_path, bpe_path=params.BPE_path, dataset="poj_104")
+    generate_embeddings(model_path=params.model_path, bpe_path=params.BPE_path, dataset="codeforces")

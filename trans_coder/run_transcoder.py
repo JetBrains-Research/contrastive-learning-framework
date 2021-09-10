@@ -44,7 +44,14 @@ def get_parser():
 
     # model
     parser.add_argument("--model_path", type=str, default="", help="Model path")
-    parser.add_argument("--BPE_path", type=str, default="", help="Path to BPE codes.")
+    parser.add_argument(
+        "--BPE_path",
+        type=str,
+        default=str(
+            Path(__file__).parents[2].joinpath("data/bpe/cpp-java-python/codes")
+        ),
+        help="Path to BPE codes."
+    )
     parser.add_argument("--code_path", type=str, default=None, help="Path to the program file")
 
     return parser

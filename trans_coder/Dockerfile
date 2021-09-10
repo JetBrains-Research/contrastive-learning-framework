@@ -36,14 +36,14 @@ RUN conda config --add channels conda-forge
 RUN conda config --add channels pytorch
 
 RUN conda install -n env -y pytorch torchvision torchaudio cudatoolkit=11.0 six scikit-learn stringcase transformers ply slimit astunparse submitit
-RUN pip install cython
+RUN /root/miniconda3/envs/env/bin/pip install cython
 
 WORKDIR /CodeGen/codegen_sources/model/tools
 RUN git clone https://github.com/glample/fastBPE.git
 
 WORKDIR /CodeGen/codegen_sources/model/tools/fastBPE
 RUN g++ -std=c++11 -pthread -O3 fastBPE/main.cc -IfastBPE -o fast
-RUN python setup.py install
+RUN /root/miniconda3/envs/env/bin/python setup.py install
 
 WORKDIR /CodeGen
 
@@ -54,12 +54,12 @@ RUN git clone https://github.com/tree-sitter/tree-sitter-java.git
 RUN git clone https://github.com/tree-sitter/tree-sitter-python.git
 
 WORKDIR /CodeGen
-RUN pip install -r ci_requirements.txt
+RUN /root/miniconda3/envs/env/bin/pip install -r ci_requirements.txt
 
 WORKDIR /CodeGen
 
-RUN pip install sacrebleu=="1.2.11" javalang tree_sitter psutil fastBPE
-RUN pip install hydra-core --upgrade --pre
-RUN pip install black==19.10b0
+RUN /root/miniconda3/envs/env/bin/pip install sacrebleu=="1.2.11" javalang tree_sitter psutil fastBPE
+RUN /root/miniconda3/envs/env/bin/pip install hydra-core --upgrade --pre
+RUN /root/miniconda3/envs/env/bin/pip install black==19.10b0
 
 COPY run_transcoder.py .

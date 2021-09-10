@@ -132,7 +132,7 @@ class Encoder:
             return enc_
 
 
-data_path = "/data_"
+data_path = "data_"
 
 
 @torch.no_grad()
@@ -157,7 +157,6 @@ def generate_embeddings(model_path: str, bpe_path: str, dataset: str):
             file_path = join(cluster_path, file)
             with open(file_path, "r", errors="ignore", encoding="utf8") as f:
                 vectors[file_path] = encoder.embed(f.read())
-                print(vectors[file_path].shape)
 
 
 if __name__ == "__main__":

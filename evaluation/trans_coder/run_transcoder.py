@@ -129,9 +129,9 @@ data_path = "data_"
 
 
 @torch.no_grad()
-def generate_embeddings(model_path: str, bpe_path: str, dataset: str):
-    dataset_path = join(data_path, dataset, "raw", "val")
-    storage_path = join(data_path, dataset, f"transcoder-{model_path.split('_')[-1]}")
+def generate_embeddings(model_path: str, bpe_path: str):
+    dataset_path = join(data_path, "raw", "test")
+    storage_path = join(data_path, f"transcoder-{model_path.split('_')[-1]}")
     if not exists(storage_path):
         mkdir(storage_path)
 
@@ -161,5 +161,4 @@ if __name__ == "__main__":
     assert isfile(params.model_path), f"The path to the model checkpoint is incorrect: {params.model_path}"
     assert isfile(params.BPE_path), f"The path to the BPE tokens is incorrect: {params.BPE_path}"
 
-    generate_embeddings(model_path=params.model_path, bpe_path=params.BPE_path, dataset="poj_104")
-    generate_embeddings(model_path=params.model_path, bpe_path=params.BPE_path, dataset="codeforces")
+    generate_embeddings(model_path=params.model_path, bpe_path=params.BPE_path)

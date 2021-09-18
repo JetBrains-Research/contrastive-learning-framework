@@ -19,8 +19,9 @@ from models.self_supervised.utils import validation_metrics, compute_map_at_k
 data_dir = "data"
 checkpoint_storage = "checkpoints"
 
+sweep_path = "https://api.wandb.ai/files/maximzubkov/contrastive-learning-framework"
 model2ckpt = {
-    "simclr-transformer-poj104": "https://api.wandb.ai/files/maximzubkov/contrastive-learning-framework/i309s5af/epoch=01-val_loss=0.0000-v1.ckpt",
+    "simclr-transformer-poj104": "/i309s5af/epoch=01-val_loss=0.0000-v1.ckpt",
     "simclr-transformer-codeforces": "",
     "simclr-code2class-poj104": ""
 }
@@ -32,7 +33,7 @@ def eval_simian(dataset: str):
     elif dataset == "codeforces":
         ks = (5, 10, 15)
 
-    output_file_path = join(data_dir, dataset, "output.yaml")
+    output_file_path = join(data_dir, dataset, "simian.yaml")
     with open(output_file_path, "r") as f:
         simian_output = yaml.safe_load(f)
         simian_output = simian_output["simian"]["checks"][0]["sets"]
@@ -73,6 +74,7 @@ def eval_simian(dataset: str):
         top_labels = labels[top_ids]
         preds = torch.eq(torch.LongTensor(top_labels), torch.LongTensor(labels).reshape(-1, 1))
         print(f"\tMAP at {k} {round(compute_map_at_k(preds) * 100, 2)}")
+
 
 def eval_embeddings(model: str, dataset: str):
     storage_path = join(data_dir, dataset, model)
@@ -128,7 +130,7 @@ if __name__ == "__main__":
             config_path = join("configs", f"{full_name}.yaml")
             checkpoint_path = join(checkpoint_storage, f"{full_name}.ckpt")
             if not exists(checkpoint_path):
-                wget.download(model2ckpt[full_name], checkpoint_path)
+                wget.download(sweep_path + model2ckpt[full_name], checkpoint_path)
         eval_checkpoint(config_path=config_path, checkpoint_path=checkpoint_path)
     else:
         raise ValueError(f"Unknown model {args.model}")

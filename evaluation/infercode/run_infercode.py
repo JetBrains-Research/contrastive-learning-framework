@@ -12,7 +12,7 @@ data_path = "/data"
 
 
 def generate_embeddings():
-    dataset_path = join(data_path, "raw", "val")
+    dataset_path = join(data_path, "raw", "test")
     storage_path = join(data_path, "infercode")
     if not exists(storage_path):
         mkdir(storage_path)

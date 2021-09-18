@@ -32,7 +32,7 @@ def generate_embeddings():
         for file in listdir(cluster_path):
             file_path = join(cluster_path, file)
             with open(file_path, "r") as f:
-                vectors[file_path] = infercode.encode(f.read())[0]
+                vectors[file_path] = infercode.encode([f.read()])[0]
 
 
 if __name__ == "__main__":

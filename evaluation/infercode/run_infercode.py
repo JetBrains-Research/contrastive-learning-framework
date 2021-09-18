@@ -11,9 +11,9 @@ logging.basicConfig(level=logging.INFO)
 data_path = "/data"
 
 
-def generate_embeddings(dataset: str):
-    dataset_path = join(data_path, dataset, "raw", "val")
-    storage_path = join(data_path, dataset, "infercode")
+def generate_embeddings():
+    dataset_path = join(data_path, "raw", "val")
+    storage_path = join(data_path, "infercode")
     if not exists(storage_path):
         mkdir(storage_path)
 
@@ -36,5 +36,4 @@ def generate_embeddings(dataset: str):
 
 
 if __name__ == "__main__":
-    generate_embeddings("codeforces")
-    generate_embeddings("poj_104")
+    generate_embeddings()

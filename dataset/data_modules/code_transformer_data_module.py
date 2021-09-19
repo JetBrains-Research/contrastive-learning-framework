@@ -34,8 +34,6 @@ class Setup(CTCodeSummarizationMixin, ExperimentSetup):
             use_pointer_network=dataset_config.use_pointer_network,
             sort_by_length=dataset_config.sort_by_length,
             chunk_size=dataset_config.chunk_size,
-            filter_language=dataset_config.filter_language,
-            dataset_imbalance=dataset_config.dataset_imbalance,
             num_sub_tokens=dataset_config.num_sub_tokens,
             num_subtokens_output=dataset_config.num_subtokens_output,
             use_only_ast=dataset_config.use_only_ast,

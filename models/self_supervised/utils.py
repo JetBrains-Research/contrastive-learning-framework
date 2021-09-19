@@ -57,7 +57,7 @@ def configure_optimizers(
 
 
 def init_model(config):
-    if config.name == "transformer":
+    if config.name in ["transformer", "gnn", "code-transformer"]:
         encoder = encoder_models[config.name](config)
     elif config.name == "code2class":
         _vocabulary = Vocabulary(
@@ -71,8 +71,6 @@ def init_model(config):
             config.dataset.max_tokens
         )
         encoder = encoder_models[config.name](config=config, vocabulary=_vocabulary)
-    elif config.name == "gnn":
-        encoder = encoder_models[config.name](config)
     else:
         raise ValueError(f"Unknown model: {config.name}")
     return encoder

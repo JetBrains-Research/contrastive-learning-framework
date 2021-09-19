@@ -109,7 +109,7 @@ class Encoder:
         # Convert source code to ids
         tokens = [t for t in tokenizer(input_)]
         tokens = self.bpe_model.apply_bpe(" ".join(tokens)).split()
-        tokens = ["</s>"] + tokens + ["</s>"]
+        tokens = ["</s>"] + tokens[:1024] + ["</s>"]
         input_ = " ".join(tokens)
 
         # Create torch batch
@@ -125,13 +125,13 @@ class Encoder:
         return enc_
 
 
-data_path = "data_"
+data_path = "/data_"
 
 
 @torch.no_grad()
 def generate_embeddings(model_path: str, bpe_path: str):
     dataset_path = join(data_path, "raw", "test")
-    storage_path = join(data_path, f"transcoder-{model_path.split('_')[-1]}")
+    storage_path = join(data_path, f"transcoder-{model_path.split('_')[-1].split('.')[0]}")
     if not exists(storage_path):
         mkdir(storage_path)
 

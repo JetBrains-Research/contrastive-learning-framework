@@ -66,6 +66,6 @@ RUN /root/miniconda3/envs/env/bin/pip install hydra-core --upgrade --pre
 RUN /root/miniconda3/envs/env/bin/pip install black==19.10b0
 
 COPY run_transcoder.py .
+COPY run_two_models.sh .
 
-CMD [ "python", "run_transcoder.py", "TransCoder_model_1.pth" ]
-CMD [ "python", "run_transcoder.py", "TransCoder_model_2.pth" ]
+CMD [ "run_two_models.sh" ]

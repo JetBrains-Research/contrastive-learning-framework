@@ -68,4 +68,4 @@ RUN /root/miniconda3/envs/env/bin/pip install black==19.10b0
 COPY run_transcoder.py .
 COPY run_two_models.sh .
 
-CMD [ "run_two_models.sh" ]
+CMD [ "bash", "run_two_models.sh" ]

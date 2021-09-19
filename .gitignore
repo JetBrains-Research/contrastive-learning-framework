@@ -13,3 +13,4 @@ notebooks/
 outputs/
 build/
 workspace/
+checkpoints/

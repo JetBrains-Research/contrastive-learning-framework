@@ -7,4 +7,4 @@ RUN tar -xvzf simian-2.5.10.tar.gz -C simian
 COPY ./run_simian.sh .
 RUN chmod +x run_simian.sh
 
-CMD [ "/bin/bash" ]
+CMD [ "/bin/bash", "run_simian.sh", "raw/test/**", "simian.yaml" ]

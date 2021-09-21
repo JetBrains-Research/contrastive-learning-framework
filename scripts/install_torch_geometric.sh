@@ -6,7 +6,7 @@ CUDA_AVAILABLE=$(python -c 'import torch; print(torch.cuda.is_available())')
 
 if [ $CUDA_AVAILABLE == "True" ]
 then
-    VERSION=cu102
+    VERSION=cu111
 else
     VERSION=cpu
 fi

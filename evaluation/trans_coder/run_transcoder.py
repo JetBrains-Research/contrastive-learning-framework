@@ -142,7 +142,7 @@ def generate_embeddings(model_path: str, bpe_path: str):
     i = 0
 
     for cluster in tqdm(listdir(dataset_path), total=len(listdir(dataset_path))):
-        if len(list(vectors.keys())) == 1000:
+        if len(list(vectors.keys())) >= 1000:
             with open(join(storage_path, f"vectors_{i}.pkl"), "wb") as f:
                 pickle.dump(vectors, f)
             vectors = {}
@@ -152,6 +152,8 @@ def generate_embeddings(model_path: str, bpe_path: str):
             file_path = join(cluster_path, file)
             with open(file_path, "r", errors="ignore", encoding="utf8") as f:
                 vectors[file_path] = encoder.embed(f.read(), tokenizer=tokenizer)
+    with open(join(storage_path, f"vectors_{i}.pkl"), "wb") as f:
+        pickle.dump(vectors, f)
 
 
 if __name__ == "__main__":

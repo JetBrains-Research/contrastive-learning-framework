@@ -32,7 +32,7 @@ then
 else
     VERSION=cu111
 fi
-
+echo $VERSION
 bash scripts/install_torch_geometric.sh $VERSION
 bash scripts/install_astminer.sh
 bash scripts/install_joern.sh

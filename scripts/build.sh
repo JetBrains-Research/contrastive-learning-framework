@@ -26,7 +26,7 @@ while (( "$#" )); do
   esac
 done
 
-if [ $CI ]
+if $CI
 then
     VERSION=cpu
 else

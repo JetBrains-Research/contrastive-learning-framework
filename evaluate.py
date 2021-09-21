@@ -22,7 +22,7 @@ checkpoint_storage = "checkpoints"
 sweep_path = "https://api.wandb.ai/files/maximzubkov/contrastive-learning-framework"
 model2ckpt = {
     "simclr-transformer-poj104": "/i309s5af/epoch=01-val_loss=0.0000-v1.ckpt",
-    "simclr-transformer-codeforces": "/jkou0zae/epoch=07-val_loss=0.0000.ckpt",
+    "moco-transformer-codeforces": "/jkou0zae/epoch=07-val_loss=0.0000.ckpt",
 }
 
 

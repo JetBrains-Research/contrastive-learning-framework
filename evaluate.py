@@ -101,7 +101,6 @@ def eval_checkpoint(config_path: str, checkpoint_path: str):
     transform = ssl_models_transforms[config.ssl.name]() if config.ssl.name in ssl_models_transforms else None
     dm = data_modules[config.name](config=config, transform=transform)
     dm.prepare_data()
-    dm.setup("test")
 
     model = ssl_models[config.ssl.name](config=config)
     checkpoint = load(checkpoint_path, map_location=torch.device("cpu"))

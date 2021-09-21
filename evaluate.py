@@ -11,6 +11,7 @@ import yaml
 import numpy as np
 from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything, Trainer
+from pytorch_lightning.utilities.cloud_io import load
 
 from dataset import data_modules
 from models import ssl_models, ssl_models_transforms
@@ -101,7 +102,9 @@ def eval_checkpoint(config_path: str, checkpoint_path: str):
     dm = data_modules[config.name](config=config, transform=transform)
     dm.prepare_data()
 
-    model = ssl_models[config.ssl.name].load_from_checkpoint(checkpoint_path, map_location=torch.device("cpu"))
+    model = ssl_models[config.ssl.name](config=config)
+    checkpoint = load(checkpoint_path, map_location=torch.device("cpu"))
+    model = model.load_state_dict(checkpoint["state_dict"], strict=True)
 
     gpu = -1 if torch.cuda.is_available() else None
     trainer = Trainer(gpus=gpu)

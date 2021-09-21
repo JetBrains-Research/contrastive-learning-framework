@@ -3,12 +3,13 @@
 
 TORCH=1.9.0
 CUDA_AVAILABLE=$(python -c 'import torch; print(torch.cuda.is_available())')
+VERSION=$1
 
 if [ $CUDA_AVAILABLE == "True" ]
 then
-    VERSION=cu102
+    echo "Cuda is available"
 else
-    VERSION=cpu
+    echo "Cuda is not available"
 fi
 
 echo "Installing ${TORCH}-${VERSION}"

@@ -23,7 +23,7 @@ def generate_embeddings():
     i = 0
 
     for cluster in tqdm(listdir(dataset_path), total=len(listdir(dataset_path))):
-        if len(list(vectors.keys())) == 1000:
+        if len(list(vectors.keys())) >= 1000:
             with open(join(storage_path, f"vectors_{i}.pkl"), "wb") as f:
                 pickle.dump(vectors, f)
             vectors = {}
@@ -33,6 +33,8 @@ def generate_embeddings():
             file_path = join(cluster_path, file)
             with open(file_path, "r") as f:
                 vectors[file_path] = infercode.encode([f.read()])[0]
+    with open(join(storage_path, f"vectors_{i}.pkl"), "wb") as f:
+        pickle.dump(vectors, f)
 
 
 if __name__ == "__main__":

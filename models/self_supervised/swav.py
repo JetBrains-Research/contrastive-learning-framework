@@ -135,6 +135,12 @@ class SwAVModel(SwAV):
         log = validation_metrics(outputs, task=self.config.dataset.name)
         self.log_dict(log)
 
+    def test_step(self, batch, batch_idx):
+        return self.validation_step(batch=batch, batch_idx=batch_idx)
+
+    def test_epoch_end(self, outputs):
+        self.validation_epoch_end(outputs=outputs)
+
     def configure_optimizers(self):
         return configure_optimizers(
             self,

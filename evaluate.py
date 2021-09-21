@@ -11,6 +11,7 @@ import yaml
 import numpy as np
 from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything, Trainer
+from pytorch_lightning.utilities.cloud_io import load
 
 from dataset import data_modules
 from models import ssl_models, ssl_models_transforms
@@ -22,8 +23,7 @@ checkpoint_storage = "checkpoints"
 sweep_path = "https://api.wandb.ai/files/maximzubkov/contrastive-learning-framework"
 model2ckpt = {
     "simclr-transformer-poj104": "/i309s5af/epoch=01-val_loss=0.0000-v1.ckpt",
-    "simclr-transformer-codeforces": "",
-    "simclr-code2class-poj104": ""
+    "moco-transformer-codeforces": "/jkou0zae/epoch=07-val_loss=0.0000.ckpt",
 }
 
 
@@ -98,11 +98,13 @@ def eval_checkpoint(config_path: str, checkpoint_path: str):
     config = OmegaConf.load(config_path)
     seed_everything(config.seed)
 
-    transform = ssl_models_transforms[config.ssl_model]() if config.ssl_model in ssl_models_transforms else None
-    dm = data_modules[config.encoder](config=config, transform=transform)
+    transform = ssl_models_transforms[config.ssl.name]() if config.ssl.name in ssl_models_transforms else None
+    dm = data_modules[config.name](config=config, transform=transform)
     dm.prepare_data()
 
-    model = ssl_models[config.ssl_model].load_from_checkpoint(checkpoint_path, map_location=torch.device("cpu"))
+    model = ssl_models[config.ssl.name](config=config)
+    checkpoint = load(checkpoint_path, map_location=torch.device("cpu"))
+    model.load_state_dict(checkpoint["state_dict"], strict=True)
 
     gpu = -1 if torch.cuda.is_available() else None
     trainer = Trainer(gpus=gpu)

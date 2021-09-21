@@ -109,7 +109,7 @@ def eval_checkpoint(config_path: str, checkpoint_path: str):
 
     gpu = -1 if torch.cuda.is_available() else None
     trainer = Trainer(gpus=gpu)
-    trainer.test(model, test_dataloaders=dm.test_dataloader())
+    trainer.test(model, datamodule=dm)
 
 
 if __name__ == "__main__":

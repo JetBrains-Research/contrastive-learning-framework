@@ -97,11 +97,11 @@ def eval_checkpoint(config_path: str, checkpoint_path: str):
     config = OmegaConf.load(config_path)
     seed_everything(config.seed)
 
-    transform = ssl_models_transforms[config.ssl_model]() if config.ssl_model in ssl_models_transforms else None
-    dm = data_modules[config.encoder](config=config, transform=transform)
+    transform = ssl_models_transforms[config.ssl.name]() if config.ssl.name in ssl_models_transforms else None
+    dm = data_modules[config.name](config=config, transform=transform)
     dm.prepare_data()
 
-    model = ssl_models[config.ssl_model].load_from_checkpoint(checkpoint_path, map_location=torch.device("cpu"))
+    model = ssl_models[config.ssl.name].load_from_checkpoint(checkpoint_path, map_location=torch.device("cpu"))
 
     gpu = -1 if torch.cuda.is_available() else None
     trainer = Trainer(gpus=gpu)

@@ -3,7 +3,7 @@
 
 TORCH=1.9.0
 CUDA_AVAILABLE=$(python -c 'import torch; print(torch.cuda.is_available())')
-VERSION=cu111
+VERSION=$1
 
 if [ $CUDA_AVAILABLE == "True" ]
 then

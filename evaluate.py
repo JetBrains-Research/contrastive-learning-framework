@@ -105,7 +105,7 @@ def eval_checkpoint(config_path: str, checkpoint_path: str):
 
     model = ssl_models[config.ssl.name](config=config)
     checkpoint = load(checkpoint_path, map_location=torch.device("cpu"))
-    model = model.load_state_dict(checkpoint["state_dict"], strict=True)
+    model.load_state_dict(checkpoint["state_dict"], strict=True)
 
     gpu = -1 if torch.cuda.is_available() else None
     trainer = Trainer(gpus=gpu)

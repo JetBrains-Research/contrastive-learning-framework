@@ -1,5 +1,5 @@
 experiment_setup:
-  executable: 'build/code-transformer/code_transformer/experiments/preprocessing/preprocess-2.py'
+  executable: 'build/code_transformer/code_transformer/experiments/preprocessing/preprocess-2.py'
 
 execution:
   num_processes: 2

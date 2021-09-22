@@ -2,9 +2,9 @@ experiment_setup:
   executable: 'build/code-transformer/code_transformer/experiments/preprocessing/preprocess-2.py'
 
 execution:
-  num_processes: 1
-  batch_size: 100
-  dataset_slice_size: 5000
+  num_processes: 2
+  batch_size: 50
+  dataset_slice_size: 1000
 
 preprocessing:
   remove_punctuation: True

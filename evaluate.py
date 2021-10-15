@@ -31,7 +31,7 @@ model2ckpt = {
 
     "simclr-code2class-poj104": "/b4qs2uam/epoch=00-val_loss=0.0000.ckpt",
     "moco-code2class-poj104": "/rrvjo40p/epoch=00-val_loss=0.0000-v1.ckpt",
-    "swav-code2class-poj104": "/jkkxhxsw/epoch=07-val_loss=0.0000.ckpt",
+    "swav-code2class-poj104": "/smyuztja/epoch=00-val_loss=0.0000-v1.ckpt",
     "simclr-code2class-codeforces": "/3bnriznw/epoch=04-val_loss=0.0000.ckpt",
     "moco-code2class-codeforces": "/vvs854oi/epoch=07-val_loss=0.0000-v1.ckpt",
     "swav-code2class-codeforces": "/jkkxhxsw/epoch=07-val_loss=0.0000-v1.ckpt",

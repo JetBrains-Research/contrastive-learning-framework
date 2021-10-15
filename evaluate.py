@@ -24,24 +24,24 @@ sweep_path = "https://api.wandb.ai/files/maximzubkov/contrastive-learning-framew
 model2ckpt = {
     "simclr-transformer-poj104": "/i309s5af/epoch=01-val_loss=0.0000-v1.ckpt",
     "moco-transformer-poj104": "/3gbb9ude/epoch=02-val_loss=0.0000-v1.ckpt",
-    "svaw-transformer-poj104": "/1pqdjf50/epoch=00-val_loss=0.0000.ckp",
+    "swav-transformer-poj104": "/1pqdjf50/epoch=00-val_loss=0.0000.ckp",
     "simclr-transformer-codeforces": "/z3n7pcg4/epoch=08-val_loss=0.0000.ckp",
     "moco-transformer-codeforces": "/jkou0zae/epoch=06-val_loss=0.0000.ckp",
-    "svaw-transformer-codeforces": "/lgk13t5u/epoch=01-val_loss=0.0000.ckp",
+    "swav-transformer-codeforces": "/lgk13t5u/epoch=01-val_loss=0.0000.ckp",
 
     "simclr-code2class-poj104": "/b4qs2uam/epoch=00-val_loss=0.0000.ckpt",
     "moco-code2class-poj104": "/rrvjo40p/epoch=00-val_loss=0.0000-v1.ckpt",
-    "svaw-code2class-poj104": "/jkkxhxsw/epoch=07-val_loss=0.0000.ckp",
+    "swav-code2class-poj104": "/jkkxhxsw/epoch=07-val_loss=0.0000.ckp",
     "simclr-code2class-codeforces": "/3bnriznw/epoch=04-val_loss=0.0000.ckp",
     "moco-code2class-codeforces": "/vvs854oi/epoch=07-val_loss=0.0000-v1.ckp",
-    "svaw-code2class-codeforces": "/jkkxhxsw/epoch=07-val_loss=0.0000-v1.ckp",
+    "swav-code2class-codeforces": "/jkkxhxsw/epoch=07-val_loss=0.0000-v1.ckp",
 
     "simclr-gnn-poj104": "/56q7ksbbç/epoch=00-val_loss=0.0000-v1.ckpt",
     "moco-gnn-poj104": "/tgj7vpyi/epoch=00-val_loss=0.0000-v1.ckpt",
-    "svaw-gnn-poj104": "/lwdxtex6/epoch=00-val_loss=0.0000-v1.ckpt",
+    "swav-gnn-poj104": "/lwdxtex6/epoch=00-val_loss=0.0000-v1.ckpt",
     "simclr-gnn-codeforces": "/uu1ries9/epoch=07-val_loss=0.0000.ckpt",
     "moco-gnn-codeforces": "/q89d3j8h/epoch=07-val_loss=0.0000.ckpt",
-    "svaw-gnn-codeforces": "/5wopmvq8/epoch=07-val_loss=0.0000.ckpt",
+    "swav-gnn-codeforces": "/5wopmvq8/epoch=07-val_loss=0.0000.ckpt",
 }
 
 

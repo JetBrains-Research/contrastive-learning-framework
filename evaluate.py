@@ -1,14 +1,14 @@
+import json
 import pickle
 from argparse import ArgumentParser
 from itertools import combinations
-
-import wget
 from os import listdir
 from os.path import join, dirname, basename, exists
 
-import torch
-import yaml
 import numpy as np
+import torch
+import wget
+import yaml
 from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.utilities.cloud_io import load
@@ -128,6 +128,9 @@ def eval_checkpoint(config_path: str, checkpoint_path: str):
     trainer = Trainer(gpus=gpu)
     trainer.test(model, datamodule=dm)
 
+    res = trainer.test(model, datamodule=dm)
+    return res
+
 
 if __name__ == "__main__":
     arg_parser = ArgumentParser()
@@ -151,6 +154,8 @@ if __name__ == "__main__":
             checkpoint_path = join(checkpoint_storage, f"{full_name}.ckpt")
             if not exists(checkpoint_path):
                 wget.download(sweep_path + model2ckpt[full_name], checkpoint_path)
-        eval_checkpoint(config_path=config_path, checkpoint_path=checkpoint_path)
+        res = eval_checkpoint(config_path=config_path, checkpoint_path=checkpoint_path)
+        with open(join(data_dir, f"{args.model}-{args.dataset}.json"), 'w') as f:
+            json.dump(res, f)
     else:
         raise ValueError(f"Unknown model {args.model}")

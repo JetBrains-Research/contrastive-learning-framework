@@ -30,6 +30,6 @@ docker build -t trans_coder .
 # Compute similarity for codeforces
 docker run -v path-to-contrastive-learning-framework/data/codeforces:/data_ --gpus=all -i -t trans_coder
 # Compute similarity for poj_104
-docker run -v path-to-contrastive-learning-framework/data/poj_104:/data_ --gpus=all -i -t simian
+docker run -v path-to-contrastive-learning-framework/data/poj_104:/data_ --gpus=all -i -t trans_coder
 ``` 
 When all embeddings are computed, run script `evaluate.py` 

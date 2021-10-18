@@ -1,5 +1,6 @@
 import logging
 import pickle
+import zipfile
 from os import listdir, mkdir
 from os.path import join, exists
 
@@ -18,6 +19,8 @@ def generate_embeddings():
         mkdir(storage_path)
 
     infercode = InferCodeClient(language="c")
+    with zipfile.ZipFile("/root/.tree-sitter/Linux.zip", "r") as zip_ref:
+        zip_ref.extractall("/root/.tree-sitter")
     infercode.init_from_config()
     vectors = {}
     i = 0
@@ -31,7 +34,7 @@ def generate_embeddings():
         cluster_path = join(dataset_path, cluster)
         for file in listdir(cluster_path):
             file_path = join(cluster_path, file)
-            with open(file_path, "r") as f:
+            with open(file_path, "r", encoding="utf8", errors='ignore') as f:
                 vectors[file_path] = infercode.encode([f.read()])[0]
     with open(join(storage_path, f"vectors_{i}.pkl"), "wb") as f:
         pickle.dump(vectors, f)

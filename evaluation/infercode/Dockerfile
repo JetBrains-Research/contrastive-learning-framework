@@ -13,6 +13,7 @@ RUN apt-get update \
                        ssh \
                        sudo \
                        vim \
+                       zip \
                        default-jre \
                        python3.8-dev python3-pip python3-setuptools
 
@@ -23,7 +24,7 @@ ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
 RUN python -m pip install --upgrade pip
-RUN pip install infercode
+RUN pip install infercode==0.0.28
 
 COPY run_infercode.py .
 CMD [ "python", "run_infercode.py" ]

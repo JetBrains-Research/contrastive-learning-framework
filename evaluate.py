@@ -102,7 +102,7 @@ def eval_embeddings(model: str, dataset: str):
         with open(file_path, "rb") as f:
             data = pickle.load(f)
         labels += [basename(dirname(key)) for key in data]
-        vectors += [torch.Tensor(data[key]).reshape(1, -1) for key in data]
+        vectors += [torch.Tensor(data[key].cpu()).reshape(1, -1) for key in data]
     labels_set = set(labels)
     label2id = {label: i for i, label in enumerate(labels_set)}
     labels = torch.LongTensor([label2id[label] for label in labels])

@@ -13,7 +13,7 @@ fi
 dirs=$(find "$DATA_DIR" -mindepth 1 -type d)
 for DIR_CLASS in $dirs
 do
-    echo "Splitting class - $DIR_CLASS"
+    echo "Processing - $DIR_CLASS"
     files=$(find "$DIR_CLASS" -mindepth 1 -type f)
     for FILE in $files
     do

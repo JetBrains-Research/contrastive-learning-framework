@@ -1,7 +1,7 @@
 import json
 import pickle
 from argparse import ArgumentParser
-from itertools import combinations
+from itertools import combinations, chain
 from os import listdir
 from os.path import join, dirname, basename, exists
 
@@ -45,12 +45,41 @@ model2ckpt = {
 }
 
 
-def eval_simian(dataset: str):
-    if dataset == "poj_104":
-        ks = (100, 200, 500)
-    elif dataset == "codeforces":
-        ks = (5, 10, 15)
+def collect_labels(dataset: str):
+    test_set_path = join(data_dir, dataset, "raw", "val_tmp")
+    files_total = list(chain(*[
+        [join(d, f) for f in listdir(join(test_set_path, d))]
+        for d in listdir(test_set_path)
+    ]))
+    file2id = {file: i for i, file in enumerate(files_total)}
+    n_total_files = len(files_total)
 
+    clusters = set().union([basename(dirname(f)) for f in files_total])
+    cluster2id = {label: i for i, label in enumerate(clusters)}
+
+    labels = np.zeros(n_total_files)
+    for file in files_total:
+        file_id = file2id[file]
+        labels[file_id] = cluster2id[basename(dirname(file))]
+
+    return labels, file2id, cluster2id
+
+
+def build_jplag_matrix(dataset: str, file2id: dict):
+    output_file_path = join(data_dir, dataset, "jplag", "results.csv")
+    duplicate_lines_matrix = np.zeros((len(file2id), len(file2id)))
+    with open(output_file_path, "r") as f:
+        for line in f:
+            file1, file2, score = line.split(";")[1:-1]
+            file1 = join(file1.rsplit("_", 2)[0], "_".join(file1.rsplit("_", 2)[1:]))
+            file2 = join(file2.rsplit("_", 2)[0], "_".join(file2.rsplit("_", 2)[1:]))
+            file1_id, file2_id = file2id[file1], file2id[file2]
+            duplicate_lines_matrix[file1_id, file2_id] += float(score)
+            duplicate_lines_matrix[file2_id, file1_id] += float(score)
+    return duplicate_lines_matrix
+
+
+def build_simian_matrix(dataset: str, file2id: dict):
     output_file_path = join(data_dir, dataset, "simian.yaml")
     with open(output_file_path, "r") as f:
         simian_output = yaml.safe_load(f)
@@ -62,34 +91,42 @@ def eval_simian(dataset: str):
         }
         for i in range(2, len(simian_output), 2)
     ]
-    files = set().union(*[d["blocks"] for d in duplicates])
-    file2id = {file: i for i, file in enumerate(files)}
-    n_files = len(files)
-    duplicate_lines_matrix = np.zeros((n_files, n_files))
 
-    clusters = set().union(*[[basename(dirname(p)) for p in d["blocks"]] for d in duplicates])
-    cluster2id = {label: i for i, label in enumerate(clusters)}
-
-    labels = np.zeros(n_files)
-    for file in files:
-        file_id = file2id[file]
-        file_cluster_id = cluster2id[basename(dirname(file))]
-        labels[file_id] = file_cluster_id
-
+    duplicate_lines_matrix = np.zeros((len(file2id), len(file2id)))
     for dup in duplicates:
         num_lines = dup["num_duplicated_lines"]
-        dup_ids = [file2id[file] for file in dup["blocks"]]
+        dup_ids = [file2id[join(basename(dirname(file)), basename(file))] for file in dup["blocks"]]
         pairs = combinations(dup_ids, 2)
         for a, b in pairs:
             duplicate_lines_matrix[a, b] += num_lines
             duplicate_lines_matrix[b, a] += num_lines
 
+    return duplicate_lines_matrix
+
+
+def eval_from_matrix(dataset: str, model: str):
+    if dataset == "poj_104":
+        ks = (100, 200, 500)
+    elif dataset == "codeforces":
+        ks = (5, 10, 15)
+
+    labels, file2id, cluster2id = collect_labels(dataset)
+
+    if model == "simian":
+        duplicate_lines_matrix = build_simian_matrix(dataset, file2id)
+    elif model == "jplag":
+        duplicate_lines_matrix = build_jplag_matrix(dataset, file2id)
+    else:
+        raise ValueError(f"Unknown model {model}")
+
+    zero_lines = (duplicate_lines_matrix.sum(-1) == 0)
     duplicate_lines_matrix_ids = np.argsort(duplicate_lines_matrix, axis=-1)
     for k in ks:
         top_ids = duplicate_lines_matrix_ids[:, -k:]
         top_ids = top_ids[:, ::-1].astype(int)
 
         top_labels = labels[top_ids]
+        top_labels[zero_lines, :] = -1
         preds = torch.eq(torch.LongTensor(top_labels), torch.LongTensor(labels).reshape(-1, 1))
         print(f"\tMAP at {k} {round(compute_map_at_k(preds) * 100, 2)}")
 
@@ -140,8 +177,8 @@ if __name__ == "__main__":
 
     if args.model in ["infercode", "transcoder-1", "transcoder-2"]:
         eval_embeddings(args.model, args.dataset)
-    elif args.model == "simian":
-        eval_simian(args.dataset)
+    elif args.model in ["simian", "jplag"]:
+        eval_from_matrix(args.dataset, args.model)
     elif f"{args.model}-{args.dataset}" in model2ckpt:
         if (args.checkpoint_path is not None) and (args.config_path is not None):
             config_path = args.config_path

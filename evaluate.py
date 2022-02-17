@@ -46,7 +46,7 @@ model2ckpt = {
 
 
 def collect_labels(dataset: str):
-    test_set_path = join(data_dir, dataset, "raw", "val_tmp")
+    test_set_path = join(data_dir, dataset, "raw", "test")
     files_total = list(chain(*[
         [join(d, f) for f in listdir(join(test_set_path, d))]
         for d in listdir(test_set_path)

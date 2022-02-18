@@ -25,3 +25,5 @@ RUN git clone https://github.com/Tallic/ccaligner.git
 
 COPY run_ccaligner.sh .
 RUN chmod -R +x ccaligner run_ccaligner.sh
+
+CMD [ "/bin/sh", "run_ccaligner.sh" ]

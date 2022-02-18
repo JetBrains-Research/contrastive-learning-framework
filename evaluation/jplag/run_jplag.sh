@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script for preparing test set
+# Script to run jplag
 
 DATA_DIR=/data
 TMP_DATA_DIR=/data_tmp

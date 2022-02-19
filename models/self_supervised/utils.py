@@ -4,6 +4,7 @@ from os.path import isdir, join
 import torch
 from code2seq.data.vocabulary import Vocabulary
 from pl_bolts.optimizers.lr_scheduler import linear_warmup_decay
+from sklearn.metrics import f1_score
 from torch.optim import Adam
 from torch_cluster import knn
 from torchmetrics.functional import auroc
@@ -87,13 +88,6 @@ def roc_auc(queries, keys, labels):
     return auroc(logits, mask)
 
 
-def compute_f1(conf_matrix):
-    assert conf_matrix.shape == (2, 2)
-    tn, fn, fp, tp = conf_matrix.reshape(-1).tolist()
-    f1 = tp / (tp + 0.5 * (fp + fn))
-    return f1
-
-
 def compute_map_at_k(preds):
     avg_precisions = []
 
@@ -106,6 +100,17 @@ def compute_map_at_k(preds):
         else:
             avg_precisions.append(torch.tensor(0.0, device=preds.device))
     return torch.stack(avg_precisions).mean().item()
+
+
+def compute_f1_at_k(preds, labels):
+    preds_positive = preds[preds >= 0].reshape(-1, preds.shape[-1])
+    target_labels = labels[(preds >= 0)[:, 0]].repeat(preds_positive.shape[-1], 1).T
+    f1 = f1_score(
+        target_labels.reshape(-1).cpu().numpy(),
+        preds_positive.reshape(-1).cpu().numpy(),
+        average="micro"
+    )
+    return f1
 
 
 def validation_metrics(outputs, task: str = "poj_104"):
@@ -131,6 +136,7 @@ def validation_metrics(outputs, task: str = "poj_104"):
             top_labels = labels[top_ids]
             preds = torch.eq(top_labels, labels.reshape(-1, 1))
             logs[f"val_map@{k}"] = compute_map_at_k(preds)
+            logs[f"val_f1@{k}"] = compute_f1_at_k(top_labels, labels.reshape(-1, 1))
     return logs
 
 

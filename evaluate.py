@@ -15,7 +15,7 @@ from pytorch_lightning.utilities.cloud_io import load
 
 from dataset import data_modules
 from models import ssl_models, ssl_models_transforms
-from models.self_supervised.utils import validation_metrics, compute_map_at_k
+from models.self_supervised.utils import validation_metrics, compute_map_at_k, compute_f1_at_k
 
 data_dir = "data"
 checkpoint_storage = "checkpoints"
@@ -46,7 +46,7 @@ model2ckpt = {
 
 
 def collect_labels(dataset: str):
-    test_set_path = join(data_dir, dataset, "raw", "test")
+    test_set_path = join(data_dir, dataset, "raw", "val_tmp")
     files_total = list(chain(*[
         [join(d, f) for f in listdir(join(test_set_path, d))]
         for d in listdir(test_set_path)
@@ -127,8 +127,12 @@ def eval_from_matrix(dataset: str, model: str):
 
         top_labels = labels[top_ids]
         top_labels[zero_lines, :] = -1
-        preds = torch.eq(torch.LongTensor(top_labels), torch.LongTensor(labels).reshape(-1, 1))
+        top_labels = torch.LongTensor(top_labels)
+        labels_pt = torch.LongTensor(labels)
+
+        preds = torch.eq(top_labels, labels_pt.reshape(-1, 1))
         print(f"\tMAP at {k} {round(compute_map_at_k(preds) * 100, 2)}")
+        print(f"\tF1 at {k} {round(compute_f1_at_k(top_labels, labels_pt) * 100, 2)}")
 
 
 def eval_embeddings(model: str, dataset: str):

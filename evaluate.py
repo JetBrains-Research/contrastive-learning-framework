@@ -46,7 +46,7 @@ model2ckpt = {
 
 
 def collect_labels(dataset: str):
-    test_set_path = join(data_dir, dataset, "raw", "val_tmp")
+    test_set_path = join(data_dir, dataset, "raw", "test")
     files_total = list(chain(*[
         [join(d, f) for f in listdir(join(test_set_path, d))]
         for d in listdir(test_set_path)
@@ -73,6 +73,22 @@ def build_jplag_matrix(dataset: str, file2id: dict):
             file1, file2, score = line.split(";")[1:-1]
             file1 = join(file1.rsplit("_", 2)[0], "_".join(file1.rsplit("_", 2)[1:]))
             file2 = join(file2.rsplit("_", 2)[0], "_".join(file2.rsplit("_", 2)[1:]))
+            file1_id, file2_id = file2id[file1], file2id[file2]
+            duplicate_lines_matrix[file1_id, file2_id] += float(score)
+            duplicate_lines_matrix[file2_id, file1_id] += float(score)
+    return duplicate_lines_matrix
+
+
+def build_ccaligner_matrix(dataset: str, file2id: dict):
+    output_file_path = join(data_dir, dataset, "ccaligner", "clones.csv")
+    duplicate_lines_matrix = np.zeros((len(file2id), len(file2id)))
+    with open(output_file_path, "r") as f:
+        for line in f:
+            file1, a1, b1, file2, a2, b2 = line.split(",")
+            score = min(int(b1) - int(a1), int(b2) - int(a2))
+            file1, file2 = basename(file1), basename(file2)
+            file1 = join(*file1.rsplit("_", 1))
+            file2 = join(*file2.rsplit("_", 1))
             file1_id, file2_id = file2id[file1], file2id[file2]
             duplicate_lines_matrix[file1_id, file2_id] += float(score)
             duplicate_lines_matrix[file2_id, file1_id] += float(score)
@@ -116,6 +132,8 @@ def eval_from_matrix(dataset: str, model: str):
         duplicate_lines_matrix = build_simian_matrix(dataset, file2id)
     elif model == "jplag":
         duplicate_lines_matrix = build_jplag_matrix(dataset, file2id)
+    elif model == "ccaligner":
+        duplicate_lines_matrix = build_ccaligner_matrix(dataset, file2id)
     else:
         raise ValueError(f"Unknown model {model}")
 
@@ -181,7 +199,7 @@ if __name__ == "__main__":
 
     if args.model in ["infercode", "transcoder-1", "transcoder-2"]:
         eval_embeddings(args.model, args.dataset)
-    elif args.model in ["simian", "jplag"]:
+    elif args.model in ["simian", "jplag", "ccaligner"]:
         eval_from_matrix(args.dataset, args.model)
     elif f"{args.model}-{args.dataset}" in model2ckpt:
         if (args.checkpoint_path is not None) and (args.config_path is not None):

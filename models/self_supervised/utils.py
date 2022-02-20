@@ -136,7 +136,7 @@ def validation_metrics(outputs, task: str = "poj_104"):
             top_labels = labels[top_ids]
             preds = torch.eq(top_labels, labels.reshape(-1, 1))
             logs[f"val_map@{k}"] = compute_map_at_k(preds)
-            logs[f"val_f1@{k}"] = compute_f1_at_k(top_labels, labels.reshape(-1, 1))
+            logs[f"val_f1@{k}"] = compute_f1_at_k(top_labels, labels)
     return logs
 
 

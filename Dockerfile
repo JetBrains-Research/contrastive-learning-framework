@@ -26,6 +26,7 @@ RUN python -m pip install --upgrade pip
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 COPY ./scripts ./scripts
+COPY ./configs ./configs
 RUN sh scripts/build.sh
 RUN pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html
 

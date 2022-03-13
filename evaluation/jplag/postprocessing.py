@@ -3,7 +3,6 @@ from os.path import join
 import regex
 from tqdm import tqdm
 
-data_path = "/data"
 results_path = "/result"
 
 r = regex.compile(r'Comparing .*.cpp-.*.cpp: ([0-9]*[.])?[0-9]+')

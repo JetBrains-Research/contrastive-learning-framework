@@ -25,3 +25,4 @@ java -jar jplag-2.12.1-SNAPSHOT-jar-with-dependencies.jar -m 1% -l c/c++ $TMP_DA
 rm -rf $RESULT_DIR
 mkdir $RESULT_DIR
 mv results.txt $RESULT_DIR
+python postprocessing.py

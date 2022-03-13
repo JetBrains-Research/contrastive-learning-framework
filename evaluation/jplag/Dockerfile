@@ -7,8 +7,11 @@ RUN apt-get update \
                        curl \
                        git \
                        sudo \
-                       vim
+                       vim \
+                       python3.8-dev python3-pip python3-setuptools
 
+RUN ln -s /usr/bin/pip3 /usr/bin/pip
+RUN ln -s /usr/bin/python3.8 /usr/bin/python
 
 RUN git clone https://github.com/jplag/JPlag.git
 WORKDIR /JPlag
@@ -27,5 +30,7 @@ RUN mv target/jplag-2.12.1-SNAPSHOT-jar-with-dependencies.jar ../..
 WORKDIR /
 COPY ./run_jplag.sh .
 RUN chmod +x run_jplag.sh
+COPY ./postprocessing.py .
+RUN chmod +x postprocessing.py
 
 CMD [ "/bin/sh", "run_jplag.sh" ]

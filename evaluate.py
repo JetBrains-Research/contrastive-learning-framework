@@ -70,7 +70,7 @@ def build_jplag_matrix(dataset: str, file2id: dict):
     duplicate_lines_matrix = np.zeros((len(file2id), len(file2id)))
     with open(output_file_path, "r") as f:
         for line in f:
-            file1, file2, score = line.split(";")[1:-1]
+            file1, file2, score = line.split(",")
             file1 = join(file1.rsplit("_", 2)[0], "_".join(file1.rsplit("_", 2)[1:]))
             file2 = join(file2.rsplit("_", 2)[0], "_".join(file2.rsplit("_", 2)[1:]))
             file1_id, file2_id = file2id[file1], file2id[file2]

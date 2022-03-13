@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 results_path = "/result"
 
-r = regex.compile(r'Comparing .*.cpp-.*.cpp: ([0-9]*[.])?[0-9]+')
+r = regex.compile(r'Comparing .*.(cpp|c)-.*.(cpp|c): ([0-9]*[.])?[0-9]+')
 
 
 def postprocess():
@@ -23,7 +23,7 @@ def postprocess():
                 similarity = float(line_[line_.index(sim_sep) + 2:])
                 if similarity:
                     line_ = line_.replace(": ", ",")
-                    f_out.write(line_ + "\n")
+                    f_out.write(line_)
 
 
 if __name__ == "__main__":

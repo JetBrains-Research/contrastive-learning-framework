@@ -21,9 +21,8 @@ do
     done
 done
 
-java -jar jplag-3.0.0-jar-with-dependencies.jar -n -1 -m 0.001 -l cpp $TMP_DATA_DIR
-rm -rf $RESULT_DIR/*.html
-rm -rf $RESULT_DIR/*.js
-rm -rf $RESULT_DIR/*.gif
-rm -rf $RESULT_DIR/*.png
-mv $RESULT_DIR/matches_avg.csv $RESULT_DIR/results.csv
+java -jar jplag-2.12.1-SNAPSHOT-jar-with-dependencies.jar -m 1% -l c/c++ $TMP_DATA_DIR > results.txt
+rm -rf $RESULT_DIR/*
+mv results.txt $RESULT_DIR
+python postprocessing.py
+rm -rf $RESULT_DIR/results.txt

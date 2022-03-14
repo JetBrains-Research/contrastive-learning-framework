@@ -16,6 +16,6 @@ echo "Installing ${TORCH}-${VERSION}"
 
 pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-${TORCH}+${VERSION}.html
 pip install torch-sparse==0.6.11 -f https://pytorch-geometric.com/whl/torch-${TORCH}+${VERSION}.html
-pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH}+${VERSION}.html
+pip install torch-cluster==1.5.9 -f https://pytorch-geometric.com/whl/torch-${TORCH}+${VERSION}.html
 pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH}+${VERSION}.html
 pip install torch-geometric

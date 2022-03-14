@@ -36,4 +36,3 @@ fi
 bash scripts/install_torch_geometric.sh $VERSION
 bash scripts/install_astminer.sh
 bash scripts/install_joern.sh
-bash scripts/install_code_transformer.sh

@@ -58,7 +58,7 @@ def configure_optimizers(
 
 
 def init_model(config):
-    if config.name in ["transformer", "gnn", "code-transformer"]:
+    if config.name in ["transformer", "gnn"]:
         encoder = encoder_models[config.name](config)
     elif config.name == "code2class":
         _vocabulary = Vocabulary(

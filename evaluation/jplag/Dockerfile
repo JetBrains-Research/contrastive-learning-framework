@@ -13,6 +13,9 @@ RUN apt-get update \
 RUN ln -s /usr/bin/pip3 /usr/bin/pip
 RUN ln -s /usr/bin/python3.8 /usr/bin/python
 
+RUN python -m pip install regex
+RUN python -m pip install tqdm
+
 RUN git clone https://github.com/jplag/JPlag.git
 WORKDIR /JPlag
 RUN git checkout fbded8822d02c852fdc017e225a3d036fe417285

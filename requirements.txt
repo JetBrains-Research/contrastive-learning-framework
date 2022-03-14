@@ -13,3 +13,4 @@ omegaconf==2.1.1
 youtokentome==1.0.6
 torchmetrics==0.5.0
 joblib>=1.0.1
+promise==2.3

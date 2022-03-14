@@ -29,5 +29,6 @@ COPY ./scripts ./scripts
 COPY ./configs ./configs
 RUN sh scripts/build.sh
 RUN pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip install setuptools==59.5.0
 
 COPY . ./contrastive-learning-framework
